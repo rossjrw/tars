@@ -4,38 +4,49 @@
 
 from pyaib.plugins import plugin_class, observes
 import sys
+import os.path
 
 # Let pyaib know that this is a plugin class
 # Store the address of the class at 'nickserv' in the context obj
 @plugin_class("nickserv")
 class NickServ(object):
-    def __init__(self, irc_context, config):
+    def __init__(self, irc_c, config):
         self.config = config
-        self.password = config.get("password")
+        passfile = open(os.path.dirname(__file__)
+                        + "/../password.secret.txt")
+        self.password = passfile.readline()
+        passfile.close()
 
     @observes("IRC_ONCONNECT")
-    def AUTO_IDENTIFY(self, irc_context):
-        self.identify(irc_context)
+    def AUTO_IDENTIFY(self, irc_c):
+        self.identify(irc_c)
 
         # Spawn a watcher that makes sure we have the nick
-        irc_context.timers.clear("nickserv", self.watcher)
-        irc_context.timers.set("nickserv", self.watcher, every=90)
+        irc_c.timers.clear("nickserv", self.watcher)
+        irc_c.timers.set("nickserv", self.watcher, every=90)
 
-    def watcher(self, irc_context, timertext):
-        if irc_context.botnick != irc_context.config.irc.nick:
-            self.identify(irc_context)
+    def watcher(self, irc_c, timertext):
+        if irc_c.botnick != irc_c.config.irc.nick:
+            self.identify(irc_c)
 
-    def identify(self, irc_context):
-        if irc_context.botnick != irc_context.config.irc.nick:
+    def identify(self, irc_c):
+        if irc_c.botnick != irc_c.config.irc.nick:
             print("Trying to reacquire nick...")
-            irc_context.PRIVMSG("nickserv",
+            irc_c.PRIVMSG("nickserv",
                                 "GHOST {} {}".format(
-                                    irc_context.config.irc.nick,
+                                    irc_c.config.irc.nick,
                                     self.password))
-            irc_context.NICK(irc_context.config.irc.nick)
+            irc_c.NICK(irc_c.config.irc.nick)
 
         # Identify
         print("Idenfifying with nickserv...")
-        irc_context.PRIVMSG("nickserv",
+        irc_c.PRIVMSG("nickserv",
                             "IDENTIFY {}".format(self.password))
         print(">>> IDENTIFY {}".format(self.password) + " <<<")
+        # Assuming that went correctly, recoonect to channels
+        print(irc_c.channels.channels)
+        if irc_c.config.channels.autojoin:
+            irc_c.JOIN("#tars")
+            for channel in irc_c.config.channels.autojoin:
+                irc_c.JOIN(channel)
+                print("Joining " + str(channel))
