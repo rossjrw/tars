@@ -13,11 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-
 import time
-
 from pyaib.plugins import observe, keyword, plugin_class, every
 
 
@@ -34,10 +30,11 @@ class Debug(object):
 
     @observe('IRC_RAW_MSG', 'IRC_RAW_SEND')
     def debug(self, irc_c, msg):
-        print("[%s] %r" % (time.strftime('%H:%M:%S'), msg))
+        print("[{}] {}".format(time.strftime('%H:%M:%S'), msg))
 
     @observe('IRC_MSG_PRIVMSG')
     def auto_reply(self, irc_c, msg):
+        print("Received a message from " + str(msg.channel))
         if msg.channel is None:
             msg.reply(msg.message)
 
@@ -69,19 +66,28 @@ class Debug(object):
     def join(self, irc_c, msg, trigger, args, kargs):
         if len(args) > 0:
             irc_c.JOIN(args)
+        else:
+            msg.reply("Malformed command")
 
     @keyword('part')
     def part(self, irc_c, msg, trigger, args, kargs):
         if len(args) > 0:
             irc_c.PART(args, message='%s asked me to leave.' % msg.nick)
+        else:
+            msg.reply("Malformed command")
 
     @keyword('invite')
     def invite(self, irc_c, msg, trigger, args, kargs):
         if len(args) > 0 and args[0].startswith('#'):
             irc_c.RAW('INVITE %s :%s' % (msg.nick, args[0]))
+        else:
+            msg.reply("Malformed command")
 
     @observe('IRC_MSG_INVITE')
     def follow_invites(self, irc_c, msg):
-        if msg.target == irc_c.botnick:  # Sanity
+        print(msg.target, irc_c.botnick)
+        if msg.target.lower() == irc_c.botnick.lower():  # Sanity
             irc_c.JOIN(msg.message)
             irc_c.PRIVMSG(msg.message, '%s: I have arrived' % msg.nick)
+        else:
+            msg.reply("Malformed command")

@@ -41,8 +41,9 @@ class NickServ(object):
         # Identify
         print("Idenfifying with nickserv...")
         irc_c.PRIVMSG("nickserv",
-                            "IDENTIFY {}".format(self.password))
-        print(">>> IDENTIFY {}".format(self.password) + " <<<")
+                      "IDENTIFY {}".format(self.password))
+        print("Marking myself as a bot...")
+        irc_c.RAW("/mode TARS +B")
         # Assuming that went correctly, recoonect to channels
         print(irc_c.channels.channels)
         if irc_c.config.channels.autojoin:
