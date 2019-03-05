@@ -5,6 +5,11 @@
 from pyaib.plugins import plugin_class, observes
 import sys
 import os.path
+from time import sleep
+from .greetings import greet
+
+def nsprint(message):
+    print("[\x1b[38;5;212mNickServ\x1b[0m] " + str(message))
 
 # Let pyaib know that this is a plugin class
 # Store the address of the class at 'nickserv' in the context obj
@@ -25,29 +30,35 @@ class NickServ(object):
         irc_c.timers.clear("nickserv", self.watcher)
         irc_c.timers.set("nickserv", self.watcher, every=90)
 
+        # Assuming that went correctly, recoonect to channels
+        nsprint("{}".format(irc_c.config.channels))
+
     def watcher(self, irc_c, timertext):
         if irc_c.botnick != irc_c.config.irc.nick:
             self.identify(irc_c)
 
     def identify(self, irc_c):
         if irc_c.botnick != irc_c.config.irc.nick:
-            print("Trying to reacquire nick...")
+            nsprint("Trying to reacquire nick...")
             irc_c.PRIVMSG("nickserv",
-                                "GHOST {} {}".format(
+                          "GHOST {} {}".format(
                                     irc_c.config.irc.nick,
                                     self.password))
             irc_c.NICK(irc_c.config.irc.nick)
 
         # Identify
-        print("Idenfifying with nickserv...")
+        nsprint("Idenfifying with nickserv...")
         irc_c.PRIVMSG("nickserv",
                       "IDENTIFY {}".format(self.password))
-        print("Marking myself as a bot...")
+        nsprint("Marking myself as a bot...")
         irc_c.RAW("/mode TARS +B")
-        # Assuming that went correctly, recoonect to channels
-        print(irc_c.channels.channels)
+        # stop for a few seconds to give time to register
+        # replace this with "Password accepted" recogniser eventually
+        sleep(5)
         if irc_c.config.channels.autojoin:
-            irc_c.JOIN("#tars")
             for channel in irc_c.config.channels.autojoin:
                 irc_c.JOIN(channel)
-                print("Joining " + str(channel))
+                irc_c.PRIVMSG(channel, greet(channel))
+                nsprint("Joining " + str(channel))
+        # Now we need to join the autojoin channels from the db
+        # but we'll do this later

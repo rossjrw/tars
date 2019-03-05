@@ -67,15 +67,17 @@ class ParsedCommand():
             self.message = shlex.split(self.message)
             # arguments is now a list, quotes are preserved
             # need to split it into different lists per tag, though
-            self.arguments = data.Object()
+            self.arguments = {}
             currArg = "root"
             for argument in self.message:
                 if argument[:1] == "-" and len(argument) == 2 \
                 or argument[:2] == "--" and len(argument) >= 2:
                     currArg = argument.strip("-")
                 else:
-                    self.arguments[currArg] += " " + argument
-                self.arguments[currArg] = self.arguments[currArg].strip()
+                    # if this tag doesn't exist, make it a list
+                    if not currArg in self.arguments:
+                        self.arguments[currArg] = []
+                    self.arguments[currArg].append(argument)
             # now arguments should be dict of tag: value, w/ root as start
         else:
             # It wasn't a command, so we probably don't need to do anything
@@ -89,5 +91,17 @@ def command(message):
 # Parse a nick to its IRCCloud colour
 def nickColor(nick, length=27):
     """Gets the IRCCloud colour of a given nick."""
+    colours = (180,220,216,209,208,46,
+               11,143,113,77,108,71,79,
+               37,80,14,39,117,75,69,146,
+               205,170,213,177,13,217)
     # Copied from IRCCloud's formatter.js
+    nick = nick.lower()
+    nick = re.sub(r"[`_]+$", "", nick)
+    nick = re.sub(r"\|.*$", "", nick)
+    hash = 0
+    for i in nick:
+        hash = ord(nick[i]) + (hash << 6) + (hash << 16) - hash
+    index = hash % length
+    return "\x1b[38;5;{}m{}\x1b[0m]".format(colours[index],nick)
     return "probably blue"
