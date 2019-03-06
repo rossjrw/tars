@@ -3,13 +3,23 @@
 Plugin that parses messages into commands and then does stuff
 """
 
-from . import parse
+from ..helpers import parse
+from .. import commands
 from pyaib.plugins import observe, plugin_class
+
+COMMANDS = {
+    "search": { "func": search },
+    "test": { "func": search },
+    "die": { "func": search },
+    "chevron": { "func": search },
+    "colour": { "func": colour },
+}
 
 @plugin_class("parsemessages")
 class ParseMessages(object):
     def __init__(self, irc_c, config):
         print("Parse plugin loaded!")
+        # TODO generate COMMANDS from commands folder
         # The config is conf's plugin.parse
 
     @observe("IRC_MSG_PRIVMSG")
@@ -37,15 +47,9 @@ class ParseMessages(object):
             # we're in a channel
             pass
 
-    def colour(irc_c, msg, cmd):
-        msg.reply(parse.nickColor(name))
+def colour(irc_c, msg, cmd):
+    msg.reply(parse.nickColor(msg.message))
 
-    def search(irc_c, msg, cmd):
-        pass
-    COMMANDS = {
-        "search": { "func": search },
-        "test": { "func": search },
-        "die": { "func": search },
-        "chevron": { "func": search },
-        "colour": { "func": colour },
-    }
+def search(irc_c, msg, cmd):
+    pass
+
