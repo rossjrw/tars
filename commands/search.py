@@ -1,4 +1,11 @@
-# Searches the wiki database per the search parameters.
+"""search.py
+
+Search commands that search the wiki for stuff.
+Commands:
+    search - base command
+    regexsearch - search with -x
+    tags - search with root params lumped into -t
+"""
 
 class search:
     @staticmethod

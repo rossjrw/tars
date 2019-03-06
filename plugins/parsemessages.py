@@ -3,7 +3,7 @@
 Plugin that parses messages into commands and then does stuff
 """
 
-from .helpers import parse
+from .. import helpers.parse
 from .. import commands
 from pyaib.plugins import observe, plugin_class
 import sys
