@@ -25,31 +25,23 @@ class ParseMessages(object):
         # TODO generate COMMANDS from commands folder
         self.COMMANDS = {}
         # for cmd_group in commands:
-        for i in ["search","lucky","go","colour"]:
-            if i in dir(commands):
-                print("{} exists".format(i))
-            else:
-                print("{} don't exist".format(i))
-        # for name,obj in inspect.getmembers(commands):
-        #     if inspect.isclass(obj):
-        #         print(name,obj)
-        #     else:
-        #         print("{} isn't a class".format(name))
-        print(dir(commands))
+        # do we really need this?
+        # could just attempt the command and if it fails assume that the
+        # command doesn't exist
 
     @observe("IRC_MSG_PRIVMSG")
     def handleMessage(self, irc_c, msg):
         print("Handling message: " + msg.message)
         cmd = parse.command(msg.message)
         # cmd is the parsed msg (used to be msg.parsed)
-        if cmd.command in COMMANDS:
+        if cmd.command in self.COMMANDS:
             # this is a command!
             msg.reply("That's the " + cmd.command.upper() + " command")
             for tag in cmd.arguments:
                 msg.reply(tag + ": " + ", ".join(cmd.arguments[tag]))
-            for command in COMMANDS:
+            for command in self.COMMANDS:
                 if cmd.command == command:
-                    COMMANDS[command]["func"](irc_c, msg, cmd)
+                    self.COMMANDS[command]["func"](irc_c, msg, cmd)
         elif cmd.pinged:
             # this isn't a command, but we were pinged
             msg.reply("That's not a valid command.")
