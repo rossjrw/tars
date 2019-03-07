@@ -9,13 +9,13 @@ from pyaib.plugins import observe, plugin_class
 import sys
 import inspect
 
-COMMANDS = {
-    "search": { "func": search },
-    "test": { "func": search },
-    "die": { "func": search },
-    "chevron": { "func": search },
-    "colour": { "func": colour },
-}
+# COMMANDS = {
+#     "search": { "func": search },
+#     "test": { "func": search },
+#     "die": { "func": search },
+#     "chevron": { "func": search },
+#     "colour": { "func": colour },
+# }
 
 @plugin_class("parsemessages")
 class ParseMessages(object):
@@ -24,9 +24,17 @@ class ParseMessages(object):
         # The config is conf's plugin.parse
         # TODO generate COMMANDS from commands folder
         self.COMMANDS = {}
-        for name,obj in inspect.getmembers(commands):
-            if inspect.isclass(obj):
-                print(name,obj)
+        for i in ["search","lucky","go","colour"]:
+            if i in dir(commands):
+                print("{} exists".format(i))
+            else:
+                print("{} don't exist".format(i))
+        # for name,obj in inspect.getmembers(commands):
+        #     if inspect.isclass(obj):
+        #         print(name,obj)
+        #     else:
+        #         print("{} isn't a class".format(name))
+        print(dir(commands))
 
     @observe("IRC_MSG_PRIVMSG")
     def handleMessage(self, irc_c, msg):

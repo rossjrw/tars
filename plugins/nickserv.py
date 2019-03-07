@@ -6,7 +6,7 @@ from pyaib.plugins import plugin_class, observes
 import sys
 import os.path
 from time import sleep
-from .greetings import greet
+from helpers.greetings import greet
 
 def nsprint(message):
     print("[\x1b[38;5;212mNickServ\x1b[0m] " + str(message))
