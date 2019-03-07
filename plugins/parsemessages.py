@@ -24,6 +24,7 @@ class ParseMessages(object):
         # The config is conf's plugin.parse
         # TODO generate COMMANDS from commands folder
         self.COMMANDS = {}
+        # for cmd_group in commands:
         for i in ["search","lucky","go","colour"]:
             if i in dir(commands):
                 print("{} exists".format(i))
