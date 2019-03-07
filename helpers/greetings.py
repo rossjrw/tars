@@ -22,3 +22,21 @@ def greet(subject):
         return choice(channel).format(subject)
     else:
         return choice(user).format(subject)
+
+def badCommand(cmd):
+    response = [
+        "I'm sorry, I didn't quite catch that.",
+        "That's not a valid command.",
+        "I don't know how to do that.",
+        "Are you sure you typed the right thing?",
+        "I don't know what that means.",
+        "That's not a command.",
+        "Bad command, sorry.",
+    ]
+    link = " See https://git.io/TARShelp for a list of commands."
+    return choice(response) + link
+
+def isGreeting(message):
+    greetings = [
+        "hello", "hi", "howdy", "yo"
+    ]

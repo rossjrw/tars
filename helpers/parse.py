@@ -51,7 +51,7 @@ class ParsedCommand():
         parseprint(match)
         if match:
             # Remove command from the message
-            self.command = match.group(1).strip()
+            self.command = match.group(1).strip().lower()
             try:
                 self.message = match.group(2).strip()
             except IndexError:

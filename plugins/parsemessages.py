@@ -34,7 +34,7 @@ class ParseMessages(object):
         print("Handling message: " + msg.message)
         cmd = parse.command(msg.message)
         # cmd is the parsed msg (used to be msg.parsed)
-        if cmd.command in self.COMMANDS:
+        if cmd.command:
             # this is a command!
             msg.reply("That's the " + cmd.command.upper() + " command")
             for tag in cmd.arguments:
@@ -42,11 +42,19 @@ class ParseMessages(object):
             for command in self.COMMANDS:
                 if cmd.command == command:
                     self.COMMANDS[command]["func"](irc_c, msg, cmd)
+            # Call the command from the right file in commands/
+            # using getattr instead of commands[cmd] bc module subscriptability
+            try:
+                getattr(commands, cmd.command).command(irc_c, msg, cmd)
+            except AttributeError:
+                msg.reply("That's not a command.")
         elif cmd.pinged:
             # this isn't a command, but we were pinged
-            msg.reply("That's not a valid command.")
+            # notify the user that it's a bad command IF not a greeting
+            msg.reply("Pinged but not a command")
         else:
             # not a command, and not pinged
+            msg.reply("Not a command and not pinged")
             pass
         if msg.channel is None:
             # we're working in PMs

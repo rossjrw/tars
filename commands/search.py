@@ -10,18 +10,18 @@ Commands:
 class search:
     aliases = ["sea", "s"]
     @classmethod
-    def command(irc_c, msg, cmd):
+    def command(cls, irc_c, msg, cmd):
         msg.reply("I don't know how to search just yet, sorry.")
 
 class regexsearch:
     aliases = ["rsea", "rsearch", "rs"]
     @classmethod
-    def command(irc_c, msg, cmd):
+    def command(cls, irc_c, msg, cmd):
         # TODO set -x to true
-        search.command(irc_c, msg, cmd)
+        search.command(cls, irc_c, msg, cmd)
 
 class tags:
     @classmethod
-    def command(irc_c, msg, cmd):
+    def command(cls, irc_c, msg, cmd):
         # TODO set -t to arguments
-        search.command(irc_c, msg, cmd)
+        search.command(cls, irc_c, msg, cmd)
