@@ -42,29 +42,42 @@ class ParsedCommand():
 
         # What was the command?
         if self.pinged:
-            pattern = r"^[!,\.\?\"']?([\w^]+)(.*)$"
+            pattern = r"^([!,\.\?\"']*)([\w^]+)(.*)$"
         else:
             # Force the command to be marked if we weren't pinged
-            pattern = r"^[!,\.\?\"']([\w^]+)(.*)$"
+            pattern = r"^([!,\.\?\"']+)([\w^]+)(.*)$"
         parseprint(self.message)
         match = re.search(pattern, self.message)
         parseprint(match)
         if match:
             # Remove command from the message
-            self.command = match.group(1).strip().lower()
+            self.command = match.group(2).strip().lower()
             try:
-                self.message = match.group(2).strip()
+                self.message = match.group(3).strip()
             except IndexError:
                 self.message = ""
             parseprint("Doing a " + self.command + "!")
+            if len(match.group(1)) > 1:
+                self.force = True
         else:
             # No command - work out what to do here
             parseprint("No command!")
-            self.command = False
 
         # What were the arguments?
         if self.command:
-            self.message = shlex.split(self.message)
+            # escape stray quotes
+            self.message = re.sub(
+                r"",
+                "<<QUOTEMARK>>",
+                self.message.replace("'", "<<APOSTROPHE>>")
+            )
+            try:
+                self.message = shlex.split(self.message)
+            except ValueError:
+                # raised if shlex detects fucked up quotemarks
+                msg.reply("I couldn't parse your quotemarks, sorry.")
+                # fall back to basic whitespace splitting
+                self.message = self.message.split()
             # arguments is now a list, quotes are preserved
             # need to split it into different lists per tag, though
             self.arguments = {}

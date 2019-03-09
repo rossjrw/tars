@@ -36,17 +36,18 @@ class ParseMessages(object):
         # cmd is the parsed msg (used to be msg.parsed)
         if cmd.command:
             # this is a command!
-            msg.reply("That's the " + cmd.command.upper() + " command")
             for tag in cmd.arguments:
                 msg.reply(tag + ": " + ", ".join(cmd.arguments[tag]))
-            # Call the command from the right file in commands/
-            # using getattr instead of commands[cmd] bc module subscriptability
-            getattr(commands, cmd.command).command(irc_c, msg, cmd)
             try:
-                pass
+                # Call the command from the right file in commands/
+                # using getattr instead of commands[cmd] bc module subscriptability
+                getattr(commands, cmd.command).command(irc_c, msg, cmd)
             except AttributeError as e:
-                print(e)
-                msg.reply("That's not a command.")
+                # if specific attr error, command doesn't exist
+                if "module 'commands' has no attribute" in str(e):
+                    msg.reply("That's not a command.")
+                else:
+                    raise
         elif cmd.pinged:
             # this isn't a command, but we were pinged
             # notify the user that it's a bad command IF not a greeting
