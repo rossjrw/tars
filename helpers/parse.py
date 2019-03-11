@@ -21,6 +21,12 @@ class ParsedCommand():
     def __init__(self, message):
         # Check that the message is a string
         self.raw = str(message)
+        self.ping = False
+        self.pinged = False
+        self.command = False
+        self.message = False
+        self.quote_error = False
+        self.arguments = False
         parseprint("Raw input: " + self.raw)
 
         # Was someone pinged?
@@ -32,7 +38,6 @@ class ParsedCommand():
             self.ping = match.group(1).strip()
         else:
             self.message = self.raw
-            self.ping = False
 
         self.pinged = self.ping == "TARS"
         parseprint("After ping extraction: " +
@@ -45,19 +50,17 @@ class ParsedCommand():
             pattern = r"^([!,\.\?\"']*)([\w^]+)(.*)$"
         else:
             # Force the command to be marked if we weren't pinged
-            pattern = r"^([!,\.\?\"']+)([\w^]+)(.*)$"
-        parseprint(self.message)
+            pattern = r"^(?P<signal>[!,\.\?\"']+)(?P<cmd>[\w^]+)(?P<rest>.*)$"
         match = re.search(pattern, self.message)
-        parseprint(match)
         if match:
             # Remove command from the message
-            self.command = match.group(2).strip().lower()
+            self.command = match.group("cmd").strip().lower()
             try:
-                self.message = match.group(3).strip()
+                self.message = match.group("rest").strip()
             except IndexError:
                 self.message = ""
             parseprint("Doing a " + self.command + "!")
-            if len(match.group(1)) > 1:
+            if len(match.group("signal")) > 1:
                 self.force = True
         else:
             # No command - work out what to do here
@@ -65,19 +68,16 @@ class ParsedCommand():
 
         # What were the arguments?
         if self.command:
-            # escape stray quotes
-            self.message = re.sub(
-                r"",
-                "<<QUOTEMARK>>",
-                self.message.replace("'", "<<APOSTROPHE>>")
-            )
+            # remove apostrophes because they'll fuck with shlex
+            self.message = self.message.replace("'", "<<APOSTROPHE>>")
             try:
                 self.message = shlex.split(self.message)
             except ValueError:
                 # raised if shlex detects fucked up quotemarks
-                msg.reply("I couldn't parse your quotemarks, sorry.")
-                # fall back to basic whitespace splitting
                 self.message = self.message.split()
+                self.quote_error = True
+            for word in self.message:
+                word = word.replace("<<APOSTROPHE>>", "'")
             # arguments is now a list, quotes are preserved
             # need to split it into different lists per tag, though
             self.arguments = {}
@@ -114,8 +114,9 @@ def nickColor(nick, length=27):
         x = x & 0xFFFFFFFF
         if x>0x7FFFFFFF:
             # x = -(0x100000000-x)
-            x = x ^ 0xFFFFFFFF
+            # x = x ^ 0xFFFFFFFF
             # x = ~x
+            x = -0x80000000 + x
         return x
 
     # Copied from IRCCloud's formatter.js
@@ -125,9 +126,9 @@ def nickColor(nick, length=27):
     nick = re.sub(r"\|.*$", "", nick)
     hash = t(0)
     for i,letter in enumerate(nick):
-        print(t(hash), t(hash << 6), t(hash << 16))
+        # print(t(hash), t(hash << 6), t(hash << 16))
         hash = t(hash)
         hash = t(t(ord(letter)) + t(hash << 6) + t(hash << 16) - t(hash))
-        print(bin(hash), hash, ord(letter))
+        # print(bin(hash), hash, ord(letter))
     index = hash % length
     return "\x1b[38;5;{}m{}\x1b[0m".format(colours[index], old_nick)

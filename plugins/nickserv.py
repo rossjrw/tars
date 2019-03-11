@@ -52,13 +52,14 @@ class NickServ(object):
                       "IDENTIFY {}".format(self.password))
         nsprint("Marking myself as a bot...")
         irc_c.RAW("/mode TARS +B")
-        # stop for a few seconds to give time to register
-        # replace this with "Password accepted" recogniser eventually
-        sleep(5)
-        if irc_c.config.channels.autojoin:
-            for channel in irc_c.config.channels.autojoin:
-                irc_c.JOIN(channel)
-                irc_c.PRIVMSG(channel, greet(channel))
-                nsprint("Joining " + str(channel))
-        # Now we need to join the autojoin channels from the db
-        # but we'll do this later
+
+    @observes("IRC_MSG_NOTICE")
+    def autojoin(self, irc_c, msg):
+        if "Password accepted" in msg.message:
+            if irc_c.config.channels.autojoin:
+                for channel in irc_c.config.channels.autojoin:
+                    irc_c.JOIN(channel)
+                    irc_c.PRIVMSG(channel, greet(channel))
+                    nsprint("Joining " + str(channel))
+            # Now we need to join the autojoin channels from the db
+            # but we'll do this later
