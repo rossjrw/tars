@@ -102,33 +102,26 @@ def command(message):
     return ParsedCommand(message)
 
 # Parse a nick to its IRCCloud colour
-def nickColor(nick, length=27):
-    """Gets the IRCCloud colour of a given nick."""
+def nickColor(string):
+    length = 27
     colours = [180,220,216,209,208,46,
                11,143,113,77,108,71,79,
                37,80,14,39,117,75,69,146,
                205,170,213,177,13,217]
 
     def t(x):
-        # if x>0xFFFFFFFF:
-        x = x & 0xFFFFFFFF
-        if x>0x7FFFFFFF:
-            # x = -(0x100000000-x)
-            # x = x ^ 0xFFFFFFFF
-            # x = ~x
-            x = -0x80000000 + x
-        return x
+        x &= 0xFFFFFFFF
+        if x > 0x7FFFFFFF:
+            x -= 0x100000000
+        return float(x)
 
-    # Copied from IRCCloud's formatter.js
-    old_nick = nick
-    nick = nick.lower()
-    nick = re.sub(r"[`_]+$", "", nick)
-    nick = re.sub(r"\|.*$", "", nick)
-    hash = t(0)
-    for i,letter in enumerate(nick):
-        # print(t(hash), t(hash << 6), t(hash << 16))
-        hash = t(hash)
-        hash = t(t(ord(letter)) + t(hash << 6) + t(hash << 16) - t(hash))
-        # print(bin(hash), hash, ord(letter))
-    index = hash % length
-    return "\x1b[38;5;{}m{}\x1b[0m".format(colours[index], old_nick)
+    bytes = string.lower()
+    bytes = re.sub(r"[`_]+$", "", bytes)
+    bytes = re.sub(r"\|.*$", "", bytes)
+    bytes = bytes.encode('utf-16-le')
+    hash = 0.0
+    for i in range(0, len(bytes), 2):
+        char_code = bytes[i] + 256*bytes[i+1]
+        hash = char_code + t(int(hash) << 6) + t(int(hash) << 16) - hash
+    index = int(hash % length if hash >= 0 else abs(hash % length - length))
+    return "\x1b[38;5;{}m{}\x1b[0m".format(colours[index], string)

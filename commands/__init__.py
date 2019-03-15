@@ -63,7 +63,7 @@ for file in COMMANDS.get():
         except NameError:
             cmdprint("search doesn't exist", True)
         for alias in COMMANDS.get(file,cmd):
-            setattr(cmds, alias, locals()[file][cmd])
+            setattr(cmds, alias, getattr(locals()[file], cmd))
             pass
     import_module(".{}".format(file),"commands")
     # now each command is at commands.file.cmdname.command()
