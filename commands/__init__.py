@@ -48,7 +48,6 @@ def cmdprint(text, error=False):
     print(bit + str(text))
 
 COMMANDS = Commands_Directory()
-cmds = Object_Alias()
 
 for file in COMMANDS.get():
     cmdprint("Importing commands from commands/{}.py".format(file))
@@ -63,7 +62,7 @@ for file in COMMANDS.get():
         except NameError:
             cmdprint("search doesn't exist", True)
         for alias in COMMANDS.get(file,cmd):
-            setattr(cmds, alias, getattr(locals()[file], cmd))
+            setattr(COMMANDS, alias, getattr(locals()[file], cmd))
             pass
     import_module(".{}".format(file),"commands")
     # now each command is at commands.file.cmdname.command()

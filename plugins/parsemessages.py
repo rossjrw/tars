@@ -4,7 +4,7 @@ Plugin that parses messages into commands and then does stuff
 """
 
 from helpers import parse
-from commands import cmds
+from commands import COMMANDS
 from pyaib.plugins import observe, plugin_class
 import sys
 import inspect
@@ -41,10 +41,10 @@ class ParseMessages(object):
             try:
                 # Call the command from the right file in commands/
                 # using getattr instead of commands[cmd] bc module subscriptability
-                getattr(cmds, cmd.command).command(irc_c, msg, cmd)
+                getattr(COMMANDS, cmd.command).command(irc_c, msg, cmd)
             except AttributeError as e:
                 # if specific attr error, command doesn't exist
-                if "module 'commands' has no attribute" in str(e):
+                if "'Commands_Directory' object has no attribute" in str(e):
                     msg.reply("That's not a command.")
                 else:
                     raise
