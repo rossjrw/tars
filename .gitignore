@@ -1,6 +1,5 @@
 *.db
-*.swp
 __pycache__
 *.secret.*
 *.vim
-*.swo
+*.sw*
