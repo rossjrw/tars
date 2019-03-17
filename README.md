@@ -26,3 +26,4 @@ alias, or it won't be able to be called.
 ### Channels
 
 | Channel name | Autojoin? | NAMES | NAMES last updated | showmore list |
+| --- | --- | --- | --- | --- |
