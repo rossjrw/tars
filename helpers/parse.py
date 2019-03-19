@@ -47,7 +47,7 @@ class ParsedCommand():
 
         # What was the command?
         if self.pinged:
-            pattern = r"^([!,\.\?\"']*)([\w^]+)(.*)$"
+            pattern = r"^(?P<signal>[!,\.\?\"']*)(?P<cmd>[\w^]+)(?P<rest>.*)$"
         else:
             # Force the command to be marked if we weren't pinged
             pattern = r"^(?P<signal>[!,\.\?\"']+)(?P<cmd>[\w^]+)(?P<rest>.*)$"
@@ -101,8 +101,8 @@ class ParsedCommand():
         # args should be ('argument','a')
         for arg in args:
             if arg in self.args:
-                return true
-        return false
+                return True
+        return False
 
     def getarg(self, *args):
         """Gets the value of a given argument."""

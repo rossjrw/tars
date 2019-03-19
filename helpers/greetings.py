@@ -49,3 +49,8 @@ def kill_bye():
         "Finally.",
     ]
     return choice(responses)
+
+def acronym():
+    responses = [
+        "Tool-Assisted Robotic Sassmouth",
+    ]

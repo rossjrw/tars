@@ -25,6 +25,8 @@ COMMANDS = {
               "join": {"join","rejoin"},
               "leave": {"leave","part"},
              },
+    "hug": {"hug": {"hug","hugtars"},
+           },
 }
 
 class Commands_Directory:
