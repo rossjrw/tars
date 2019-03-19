@@ -100,15 +100,15 @@ class ParsedCommand():
         """Checks whether this command has a given argument."""
         # args should be ('argument','a')
         for arg in args:
-            if arg in self.arguments:
+            if arg in self.args:
                 return true
         return false
 
     def getarg(self, *args):
         """Gets the value of a given argument."""
         for arg in args:
-            if arg in self.arguments:
-                return self.arguments[arg]
+            if arg in self.args:
+                return self.args[arg]
         return None
 
 # Parse a command
