@@ -17,6 +17,8 @@ COMMANDS = {
                "regexsearch": {"regexsearch","rsearch","rsea","rs"},
                "tags": {"tags"},
               },
+    "password": {"password": {"password","passcode"},
+                },
 }
 
 class Commands_Directory:

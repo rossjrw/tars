@@ -36,7 +36,7 @@ class Debug(object):
     def auto_reply(self, irc_c, msg):
         print("Received a message from " + str(msg.channel))
         if msg.channel is None:
-            msg.reply(msg.message)
+            print("It's a PM")
 
     @keyword('die')
     def die(self, irc_c, msg, trigger, args, kargs):
