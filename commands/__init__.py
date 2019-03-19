@@ -38,9 +38,6 @@ class Commands_Directory:
                 return self.COMMANDS[file][command]
         pass
 
-class Object_Alias:
-    pass
-
 from importlib import import_module
 
 def cmdprint(text, error=False):
@@ -56,13 +53,6 @@ for file in COMMANDS.get():
     import_module(".{}".format(file),"commands")
     for cmd in COMMANDS.get(file):
         cmdprint("Importing {}".format(cmd))
-        try:
-            search.regexsearch().test()
-            # ^ this works - need to alias the aliases
-            # alias search.regexsearch().command()
-            # to commands.regexsearch().command()
-        except NameError:
-            cmdprint("search doesn't exist", True)
         for alias in COMMANDS.get(file,cmd):
             setattr(COMMANDS, alias, getattr(locals()[file], cmd))
             pass
