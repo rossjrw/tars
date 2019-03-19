@@ -21,6 +21,10 @@ COMMANDS = {
                 },
     "showmore": {"showmore": {"showmore","sm"},
                 },
+    "admin": {"kill": {"kill","die","kys"},
+              "join": {"join","rejoin"},
+              "leave": {"leave","part"},
+             },
 }
 
 class Commands_Directory:
