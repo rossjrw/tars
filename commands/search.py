@@ -7,22 +7,21 @@ Commands:
     tags - search with root params lumped into -t
 """
 
-from helpers.basecommand import Base
 from helpers.defer import defer
 
-class search(Base):
+class search:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         defer.check(irc_c, msg, "jarvis")
         msg.reply("I don't know how to search just yet, sorry.")
 
-class regexsearch(Base):
+class regexsearch:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         # TODO set -x to true
         search.command(cls, irc_c, msg, cmd)
 
-class tags(Base):
+class tags:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         # TODO set -t to arguments

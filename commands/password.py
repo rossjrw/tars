@@ -1,6 +1,10 @@
-from helpers.basecommand import Base
+"""password.py
 
-class password(Base):
+Prints a detailed guide for new users, instructing them where to find the
+passcode in the Guide for Newbies.
+"""
+
+class password:
     @classmethod
-    def command(cld, irc_c, msg, cmd):
+    def command(cls, irc_c, msg, cmd):
         msg.reply("look harder fuckwit")
