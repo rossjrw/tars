@@ -40,3 +40,12 @@ def isGreeting(message):
     greetings = [
         "hello", "hi", "howdy", "yo"
     ]
+    return 0
+
+def kill_bye():
+    responses = [
+        "Ok :(",
+        "I don't wanna go :(",
+        "Finally.",
+    ]
+    return choice(responses)

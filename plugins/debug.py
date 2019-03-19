@@ -38,11 +38,6 @@ class Debug(object):
         if msg.channel is None:
             print("It's a PM")
 
-    @keyword('die')
-    def die(self, irc_c, msg, trigger, args, kargs):
-        msg.reply('Ok :(')
-        irc_c.client.die()
-
     @keyword('raw')
     def raw(self, irc_c, msg, trigger, args, kargs):
         irc_c.RAW(args)

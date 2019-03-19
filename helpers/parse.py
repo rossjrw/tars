@@ -96,6 +96,21 @@ class ParsedCommand():
             # It wasn't a command, so we probably don't need to do anything
             pass
 
+    def hasarg(self, *args):
+        """Checks whether this command has a given argument."""
+        # args should be ('argument','a')
+        for arg in args:
+            if arg in self.arguments:
+                return true
+        return false
+
+    def getarg(self, *args):
+        """Gets the value of a given argument."""
+        for arg in args:
+            if arg in self.arguments:
+                return self.arguments[arg]
+        return None
+
 # Parse a command
 def command(message):
     """Converts a raw IRC message to a command."""
