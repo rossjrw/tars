@@ -18,7 +18,7 @@ class showmore:
                 cmd.args['root'][0] = int(cmd.args['root'][0])
             except ValueError:
                 cmd.args['root'] = [0]
-        number = cmd.args['root']
+        number = cmd.args['root'][0]
         if number == 0:
             msg.reply("Show more of what?")
         elif number > 10:

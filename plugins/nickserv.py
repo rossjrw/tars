@@ -51,7 +51,7 @@ class NickServ(object):
         irc_c.PRIVMSG("nickserv",
                       "IDENTIFY {}".format(self.password))
         nsprint("Marking myself as a bot...")
-        irc_c.RAW("/mode TARS +B")
+        irc_c.RAW("mode TARS +B")
 
     @observes("IRC_MSG_NOTICE")
     def autojoin(self, irc_c, msg):
