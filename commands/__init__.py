@@ -19,6 +19,8 @@ COMMANDS = {
               },
     "password": {"password": {"password","passcode"},
                 },
+    "showmore": {"showmore": {"showmore","sm"},
+                },
 }
 
 class Commands_Directory:

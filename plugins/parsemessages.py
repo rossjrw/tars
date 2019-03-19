@@ -36,8 +36,8 @@ class ParseMessages(object):
         # cmd is the parsed msg (used to be msg.parsed)
         if cmd.command:
             # this is a command!
-            for tag in cmd.arguments:
-                msg.reply(tag + ": " + ", ".join(cmd.arguments[tag]))
+            for tag in cmd.args:
+                msg.reply(tag + ": " + ", ".join(cmd.args[tag]))
             try:
                 # Call the command from the right file in commands/
                 # using getattr instead of commands[cmd] bc module subscriptability

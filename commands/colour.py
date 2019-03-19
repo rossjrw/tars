@@ -3,11 +3,11 @@ from helpers import parse
 class colour:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        if not "root" in cmd.arguments:
-            cmd.arguments["root"] = [msg.nick]
+        if not "root" in cmd.args:
+            cmd.args["root"] = [msg.nick]
         reply = ""
-        if len(cmd.arguments["root"]) > 0:
-            for name in cmd.arguments['root']:
+        if len(cmd.args["root"]) > 0:
+            for name in cmd.args['root']:
                 reply += parse.nickColor(name)
         else:
             reply = "Malformed command"

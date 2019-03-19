@@ -19,10 +19,10 @@ class regexsearch:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         # TODO set -x to true
-        search.command(cls, irc_c, msg, cmd)
+        search.command(irc_c, msg, cmd)
 
 class tags:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         # TODO set -t to arguments
-        search.command(cls, irc_c, msg, cmd)
+        search.command(irc_c, msg, cmd)

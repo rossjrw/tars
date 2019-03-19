@@ -26,7 +26,7 @@ class ParsedCommand():
         self.command = False
         self.message = False
         self.quote_error = False
-        self.arguments = False
+        self.args = False
         parseprint("Raw input: " + self.raw)
 
         # Was someone pinged?
@@ -80,7 +80,7 @@ class ParsedCommand():
                 word = word.replace("<<APOSTROPHE>>", "'")
             # arguments is now a list, quotes are preserved
             # need to split it into different lists per tag, though
-            self.arguments = {}
+            self.args = {}
             currArg = "root"
             for argument in self.message:
                 if argument[:1] == "-" and len(argument) == 2 \
@@ -88,9 +88,9 @@ class ParsedCommand():
                     currArg = argument.strip("-")
                 else:
                     # if this tag doesn't exist, make it a list
-                    if not currArg in self.arguments:
-                        self.arguments[currArg] = []
-                    self.arguments[currArg].append(argument)
+                    if not currArg in self.args:
+                        self.args[currArg] = []
+                    self.args[currArg].append(argument)
             # now arguments should be dict of tag: value, w/ root as start
         else:
             # It wasn't a command, so we probably don't need to do anything
