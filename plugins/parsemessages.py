@@ -51,7 +51,8 @@ class ParseMessages(object):
         elif cmd.pinged:
             # this isn't a command, but we were pinged
             # notify the user that it's a bad command IF not a greeting
-            msg.reply("Pinged but not a command")
+            if msg.message.lower() == "tars!":
+                msg.reply("{}!".format(msg.nick))
         else:
             # not a command, and not pinged
             pass

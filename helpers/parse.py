@@ -39,7 +39,7 @@ class ParsedCommand():
         else:
             self.message = self.raw
 
-        self.pinged = self.ping == "TARS"
+        self.pinged = self.ping.upper() == "TARS"
         parseprint("After ping extraction: " +
                    "\nping: {}".format(self.ping) +
                    "\nmessage: {}".format(self.message) +
@@ -47,10 +47,10 @@ class ParsedCommand():
 
         # What was the command?
         if self.pinged:
-            pattern = r"^(?P<signal>[!,\.\?\"']*)(?P<cmd>[\w^]+)(?P<rest>.*)$"
+            pattern = r"^(?P<signal>[!,\.\?]*)(?P<cmd>[\w^]+)(?P<rest>.*)$"
         else:
             # Force the command to be marked if we weren't pinged
-            pattern = r"^(?P<signal>[!,\.\?\"']+)(?P<cmd>[\w^]+)(?P<rest>.*)$"
+            pattern = r"^(?P<signal>[!,\.\?]+)(?P<cmd>[\w^]+)(?P<rest>.*)$"
         match = re.search(pattern, self.message)
         if match:
             # Remove command from the message
