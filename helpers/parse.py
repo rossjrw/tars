@@ -21,12 +21,12 @@ class ParsedCommand():
     def __init__(self, message):
         # Check that the message is a string
         self.raw = str(message)
-        self.ping = False
+        self.ping = None
         self.pinged = False
-        self.command = False
-        self.message = False
+        self.command = None
+        self.message = None
         self.quote_error = False
-        self.args = False
+        self.args = None
         parseprint("Raw input: " + self.raw)
 
         # Was someone pinged?
@@ -39,18 +39,22 @@ class ParsedCommand():
         else:
             self.message = self.raw
 
-        self.pinged = self.ping.upper() == "TARS"
+        if isinstance(self.ping, str):
+            if self.ping.upper() == "TARS":
+                self.pinged = True
+
         parseprint("After ping extraction: " +
                    "\nping: {}".format(self.ping) +
                    "\nmessage: {}".format(self.message) +
                    "\npinged: {}".format(self.pinged))
 
         # What was the command?
+        # Check for regular commands (including chevron)
         if self.pinged:
-            pattern = r"^(?P<signal>[!,\.\?]*)(?P<cmd>[\w^]+)(?P<rest>.*)$"
+            pattern = r"^(?P<signal>[!,\.\?]*)(?P<cmd>[\w\^]+)(?P<rest>.*)$"
         else:
             # Force the command to be marked if we weren't pinged
-            pattern = r"^(?P<signal>[!,\.\?]+)(?P<cmd>[\w^]+)(?P<rest>.*)$"
+            pattern = r"^(?P<signal>[!,\.\?]+)(?P<cmd>[\w\^]+)(?P<rest>.*)$"
         match = re.search(pattern, self.message)
         if match:
             # Remove command from the message
@@ -60,6 +64,7 @@ class ParsedCommand():
             except IndexError:
                 self.message = ""
             parseprint("Doing a " + self.command + "!")
+            # if >1 punctuation used, override bot detection later
             if len(match.group("signal")) > 1:
                 self.force = True
         else:
@@ -92,6 +97,17 @@ class ParsedCommand():
                         self.args[currArg] = []
                     self.args[currArg].append(argument)
             # now arguments should be dict of tag: value, w/ root as start
+
+            # detect a chevron command
+            pattern = r"^(\^+)$"
+            match = re.match(pattern, self.command)
+            if match:
+                chevs = str(len(self.command))
+                self.command = "chevron"
+                if 'root' in self.args:
+                    self.args['root'].insert(0, chevs)
+                else:
+                    self.args['root'] = [chevs]
         else:
             # It wasn't a command, so we probably don't need to do anything
             pass

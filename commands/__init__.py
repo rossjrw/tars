@@ -27,6 +27,11 @@ COMMANDS = {
              },
     "hug": {"hug": {"hug","hugtars"},
            },
+    "chevron": {"chevron": {"chevron"},
+               },
+    "info": {"help": {"help"},
+             "version": {"version","tars"},
+            },
 }
 
 class Commands_Directory:
