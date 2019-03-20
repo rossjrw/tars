@@ -9,14 +9,6 @@ from pyaib.plugins import observe, plugin_class
 import sys
 import inspect
 
-# COMMANDS = {
-#     "search": { "func": search },
-#     "test": { "func": search },
-#     "die": { "func": search },
-#     "chevron": { "func": search },
-#     "colour": { "func": colour },
-# }
-
 @plugin_class("parsemessages")
 class ParseMessages(object):
     def __init__(self, irc_c, config):
@@ -31,7 +23,6 @@ class ParseMessages(object):
 
     @observe("IRC_MSG_PRIVMSG")
     def handleMessage(self, irc_c, msg):
-        print("Handling message: " + msg.message)
         cmd = parse.command(msg.message)
         # cmd is the parsed msg (used to be msg.parsed)
         if cmd.command:

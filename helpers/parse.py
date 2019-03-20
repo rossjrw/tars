@@ -3,7 +3,8 @@ import shlex
 import pyaib.util.data as data
 
 def parseprint(message):
-    print("[\x1b[1;32mParser\x1b[0m] " + str(message))
+    #print("[\x1b[1;32mParser\x1b[0m] " + str(message))
+    pass
 
 class ParsedCommand():
     """ParsedCommand
@@ -44,17 +45,17 @@ class ParsedCommand():
                 self.pinged = True
 
         parseprint("After ping extraction: " +
-                   "\nping: {}".format(self.ping) +
-                   "\nmessage: {}".format(self.message) +
-                   "\npinged: {}".format(self.pinged))
+                   "\nping: >{}<".format(self.ping) +
+                   "\nmessage: >{}<".format(self.message) +
+                   "\npinged: >{}<".format(self.pinged))
 
         # What was the command?
         # Check for regular commands (including chevron)
         if self.pinged:
-            pattern = r"^(?P<signal>[!,\.\?]*)(?P<cmd>[\w\^]+)(?P<rest>.*)$"
+            pattern = r"^(?P<signal>[!,\.\?]{0,2})(?P<cmd>[\w\^]+)(?P<rest>.*)$"
         else:
             # Force the command to be marked if we weren't pinged
-            pattern = r"^(?P<signal>[!,\.\?]+)(?P<cmd>[\w\^]+)(?P<rest>.*)$"
+            pattern = r"^(?P<signal>[!,\.\?]{1,2})(?P<cmd>[\w\^]+)(?P<rest>.*)$"
         match = re.search(pattern, self.message)
         if match:
             # Remove command from the message
@@ -147,6 +148,7 @@ def nickColor(string):
         return float(x)
 
     bytes = string.lower()
+    bytes = re.sub(r"^#", "", bytes)
     bytes = re.sub(r"[`_]+$", "", bytes)
     bytes = re.sub(r"\|.*$", "", bytes)
     bytes = bytes.encode('utf-16-le')
@@ -156,3 +158,20 @@ def nickColor(string):
         hash = char_code + t(int(hash) << 6) + t(int(hash) << 16) - hash
     index = int(hash % length if hash >= 0 else abs(hash % length - length))
     return "\x1b[38;5;{}m{}\x1b[0m".format(colours[index], string)
+
+def output(output):
+    """Takes an output message from plugins/log.py"""
+    output = str(output)
+    pattern = r"(?P<kind>[A-Z]+) (?P<ch>\S+) :(?P<message>.*)"
+    match = re.match(pattern, output)
+    if not match:
+        return None
+    msg = {}
+    #if match.group('ch')[0] == '#':
+    #    msg['channel'] = match.group('ch')
+    #else:
+    #    msg['channel'] = "private"
+    #    msg['nick'] = match.group('ch')
+    msg['channel'] = match.group('ch')
+    msg['message'] = match.group('message')
+    return msg

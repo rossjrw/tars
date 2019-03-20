@@ -28,57 +28,6 @@ class Debug(object):
     def __init__(self, irc_context, config):
         print("Debug Plugin Loaded!")
 
-    @observe('IRC_RAW_MSG', 'IRC_RAW_SEND')
-    def debug(self, irc_c, msg):
-        print("[{}] {}".format(time.strftime('%H:%M:%S'), msg))
-
-    @observe('IRC_MSG_PRIVMSG')
-    def auto_reply(self, irc_c, msg):
-        print("Received a message from " + str(msg.channel))
-        if msg.channel is None:
-            print("It's a PM")
-
-    @keyword('raw')
-    def raw(self, irc_c, msg, trigger, args, kargs):
-        irc_c.RAW(args)
-
-    @keyword('test')
-    def argtest(self, irc_c, msg, trigger, args, kargs):
-        msg.reply('Trigger: %r' % trigger)
-        msg.reply('ARGS: %r' % args)
-        msg.reply('KEYWORDS: %r' % kargs)
-        msg.reply('Unparsed: %r' % msg.unparsed)
-
-    @keyword('test')
-    @keyword.sub('sub')
-    def argsubtest(self, irc_c, msg, trigger, args, kargs):
-        msg.reply('Triggers: %r' % trigger)
-        msg.reply('ARGS: %s' % args)
-        msg.reply('KEYWORDS: %r' % kargs)
-        msg.reply('Unparsed: %r' % msg.unparsed)
-
-    @keyword('join')
-    def join(self, irc_c, msg, trigger, args, kargs):
-        if len(args) > 0:
-            irc_c.JOIN(args)
-        else:
-            msg.reply("Malformed command")
-
-    @keyword('part')
-    def part(self, irc_c, msg, trigger, args, kargs):
-        if len(args) > 0:
-            irc_c.PART(args, message='%s asked me to leave.' % msg.nick)
-        else:
-            msg.reply("Malformed command")
-
-    @keyword('invite')
-    def invite(self, irc_c, msg, trigger, args, kargs):
-        if len(args) > 0 and args[0].startswith('#'):
-            irc_c.RAW('INVITE %s :%s' % (msg.nick, args[0]))
-        else:
-            msg.reply("Malformed command")
-
-    @observe('IRC_MSG_INVITE')
     def follow_invites(self, irc_c, msg):
         print(msg.target, irc_c.botnick)
         if msg.target.lower() == irc_c.botnick.lower():  # Sanity

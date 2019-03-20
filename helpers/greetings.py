@@ -23,7 +23,7 @@ def greet(subject):
     else:
         return choice(user).format(subject)
 
-def badCommand(cmd):
+def bad_command(**kwargs):
     response = [
         "I'm sorry, I didn't quite catch that.",
         "That's not a valid command.",
@@ -33,8 +33,9 @@ def badCommand(cmd):
         "That's not a command.",
         "Bad command, sorry.",
     ]
+    message = kwargs['message'] if 'message' in kwargs else choice(response)
     link = " See https://git.io/TARShelp for a list of commands."
-    return choice(response) + link
+    return message + link
 
 def isGreeting(message):
     greetings = [
