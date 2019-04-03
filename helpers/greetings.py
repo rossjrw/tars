@@ -54,4 +54,6 @@ def kill_bye():
 def acronym():
     responses = [
         "Tool-Assisted Robotic Sassmouth",
+        "TARS: A Recursive Semantic",
+        "Totally Awesome Robot (/s)",
     ]

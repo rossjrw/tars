@@ -1,3 +1,8 @@
+"""parse.py
+
+Provides functions for parsing and formatting stuff into other stuff.
+"""
+
 import re
 import shlex
 import pyaib.util.data as data
@@ -81,22 +86,25 @@ class ParsedCommand():
             except ValueError:
                 # raised if shlex detects fucked up quotemarks
                 self.message = self.message.split()
+                print("shlex error")
                 self.quote_error = True
-            for word in self.message:
-                word = word.replace("<<APOSTROPHE>>", "'")
+            for i,word in enumerate(self.message):
+                self.message[i] = word.replace("<<APOSTROPHE>>", "'")
             # arguments is now a list, quotes are preserved
             # need to split it into different lists per tag, though
-            self.args = {}
-            currArg = "root"
+            self.args = {'root': []}
+            currArg = 'root'
             for argument in self.message:
                 if argument[:1] == "-" and len(argument) == 2 \
                 or argument[:2] == "--" and len(argument) >= 2:
                     currArg = argument.strip("-")
+                    self.args[currArg] = []
                 else:
-                    # if this tag doesn't exist, make it a list
-                    if not currArg in self.args:
-                        self.args[currArg] = []
                     self.args[currArg].append(argument)
+            # not let's iterate through args and replace empty w True
+            #for arg in self.args:
+            #    if not self.args[arg]:
+            #        self.args[arg] = True
             # now arguments should be dict of tag: value, w/ root as start
 
             # detect a chevron command

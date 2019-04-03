@@ -28,6 +28,7 @@ class Debug(object):
     def __init__(self, irc_context, config):
         print("Debug Plugin Loaded!")
 
+    @observe('IRC_MSG_INVITE')
     def follow_invites(self, irc_c, msg):
         print(msg.target, irc_c.botnick)
         if msg.target.lower() == irc_c.botnick.lower():  # Sanity
@@ -35,3 +36,4 @@ class Debug(object):
             irc_c.PRIVMSG(msg.message, '%s: I have arrived' % msg.nick)
         else:
             msg.reply("Malformed command")
+        # TODO move this to another file

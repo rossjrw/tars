@@ -32,11 +32,13 @@ COMMANDS = {
     "info": {"help": {"help"},
              "version": {"version","tars"},
             },
+    "promote": {"promote": {"promote"},
+               },
 }
 
 class Commands_Directory:
-    def __init__(self):
-        self.COMMANDS = COMMANDS
+    def __init__(self, directory):
+        self.COMMANDS = directory
 
     def get(self,file=None,command=None):
         if file is None:
@@ -59,7 +61,7 @@ def cmdprint(text, error=False):
         bit += "[\x1b[38;5;196mError\x1b[0m] "
     print(bit + str(text))
 
-COMMANDS = Commands_Directory()
+COMMANDS = Commands_Directory(COMMANDS)
 
 for file in COMMANDS.get():
     cmdprint("Importing commands from commands/{}.py".format(file))

@@ -31,7 +31,7 @@ class ParseMessages(object):
                 msg.reply(tag + ": " + ", ".join(cmd.args[tag]))
             try:
                 # Call the command from the right file in commands/
-                # using getattr instead of commands[cmd] bc module subscriptability
+                # getattr instead of commands[cmd] bc module subscriptability
                 getattr(COMMANDS, cmd.command).command(irc_c, msg, cmd)
             except AttributeError as e:
                 # if specific attr error, command doesn't exist

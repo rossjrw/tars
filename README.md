@@ -3,9 +3,19 @@ IRC bot for IO automation
 
 Check here for documentation: https://github.com/rossjrw/tars/wiki/Help
 
+## Usage
+
+Extact anywhere then
+
+```
+python3 bot.py [-p password] [-n name]
+```
+
+where password is TARS' NickServ password and name is the bot's name.
+
 ## Adding commands
 
-Each major command must be in its own file. Subcommands can be in the same file
+Each major command should be in its own file. Subcommands can be in the same file
 as the major command's file.
 
 Create a new file in `commands/` named the same as your major command.
@@ -27,3 +37,8 @@ alias, or it won't be able to be called.
 
 | Channel name | Autojoin? | NAMES | NAMES last updated | showmore list |
 | --- | --- | --- | --- | --- |
+
+### Users
+
+| Primary name | Aliases | Controller? |
+| --- | --- | --- |
