@@ -1,0 +1,262 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/3.0.1/github-markdown.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.4.2/tocbot.css">
+<style>
+    .markdown-body {
+        box-sizing: border-box;
+        min-width: 200px;
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 45px;
+    }
+    @media (max-width: 767px) {
+        .markdown-body {
+            padding: 15px;
+        }
+    }
+</style>
+<nav class="contents"
+<article class="markdown-body">
+<p>| Just want a quick list of commands? See <a href="https://github.com/rossjrw/tars/wiki/Quick-Commands">Quick Commands</a> | | --- |</p>
+<p>This file has been deprecated in favour of the html one</p>
+<h3 id="whatistars">What is TARS?</h3>
+<p>TARS is an IRC bot primarily for aiding IO in social media promotion, but also has a bunch of other things it can do. The following is a list of all the commands that TARS knows.</p>
+<p>Whenever you see a command such as <code>.search</code>, keep in mind that you can also use this command by pinging TARS at the start of your message: <code>TARS: search</code></p>
+<p>Command templates: <code>.commandname requiredargument [optionalargument] [--tagged taggedargument]</code></p>
+<p>"commandname" is the name of the command. "requiredargument" is required. Anything in [square brackets] is not required. Tagged arguments must come after their tag - for example, in the above command <code>.commandname requiredargument --tagged taggedargument</code> is valid, but <code>.commandname requiredargument taggedargument</code> is not.</p>
+<h3 id="tableofcontents">Table of Contents</h3>
+<ul>
+    <li><a href="#noncommand">Features</a>
+        <ul>
+            <li><a href="#scpmatch">SCP-matching</a></li>
+            <li><a href="#chevronning">Chevronning</a></li>
+            <li><a href="#jl">Joining/Leaving</a></li>
+            <li><a href="#deferral">Deferral</a></li>
+        </ul>
+    </li>
+    <li><a href="#general">General Commands</a>
+        <ul>
+            <li><a href="#help">Help</a></li>
+            <li><a href="#search">Search</a></li>
+            <li><a href="#lastcreated">Last Created</a></li>
+            <li><a href="#regexsearch">Regex Search</a></li>
+            <li><a href="#showmore">Show More</a></li>
+            <li><a href="#au">Author Page</a></li>
+            <li><a href="#alias">Alias</a></li>
+            <li><a href="#seen">Seen</a></li>
+        </ul>
+    </li>
+    <li><a href="#staffonly">Staff-Only Commands</a>
+        <ul>
+            <li><a href="#promote">Promote</a></li>
+        </ul>
+    </li>
+    <li><a href="#controller">Controller-only Commands</a></li>
+    <li><a href="#gimmick">Gimmick Commands</a></li>
+</ul>
+<p>
+    <br>
+</p>
+<p><a name="noncommand" /></p>
+<h1 id="features">Features</h1>
+<p>Usually TARS is operated with specific commands, but it has some features that aren't command-related.</p>
+<p><a name="scpmatch" /></p>
+<h2 id="scpmatching">SCP-matching</h2>
+<p>TARS will automatically provide a link for a message that's just an SCP number (it'll ignore any pings in the message). It'll also provide a link for a message that contains an SCP number prefixed with "!", e.g. "!SCP-4000".</p>
+<p><a name="chevronning" /></p>
+<h2 id="chevronning">Chevronning</h2>
+<p><code>TARS: ^</code></p>
+<p>Tagging TARS in a message that's just a caret (or a chevron) is like saying "TARS, take a good hard look at the last message that was posted". TARS will take a look at the message above the chevron and attempt to parse any command that's there. If it doesn't find anything, it'll move up to the previous message, and will keep doing so until it finds a command.</p>
+<p>Chevronning has a variety of effects:</p>
+<ul>
+    <li>If the message contains any SCP numbers, TARS will provide links for them all</li>
+    <li>If the whole message body, minus any pings, is a match for an article on the wiki, TARS will provide a link for it</li>
+    <li>If TARS finds a command that starts with the wrong character (e.g. <code>!search</code> or <code>search</code>), it will execute it</li>
+    <li>If TARS finds a command that it previously ignored because another bot was present, it will execute it</li>
+    <li>Otherwise, TARS will not do anything.</li>
+</ul>
+<p>Append a number after the chevron to change how many messages are checked, e.g. <code>TARS: ^ 20</code>. There is a hard limit of 50, and the default is 10.</p>
+<p>Change the number of chevrons to skip commands. <code>^</code> will execute the first command that is found, <code>^^</code> will skip the first command and execute the second command, and so on.</p>
+<p>An empty message that pings TARS and nothing else, eg <code>TARS:</code>, is equivalent to <code>TARS: ^ 1</code>.</p>
+<p><a name="jl" /></p>
+<h2 id="joiningleaving">Joining/Leaving</h2>
+<p>TARS will join any channel that it's invited to. This channel will be added to the auto-join list.</p>
+<p>If TARS is kicked from a channel, it will leave, and the channel will be removed from the auto-join list.</p>
+<p>
+    <a name="deferral"></p>
+<h2 id="deferraltootherbots">Deferral (to other bots)</h2>
+<p>If someone posts a command like <code>.help</code> in a channel, if there are multiple bots there, they may all try to parse it at once! To avoid this, SCP IRC bots are in a hierarchy in which the bot at the top will always try to parse the command, and all the other bots will only try to parse it if all the bots above them in the hierarchy are not present.</p>
+<p>jarvis is at the top of the hierarchy. Secretary_Helen is next. TARS is right at the bottom.</p>
+<p>If jarvis or Secretary_Helen are in the channel, TARS will ignore any commands that they would usually pick up on. Look for 🇯 and/or 🇭 after the command name to see whether or not this is the case for each command.</p>
+<p>However, if either of those bots fails the request (e.g. not finding anything in a <strong><code>.search</code></strong>) then TARS will automatically try as well. (If TARS also fails to find anything, it won't say anything.)</p>
+<p>To force TARS to parse a command, either ping it at the start of the message, or prefix the command with two dots, e.g. <strong><code>..search</code></strong>. jarvis and Secretary_Helen won't pick up on it.</p>
+<p>
+    <br>
+</p>
+<p><a name="general" /></p>
+<h1 id="generalcommands">General Commands</h1>
+<p><a name="help" /></p>
+<h2 id="help">.help 🇯 🇭</h2>
+<p>Provides a link to both this page and <a href="https://github.com/rossjrw/tars/wiki/Quick-Commands">Quick Commands</a>.</p>
+<p><a name="search" /></p>
+<h2 id="searchseas">.search, .sea, .s 🇯 🇭</h2>
+<p>Searches the wiki for pages, and provides URLs and basic info about the page that matches your search criteria.</p>
+<p><code>.search [title] [--tags tags] [--author author] [--rating rating] [--created created] [--fullname] [--regex] [--summary]</code></p>
+<ul>
+    <li><strong>title</strong>
+        <br> Search for pages whose title contains all of these words. Words are space-separated. If neither <strong>-f</strong> nor <strong>-x</strong> are present, anything wrapped in quotes (<code>"</code>) will be treated as a single word. Not case sensitive.</li>
+    <li><strong>--tags, -t</strong>
+        <br> Filter pages by tags. <code>+scp</code> means pages tagged scp. <code>-scp</code> means pages not tagged scp. Default is "+".</li>
+    <li><strong>--author, -a</strong>
+        <br> Filter pages by exact author name.</li>
+    <li><strong>--rating, -r</strong>
+        <br> Filter pages by a rating number. Prefix the number with any of <code>&gt;</code>, <code>&lt;</code>, <code>=</code>. Default is <code>&gt;</code>. Can also specify a range of ratings with two dots, e.g. <code>20..50</code>.</li>
+    <li><strong>--created, -c</strong>
+        <br> Filter pages by date of creation. Rewrite dates are ignored. Date must be of the format YYYY-MM-DD, YYYY-MM or YYYY. Can use the same prefixes as <strong>rating</strong>, and also supports ranges of dates in the same way.
+        <br>
+    </li>
+    <li><strong>--category, -y</strong>
+        <br> Exactly the same as <strong>--tags</strong>, except for Wikidot categories instead. Reminder: the default page category is "_default".</li>
+    <li><strong>--fullname, -f</strong>
+        <br> Instead of searching for all words in <strong>title</strong>, TARS will search for a page that exactly matches the <strong>title</strong> (SCP titles included).</li>
+    <li><strong>--regex, -x</strong>
+        <br> Instead of treating <strong>title</strong> as a series of words, TARS will treat it as a single regular expression. If <strong>-x</strong> is specified, <strong>-f</strong> will do nothing. You must start and end the regular expression with <code>/</code>.</li>
+    <li><strong>--random, -n, -d</strong>
+        <br> If your search matches more than one article, TARS will return a random one from the list.</li>
+    <li><strong>--summary, -s, -u</strong>
+        <br> Instead of providing a link to a single article, TARS will summarise all articles that match the search criteria.</li>
+</ul>
+<p>Example: <code>TARS: search -t +scp +meta -r &gt;100 -c 2014</code> - <em>matches pages tagged both "scp" and "meta", with a rating of more than 100, posted in 2014.</em></p>
+<p>Example: <code>.s Insurgency --rating 20..80 --created 2018-06..2018</code> - <em>matches pages that contain the word "Insurgency" in the title, which have a rating of between 20 and 80, and were created between June 1st 2018 and the end of 2018.</em></p>
+<p>If TARS finds more that one article that matches your criteria, it will provide a list of matches and ask if you meant any of them. To pick your article from the list, see the <strong><code>showmore</code></strong> command.</p>
+<p>
+    <a name="lastcreated"></p>
+<h2 id="lastcreatedlclrecent">.lastcreated, .lc, .l, .recent 🇯 🇭</h2>
+<p>TARS will generate a list of the 3 most recently created pages.</p>
+<p><code>.lastcreated [--tags tags] [--author author] [--rating rating] [--created created] [--fullname]</code></p>
+<ul>
+    <li><strong>--tags, -t</strong></li>
+    <li><strong>--author, -a</strong></li>
+    <li><strong>--rating, -r</strong></li>
+    <li><strong>--created, -c</strong></li>
+    <li><strong>--category, -y</strong>
+        <br> Exactly the same implementation as <strong><code>.search</code></strong> for additional filtering before showing the results.</li>
+</ul>
+<p>Example: <code>.lc -a Croquembouche</code> - <em>shows the last 3 articles posted by Croquembouche.</em></p>
+<p><a name="regexsearch" /></p>
+<h2 id="regexsearchregexsearsears">.regexsearch, .regexsea, .rsea, .rs</h2>
+<p>Exactly the same as <strong><code>search</code></strong>, except the <strong>--regex</strong> flag is enabled by default.</p>
+<p>Example: <code>.rs /^SCP-\d*2/</code> - <em>matches articles that start with "SCP-" followed by any amount of numbers so long as that number ends in a 2</em></p>
+<p><a name="showmore" /></p>
+<h2 id="showmoresm">.showmore, .sm 🇯 🇭</h2>
+<p>When TARS presents you with a list of articles to pick from, use this command to pick which one you want to see.</p>
+<p>Example: <code>.sm 2</code> - <em>pick the 2nd article from the list</em></p>
+<p>Anyone can <strong><code>.sm</code></strong> one of TARS' lists, even if they didn't send the command that created it.</p>
+<p>You can always <strong><code>.sm</code></strong> the last list that TARS created in a given channel, even if TARS has been offline. When a new list is created in a channel, it will overwrite the old list.</p>
+<p>Over time, TARS will learn which articles are picked more often than others, and will move those to the top of the list.</p>
+<p><a name="au" /></p>
+<h2 id="authorpageauthorau">.authorpage, .author, .au 🇯 🇭</h2>
+<p><code>.au [username]</code></p>
+<p>Fetches the author page for a given user. You must specify their Wikidot name exactly, although if you name an IRC user, TARS will check its list of aliases (see <strong><code>.alias</code></strong>) as well. If you don't specify anyone, TARS will try to find your author page instead (and it'll check your aliases, too).</p>
+<p><a name="alias" /></p>
+<h2 id="alias">.alias</h2>
+<p><code>.alias [names] [--remove] [--list]</code></p>
+<p>Add an alternate name(s) for yourself into TARS' database. These names are used for <strong><code>.authorpage</code></strong> and <strong><code>.seen</code></strong>.</p>
+<ul>
+    <li><strong>names:</strong>
+        <br> A list of names to associate with your current IRC name. Separate multiple names with spaces. If your name contains a space, wrap it in quotes.</li>
+    <li><strong>--remove, r:</strong>
+        <br> Instead of being added to the database, the names will be removed.</li>
+    <li><strong>--list, -l:</strong>
+        <br> List all aliases associated with your name.</li>
+</ul>
+<p>If TARS notices that you look up a single person a lot, it'll ask if that person is you and recommend that you add that name as an alias. It will only do this once.</p>
+<p>Example: <code>.alias "James Bond" James_Bond 007</code></p>
+<p><a name="seen" /></p>
+<h2 id="seen">.seen 🇯 🇭</h2>
+<p><code>.seen name</code></p>
+<p>TARS will tell you when this user was last active.</p>
+<p>It'll tell you two things:</p>
+<ol>
+    <li>When the user last sent a message in this channel</li>
+    <li>When the user last sent a message in any channel</li>
+</ol>
+<p>
+    <br>
+</p>
+<p><a name="staffonly" /></p>
+<h1 id="staffonlycommands">Staff-Only Commands</h1>
+<p>Some commands are reserved for SCP staff only.</p>
+<p><a name="promote" /></p>
+<h2 id="promote">.promote</h2>
+<p>Promote an article or message on SCP social media.</p>
+<p><code>.promote [message] [--article article] [--image image] [--facebook image] [--twitter image] [--tumblr image] [--reddit] [--instagram]</code></p>
+<ul>
+    <li><strong>message</strong>
+        <br> The message to be posted in the announcement. If you don't supply a message, TARS will ask you for separate messages.</li>
+    <li><strong>--article, -a</strong>
+        <br> The full URL of the article that needs promotion.</li>
+    <li><strong>--image, -m</strong>
+        <br> The full URL of an image to send with the post.</li>
+    <li><strong>--facebook, -f</strong>
+        <br>
+    </li>
+    <li><strong>--twitter, -w</strong>
+        <br>
+    </li>
+    <li><strong>--tumblr, -b</strong>
+        <br>
+    </li>
+    <li><strong>--reddit, -r</strong>
+        <br>
+    </li>
+    <li><strong>--instagram, -i</strong>
+        <br> Include any or all of these tags to post to the respective social media accounts. Include a "true" or "false" after each one to include the image specified in <strong>--image</strong>. Default is "true". Reddit will always be false and Instagram will always be true (if you don't specify an image, you won't be able to post to Instagram).</li>
+</ul>
+<p>The <strong><code>.promote</code></strong> command can only be used by an <strong>operator</strong> or higher in #site42, the Internet Outreach channel.</p>
+<p>Once you've called <strong><code>.promote</code></strong>, TARS will message you privately. This private conversation will not be logged and the bot owner will not have access to these message. TARS will take you through a series of simple questions to confirm that you do actually want to post things to the social media accounts.</p>
+<p>TARS will ask you for passwords and/or API keys to the accounts. These are necessary in order for TARS to post. At the end of the session, you'll be asked whether or not you want to keep the passwords saved. If you do, it'll make things faster next time by keeping the passwords in an encrypted file. If you don't, the passwords will be purged.</p>
+<p>At any point during the session, type "ABORT" to cancel everything.</p>
+<p>
+    <br>
+</p>
+<p><a name="controller" /></p>
+<h1 id="controlleronlycommands">Controller-only Commands</h1>
+<p>The following commands will only work if you are a Controller of TARS. The bot owner picks who the Controllers are.</p>
+<ul>
+    <li><strong>.join channel:</strong> Join a channel</li>
+    <li><strong>.leave [channel]:</strong> Leave the current channel or a given one</li>
+    <li><strong>.die, .shutdown, .kys:</strong> Robots dream of electric sheep</li>
+    <li><strong>.autojoin [--list] [--add channels] [--remove channels]:</strong> View, add to or remove from the autojoin list</li>
+    <li><strong>.ff [--add ff] [--remove ff] [--list]:</strong> You know what this does already</li>
+</ul>
+<p>
+    <br>
+</p>
+<p>
+    <a name="gimmick"></p>
+<h1 id="gimmickcommands">Gimmick Commands</h1>
+<p>The following commands are just simple gimmicks, usually added by request.</p>
+<ul>
+    <li><strong>hug:</strong> Hugs!</li>
+    <li>**.tags 🇯</li>
+</ul>
+<p>Find pages with the given tags.</p>
+<p><code>.tags tale alchemy-department</code> is the same as <code>.search -t +tale +alchemy-department</code>.</p>
+<p>
+    <a name="user"></p>
+<h2 id="user">.user 🇯 🇭</h2>
+<p><code>.user username</code></p>
+<p>Fetches the Wikidot user page for a given user. Must specify their Wikidot username exactly.</p>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.4.2/tocbot.min.js"></script>    
+<script>
+    tocbot.init({
+        // Where to render the table of contents.
+        tocSelector: '.js-toc',
+        // Where to grab the headings to build the table of contents.
+        contentSelector: '.js-toc-content',
+        // Which headings to grab inside of the contentSelector element.
+        headingSelector: 'h1, h2, h3',
+    });
+</script>
+</body>
