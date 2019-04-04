@@ -15,16 +15,6 @@
         }
     }
 </style>
-<script>
-    tocbot.init({
-  // Where to render the table of contents.
-  tocSelector: '.js-toc',
-  // Where to grab the headings to build the table of contents.
-  contentSelector: '.js-toc-content',
-  // Which headings to grab inside of the contentSelector element.
-  headingSelector: 'h1, h2, h3',
-});
-</script>
 <article class="markdown-body">
 <p>| Just want a quick list of commands? See <a href="https://github.com/rossjrw/tars/wiki/Quick-Commands">Quick Commands</a> | | --- |</p>
 <p>This file has been deprecated in favour of the html one</p>
@@ -257,5 +247,15 @@
 <h2 id="user">.user 🇯 🇭</h2>
 <p><code>.user username</code></p>
 <p>Fetches the Wikidot user page for a given user. Must specify their Wikidot username exactly.</p>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.4.2/tocbot.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.4.2/tocbot.min.js"></script>    
+<script>
+    tocbot.init({
+        // Where to render the table of contents.
+        tocSelector: '.js-toc',
+        // Where to grab the headings to build the table of contents.
+        contentSelector: '.js-toc-content',
+        // Which headings to grab inside of the contentSelector element.
+        headingSelector: 'h1, h2, h3',
+    });
+</script>
 </body>
