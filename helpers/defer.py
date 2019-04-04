@@ -1,6 +1,7 @@
 """defer.py
 
-For checking whether a command should defer to jarvis or Secretary_Helen."""
+For checking whether a command should defer to jarvis or Secretary_Helen.
+"""
 
 class defer:
     @classmethod
@@ -12,6 +13,13 @@ class defer:
         # first, get a list of everyone in this channel
         # issue a request for channel member names
         mex = irc_c.RAW("NAMES {}".format(msg.raw_channel))
+        # We need to request a list of NAMES from IRC.
+        # Problem: we can't just await that data, as it'll be coming from raw
+        # So we need to log the NAMES into a database and then wait for
+        #   the database to have updated.
+        # We'll need to have another function on the go somewhere that's
+        #   logging names to the db. We'll also need a db.
+        # That function will be in plugins/names.py
         print(mex)
         for bot in bots:
             pass

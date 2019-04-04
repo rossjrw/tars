@@ -57,10 +57,10 @@ class ParsedCommand():
         # What was the command?
         # Check for regular commands (including chevron)
         if self.pinged:
-            pattern = r"^(?P<signal>[!,\.\?]{0,2})(?P<cmd>[\w\^]+)(?P<rest>.*)$"
+            pattern = r"^(?P<signal>[!,\.\?]{0,2})(?P<cmd>[\S]+)(?P<rest>.*)$"
         else:
             # Force the command to be marked if we weren't pinged
-            pattern = r"^(?P<signal>[!,\.\?]{1,2})(?P<cmd>[\w\^]+)(?P<rest>.*)$"
+            pattern = r"^(?P<signal>[!,\.\?]{1,2})(?P<cmd>[\S]+)(?P<rest>.*)$"
         match = re.search(pattern, self.message)
         if match:
             # Remove command from the message

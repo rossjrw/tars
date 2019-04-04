@@ -34,6 +34,9 @@ COMMANDS = {
             },
     "promote": {"promote": {"promote"},
                },
+    "reptile": {"reptile": {"reptile","rep"},
+                "fish": {"fish","reptile+","rep+"},
+               },
 }
 
 class Commands_Directory:
