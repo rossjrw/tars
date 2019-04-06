@@ -22,6 +22,41 @@
             top: 50%;
             left: calc(50vw - 600px);
         }
+        h1 {
+            background: lightgray;
+            padding: 0.2em 0.5em;
+            margin-left: -1em;
+            border-radius: 50px 0 0 50px;
+            padding-right: 999rem;
+            margin-right: -999rem;
+        }
+        h2, h2::after {
+            padding: 0.2em 0.5em;
+            background: #eaeaea;
+            display: inline-block;
+            border-radius: 50px;
+            margin: 0.2em;
+        }
+        .jarvis::after, .helen::after {
+            position: absolute;
+            bottom: 3px;
+            box-sizing: content-box;
+            right: 0;
+            transform: translate(108%,0);
+            font-size: 0.6em;
+            color: white;
+            background: #444;
+            white-space: nowrap;
+        }
+        .jarvis::after {
+            content: "DEFERS TO jarvis";
+        }
+        .helen::after {
+            content: "DEFERS TO Secretary_Helen";
+        }
+        .jarvis.helen::after {
+            content: "DEFERS TO jarvis AND Secretary_Helen";
+        }
         @media (max-width: 1200px) {
             nav {
                 left: 20px;
@@ -119,8 +154,8 @@
         and all the other bots will only try to parse it if all the bots above them in the hierarchy are not present.</p>
     <p>jarvis is at the top of the hierarchy. Secretary_Helen is next. TARS is right at the bottom.</p>
     <p>If jarvis or Secretary_Helen are in the channel, TARS will ignore any commands that they would usually pick up on. Look for 🇯 and/or 🇭 after the command name to see whether or not this is the case for each command.</p>
-    <p>However, if either of those bots fails the request (e.g. not finding anything in a <b><code>.search</code></b>) then TARS will automatically try as well. (If TARS also fails to find anything, it won't say anything.)</p>
-    <p>To force TARS to parse a command, either ping it at the start of the message, or prefix the command with two dots, e.g. <b><code>..search</code></b>. jarvis and Secretary_Helen won't pick up on it, but TARS will.</p>
+    <p>However, if either of those bots fails the request (e.g. not finding anything in a <a href="#search"><b><code>.search</code></b></a>) then TARS will automatically try as well. (If TARS also fails to find anything, it won't say anything.)</p>
+    <p>To force TARS to parse a command, either ping it at the start of the message, or prefix the command with two dots, e.g. <a href="#search"><b><code>..search</code></b></a>. jarvis and Secretary_Helen won't pick up on it, but TARS will.</p>
 
     <h1 id="generalcommands">General Commands</h1>
 
@@ -174,7 +209,8 @@
     <p>Example: <code>.s Insurgency --rating 20..80 --created 2018-06..2018</code> - <em>matches pages that contain the word "Insurgency" in the title, which have a rating of between 20 and 80, and were created between June 1st 2018 and the end of 2018.</em></p>
     <p>Example: <code>.s Unexplained Location -f -c 20d..40W --random</code> - <em>matches pages whose name is exactly "Unexplained Location" created between 20 days and 40 weeks ago, and returns a random one.</em></p>
     <p>Example: <code>.s /^SCP-\d*2/ -x -m</code> - <em>matches articles that start with "SCP-" followed by any amount of numbers so long as that number ends in a 2, and returns the one that most needs extra attention.</em></p>
-    <p>If TARS finds more that one article that matches your criteria (and if you didn't specify <b>--random</b>, <b>--summary</b> or <b>--recommend</b>), it will provide a list of matches and ask if you meant any of them. To pick your article from the list, see the <b><code>showmore</code></b> command.</p>
+    <p>If TARS finds more that one article that matches your criteria (and if you didn't specify <b>--random</b>, <b>--summary</b> or <b>--recommend</b>), it will provide a list of matches and ask if you meant any of them. To pick your article from the list, see the <a href="#showmore"><b><code>showmore</code></b></a> command.</p>
+    <p><a href="#regexsearch"><b><code>.regexsearch</code></b></a>, <a href="#tags"><b><code>.tags</code></b></a> and <a href="#random"><b><code>.random</code></b></a> are aliases of this command.</p>
 
     <h2 id="lastcreated" class="jarvis helen">.lastcreated, .lc, .l, .recent </h2>
     <p>TARS will generate a list of the 3 most recently created pages.</p>
@@ -185,29 +221,29 @@
         <li><b>--rating, -r</b></li>
         <li><b>--created, -c</b></li>
         <li><b>--category, -y</b><br>
-            Exactly the same implementation as <b><code>.search</code></b> for additional filtering before showing the results.
+            Exactly the same implementation as <a href="#search"><b><code>.search</code></b></a> for additional filtering before showing the results.
         </li>
     </ul>
     <p>Example: <code>.lc -a Croquembouche</code> - <em>shows the last 3 articles posted by Croquembouche.</em></p>
 
     <h2 id="regexsearch">.regexsearch, .regexsea, .rsea, .rs</h2>
-    <p>Exactly the same as <b><code>search</code></b>, except the <b>--regex</b> flag is enabled.</p>
+    <p>Exactly the same as <a href="#search"><b><code>search</code></b></a>, except the <b>--regex</b> flag is enabled.</p>
 
     <h2 id="showmore" class="jarvis helen">.showmore, .sm </h2>
     <p>When TARS presents you with a list of articles to pick from, use this command to pick which one you want to see.</p>
     <p>Example: <code>.sm 2</code> - <em>pick the 2nd article from the list.</em></p>
-    <p>Anyone can <b><code>.sm</code></b> one of TARS' lists, even if they didn't send the command that created it.</p>
-    <p>You can always <b><code>.sm</code></b> the last list that TARS created in a given channel, even if TARS has been offline. When a new list is created in a channel, it will overwrite the old list.</p>
+    <p>Anyone can <a href="#sm"><b><code>.sm</code></b></a> one of TARS' lists, even if they didn't send the command that created it.</p>
+    <p>You can always <a href="#sm"><b><code>.sm</code></b></a> the last list that TARS created in a given channel, even if TARS has been offline. When a new list is created in a channel, it will overwrite the old list.</p>
     <p>Over time, TARS will learn which articles are picked more often than others, and will move those to the top of the list.</p>
     <p>Use <code>.sm</code> or <code>.sm 0</code> to see the whole list.</p>
 
     <h2 id="authorpage" class="jarvis helen">.authorpage, .author, .au </h2>
     <p><code>.au [username]</code></p>
-    <p>Fetches the author page for a given user. You must specify their Wikidot name exactly, although if you name an IRC user, TARS will check its list of aliases (see <b><code>.alias</code></b>) as well. If you don't specify anyone, TARS will try to find your author page instead (and it'll check your aliases, too).</p>
+    <p>Fetches the author page for a given user. You must specify their Wikidot name exactly, although if you name an IRC user, TARS will check its list of aliases (see <a href="#alias"><b><code>.alias</code></b></a>) as well. If you don't specify anyone, TARS will try to find your author page instead (and it'll check your aliases, too).</p>
 
     <h2 id="alias">.alias</h2>
     <p><code>.alias [name] [--add names] [--remove names] [--list]</code></p>
-    <p>Add an alternate name(s) for yourself into TARS' database. These names are used for <b><code>.authorpage</code></b> and <b><code>.seen</code></b>.</p>
+    <p>Add an alternate name(s) for yourself into TARS' database. These names are used for <a href="#authorpage"><b><code>.authorpage</code></b></a> and <a href="#seen"><b><code>.seen</code></b></a>.</p>
     <ul>
         <li><b>name</b><br>
             An IRC name. You can only <b>--add</b> or <b>--remove</b> aliases from this name if it's your current IRC nick (or if it's already one of your aliases), but you can <b>--list</b> anyone's aliases. If you don't include this argument, TARS will assume that you mean your current IRC nick.
@@ -257,8 +293,8 @@
             Instagram will always be true (if you don't specify an image, you won't be able to post to Instagram).
         </li>
     </ul>
-    <p>The <b><code>.promote</code></b> command can only be used by an <b>operator</b> or higher in #site42, the Internet Outreach channel.</p>
-    <p>Once you've called <b><code>.promote</code></b>, TARS will message you privately. This private conversation will not be logged and the bot owner will not have access to these message. TARS will take you through a series of simple questions to confirm that you do actually want to post things to the social media accounts.</p>
+    <p>The <a href="#promote"><b><code>.promote</code></b></a> command can only be used by an <b>operator</b> or higher in #site42, the Internet Outreach channel.</p>
+    <p>Once you've called <a href="#promote"><b><code>.promote</code></b></a>, TARS will message you privately. This private conversation will not be logged and the bot owner will not have access to these message. TARS will take you through a series of simple questions to confirm that you do actually want to post things to the social media accounts.</p>
     <p>TARS will ask you for passwords and/or API keys to the accounts. These are necessary in order for TARS to post. At the end of the session, you'll be asked whether or not you want to keep the passwords saved. If you do, it'll make things faster next
         time by keeping the passwords in an encrypted file. If you don't, the passwords will be purged.</p>
     <p>At any point during the session, type "ABORT" to cancel everything.</p>
@@ -284,13 +320,14 @@
         <li><b>..autojoin [--list] [--add channels] [--remove channels]:</b> View, add to or remove from the autojoin list</li>
     </ul>
 
-    <h1 id="gimmickcommands">Gimmick Commands</h1>
+    <h1 id="gimmickcommands">Gimmicks and Aliases</h1>
     
     <p>The following commands are just simple gimmicks or aliases. You can request gimmick commands if you want.</p>
     <ul>
         <li class="jarvis helen"><b>.user:</b> Fetches the Wikidot user page for a given user.</li>
-        <li class="jarvis"><b>.tags:</b> Search for a page with the given tags. <code>.tags tale alchemy-department</code> is the same as <code>.search -t +tale +alchemy-department</code>.</li>
-        <li class="jarvis"><b>.random, .ran, .r:</b> Same as <b><code>.search</code></b> except with <b>--random</b> enabled.</li>
+        <li id="regexsearch"><b>.regexsearch, .rsea, .rs:</b> Same as <a href="#search"><b><code>.search</code></b></a> except with <b>--regex</b> enabled.</li>
+        <li class="jarvis" id="tags"><b>.tags:</b> Search for a page with the given tags. <code>.tags tale alchemy-department</code> is the same as <code>.search -t +tale +alchemy-department</code>.</li>
+        <li class="jarvis" id="random"><b>.random, .ran, .r:</b> Same as <a href="#search"><b><code>.search</code></b></a> except with <b>--random</b> enabled.</li>
         <li><b>.hugtars, .hug:</b> Hugs!</li>
         <li><b>.reptile, .rep:</b> rawr xD</li>
         <li><b>.ff:</b> Returns a meaningful and inspirational quote.</li>
