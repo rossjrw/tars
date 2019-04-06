@@ -1,22 +1,27 @@
 <head>
+    <title>TARS Help</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/3.0.1/github-markdown.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.4.2/tocbot.css">
     <style>
         .markdown-body {
-        box-sizing: border-box;
-        min-width: 200px;
-        max-width: 980px;
-        margin: 0 auto;
-        padding: 45px;
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+        }
+        a.toc-link {
+            color: 0366d6;
         }
         @media (max-width: 767px) {
-        .markdown-body {
-        padding: 15px;
-        }
+            .markdown-body {
+                padding: 15px;
+            }
         }
     </style>
 </head>
+<body class="markdown-body">
 <nav class="contents js-toc">
     <h3 id="tableofcontents">Table of Contents</h3>
     <ul>
@@ -53,7 +58,7 @@
     </ul>
 </nav>
 
-<article class="markdown-body js-toc-content">
+<article class="js-toc-content">
     <p>Just want a quick list of commands? See <a href="https://github.com/rossjrw/tars/wiki/Quick-Commands">Quick Commands</a></p>
 
     <h3 id="whatistars">What is TARS?</h3>
@@ -258,16 +263,18 @@
         <li><b>..leave [channel]:</b> Leave the current channel or a given one</li>
         <li><b>..die, ..shutdown, ..kys:</b> Robots dream of electric sheep</li>
         <li><b>..autojoin [--list] [--add channels] [--remove channels]:</b> View, add to or remove from the autojoin list</li>
-        <li><b>..ff [--add ff] [--remove ff] [--list]:</b> You know what this does already</li>
     </ul>
 
     <h1 id="gimmickcommands">Gimmick Commands</h1>
     
     <p>The following commands are just simple gimmicks or aliases. You can request gimmick commands if you want.</p>
     <ul>
-        <li><b>.hug, .hugtars:</b> Hugs!</li>
         <li class="jarvis helen"><b>.user:</b> Fetches the Wikidot user page for a given user.</li>
         <li class="jarvis"><b>.tags:</b> Search for a page with the given tags. <code>.tags tale alchemy-department</code> is the same as <code>.search -t +tale +alchemy-department</code>.</li>
+        <li class="jarvis"><b>.random, .ran, .r:</b> Same as <b><code>.search</code></b> except with <b>--random</b> enabled.</li>
+        <li><b>.hugtars, .hug:</b> Hugs!</li>
+        <li><b>.reptile, .rep:</b> rawr xD</li>
+        <li><b>.ff:</b> Returns a meaningful and inspirational quote.</li>
     </ul>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.4.2/tocbot.min.js"></script>
@@ -304,7 +311,7 @@
     // there are only 6 heading levels and number 0 will collpase them all.
     // The sections that are hidden will open
     // and close as you scroll to headings within them.
-    collapseDepth: 0,
+    collapseDepth: 6,
     // Smooth scrolling enabled.
     scrollSmooth: true,
     // Smooth scroll duration.
