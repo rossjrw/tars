@@ -11,6 +11,9 @@
             margin: 0 auto;
             padding: 45px;
             padding-left: 345px;
+            overflow-x: none;
+            position: relative;
+            z-index: 1;
         }
         a.toc-link {
             color: 0366d6;
@@ -39,27 +42,28 @@
             position: relative;
         }
         .markdown-body .jarvis::after, .markdown-body .helen::after {
-            padding: 0.2em 0.5em;
+            padding: 0.2em 0.5em 0.2em 1em;
             border-radius: 50px;
             margin: 0.2em;
             position: absolute;
             bottom: 3px;
             box-sizing: content-box;
             right: 0;
-            transform: translate(108%,0);
+            transform: translate(90%,0);
             font-size: 0.6em;
             color: white;
-            background: #444;
+            background: #929292;
             white-space: nowrap;
+            z-index: -1;
         }
         .jarvis::after {
-            content: "DEFERS TO jarvis";
+            content: "defers to jarvis";
         }
         .helen::after {
-            content: "DEFERS TO Secretary_Helen";
+            content: "defers to Secretary_Helen";
         }
         .jarvis.helen::after {
-            content: "DEFERS TO jarvis AND Secretary_Helen";
+            content: "defers to jarvis, Secretary_Helen";
         }
         @media (max-width: 1200px) {
             nav {
