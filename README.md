@@ -33,12 +33,4 @@ alias, or it won't be able to be called.
 
 ## Database Structure
 
-### Channels
-
-| Channel name | Autojoin? | NAMES | NAMES last updated | showmore list |
-| --- | --- | --- | --- | --- |
-
-### Users
-
-| Primary name | Aliases | Controller? |
-| --- | --- | --- |
+![database layout](https://raw.githubusercontent.com/rossjrw/tars/master/database.png)
