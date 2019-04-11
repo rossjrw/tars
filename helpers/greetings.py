@@ -56,4 +56,6 @@ def acronym():
         "Tool-Assisted Robotic Sassmouth",
         "TARS: A Recursive Semantic",
         "Totally Awesome Robot (/s)",
+        "Tantalising And Rambunctious Sexbot",
+        "anoTher bot that Also helps io do pRomotion Stuff",
     ]

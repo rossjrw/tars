@@ -3,6 +3,10 @@
 Whenever we gets a NAMES response from the server, save that info to the db.
 """
 
+# Hey there deadname, I haven't seen you go by this name before.
+# Would you consider adding this name to your list of alises by
+# typing `.alias newname`?
+
 from pyaib.plugins import observe, plugin_class
 
 @plugin_class('names')
@@ -22,17 +26,24 @@ class Names:
                 if letter is not ' ':
                     name += letter
                 else:
-                    names.append(name)
+                    names.append({"nick": name})
                     name = ""
             elif letter == ':':
                 saving = True
         # chatstaff names start with a punctuation
         # for consistency, let's add a char to identify names with no role
+        modes = ["vop","hop","aop","sop","owner"]
+        modechars = "~&@%+"
         for key,name in enumerate(names):
-            print(name[0])
-            if name[0] in "~&@%+":
-                # they have a role, do nothing
-                pass
+            if name[0] in modechars:
+                # Set the user mode based on the first character
+                names[key] = {
+                    "nick": name[1:],
+                    "mode": modechars[mode.index(nick[0])]
+                }
             else:
-                names[key] = "-" + name
+                names[key] = {
+                    "nick": name,
+                    "mode": None
+                }
         print(names)
