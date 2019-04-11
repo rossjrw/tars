@@ -11,7 +11,7 @@
             margin: 0 auto;
             padding: 45px;
             padding-left: 345px;
-            overflow-x: none;
+            overflow-x: hidden;
             position: relative;
             z-index: 1;
         }
@@ -223,8 +223,11 @@
 
     <h2 id="lastcreated" class="jarvis helen">.lastcreated, .lc, .l, .recent </h2>
     <p>TARS will generate a list of the 3 most recently created pages.</p>
-    <p><code>.lastcreated [--tags tags] [--author author] [--rating rating] [--created created] [--fullname]</code></p>
+    <p><code>.lastcreated [amount] [--tags tags] [--author author] [--rating rating] [--created created] [--fullname]</code></p>
     <ul>
+        <li><b>amount</b><br>
+            The number of pages to show. Default is 3, max is 10.
+        </li>
         <li><b>--tags, -t</b></li>
         <li><b>--author, -a</b></li>
         <li><b>--rating, -r</b></li>
