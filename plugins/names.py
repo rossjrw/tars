@@ -1,7 +1,7 @@
-"""Names Plugin
+'''Names Plugin
 
 Whenever we gets a NAMES response from the server, save that info to the db.
-"""
+'''
 
 # Hey there deadname, I haven't seen you go by this name before.
 # Would you consider adding this name to your list of alises by
@@ -12,38 +12,39 @@ from pyaib.plugins import observe, plugin_class
 @plugin_class('names')
 class Names:
     def __init__(self, irc_c, config):
-        print("Names Plugin Loaded!")
+        print('Names Plugin Loaded!')
 
     @observe('IRC_MSG_353') # 353 is a NAMES response
     def record_names(self, irc_c, msg):
         # the names are in msg.args but as individual letters
         saving  = False
         names = []
-        name = ""
+        name = ''
         for letter in msg.args:
             # we don't want to keep any letters until we get to a colon
             if saving:
                 if letter is not ' ':
                     name += letter
                 else:
-                    names.append({"nick": name})
-                    name = ""
+                    names.append({'nick': name})
+                    name = ''
             elif letter == ':':
                 saving = True
+        print(names)
         # chatstaff names start with a punctuation
         # for consistency, let's add a char to identify names with no role
-        modes = ["vop","hop","aop","sop","owner"]
-        modechars = "~&@%+"
+        modes = ['vop','hop','aop','sop','owner']
+        modechars = '+%@&~'
         for key,name in enumerate(names):
-            if name[0] in modechars:
+            if name['nick'][0] in modechars:
                 # Set the user mode based on the first character
                 names[key] = {
-                    "nick": name[1:],
-                    "mode": modechars[mode.index(nick[0])]
+                    'nick': name['nick'][1:],
+                    'mode': modes[modechars.index(name['nick'][0])]
                 }
             else:
                 names[key] = {
-                    "nick": name,
-                    "mode": None
+                    'nick': name['nick'],
+                    'mode': None
                 }
         print(names)
