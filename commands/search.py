@@ -130,9 +130,8 @@ class search:
         print(api_key)
         s = ServerProxy('https://TARS:{}@www.wikidot.com/xml-rpc-api.php' \
                         .format(api_key))
-        page = s.pages.get_meta({'site':'scp-wiki','pages':cmd.args['root']})
-        print(page)
-        for title,page in page.items():
+        pages = s.pages.get_meta({'site':'scp-wiki','pages':cmd.args['root']})
+        for title,page in pages.items():
             print(page)
             msg.reply(
                 "{} | {} | {} | {}".format(
