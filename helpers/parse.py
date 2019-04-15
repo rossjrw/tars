@@ -134,7 +134,24 @@ class ParsedCommand():
         for arg in args:
             if arg in self.args:
                 return self.args[arg]
-        return None
+        raise AttributeError("Command does not have argument(s):"
+                             + ", ".join(args))
+
+    def expandargs(self, args):
+        """Expand short args to long ones
+        Expects one array of "long s" pairs"""
+        for pair in args:
+            aliases = pair.split()
+            # Keep the parent alias for reference
+            parent = ""
+            for key,alias in enumerate(aliases):
+                # ignore the 1st one
+                if key == 0:
+                    parent = alias
+                    continue
+                else:
+                    if alias in self.args:
+                        self.args[parent] = self.args[alias]
 
 # Parse a command
 def command(message):

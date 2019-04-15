@@ -16,9 +16,11 @@ class join:
     """Joins a channel"""
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        if 'root' in cmd.args and cmd.args['root'][0][0] == '#':
+        if len(cmd.args['root']) > 0 and cmd.args['root'][0][0] == '#':
             irc_c.JOIN(cmd.args['root'][0])
             msg.reply("Joining {}".format(cmd.args['root'][0]))
+            irc_c.PRIVMSG(cmd.args['root'][0],
+                          "Joining by request of {}".format(msg.nick))
         else:
             msg.reply("You'll need to specify a valid channel.")
 
