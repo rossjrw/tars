@@ -20,6 +20,4 @@ class defer:
         # We'll need to have another function on the go somewhere that's
         #   logging names to the db. We'll also need a db.
         # That function will be in plugins/names.py
-        print(mex)
-        for bot in bots:
-            pass
+        msg.reply("Unable to check NAMES")

@@ -8,12 +8,13 @@ Commands:
 """
 
 from helpers.defer import defer
+from xmlrpc.client import ServerProxy
 
 class search:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         defer.check(irc_c, msg, "jarvis")
-        msg.reply("I don't know how to search just yet, sorry.")
+
 
 class regexsearch:
     @classmethod

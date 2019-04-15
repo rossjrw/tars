@@ -30,7 +30,6 @@ class Names:
                     name = ''
             elif letter == ':':
                 saving = True
-        print(names)
         # chatstaff names start with a punctuation
         # for consistency, let's add a char to identify names with no role
         modes = ['vop','hop','aop','sop','owner']
@@ -48,3 +47,4 @@ class Names:
                     'mode': None
                 }
         print(names)
+        # just need to log these names to the db now
