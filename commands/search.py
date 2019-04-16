@@ -9,9 +9,13 @@ Commands:
 
 from helpers.defer import defer
 from helpers.api import api_key
-from xmlrpc.client import ServerProxy
 from helpers.error import CommandError
+from xmlrpc.client import ServerProxy
 import re
+import timeago
+import iso8601
+from iso8601 import ParseError
+from datetime import datetime, timezone
 
 date_offsets = {'s': 1,
                 'm': 60,
@@ -122,23 +126,34 @@ class search:
         createds = {'max': None, 'min': None}
         if cmd.hasarg('created'):
             created = cmd.getarg('created').split("..")
+            if len(created) > 2:
+                raise CommandError("Date ranges must have 2 dates only")
             for key,date in enumerate(created):
                 # Convert all dates to timestamps
                 # 1. Relative
+                # 2. Absolute
+                try:
+                    date = iso8601.parse_date(date)
+                    msg.reply("Using absolute date")
+                except ParseError:
+                    msg.reply("Using relative date")
                 pass
         # \/ Test stuff to be moved elsewhere after DB stuff
-        print(api_key)
         s = ServerProxy('https://TARS:{}@www.wikidot.com/xml-rpc-api.php' \
                         .format(api_key))
         pages = s.pages.get_meta({'site':'scp-wiki','pages':cmd.args['root']})
         for title,page in pages.items():
-            print(page)
             msg.reply(
-                "{} | {} | {} | {}".format(
-                    page['title'],
-                    page['rating'],
+                "\x02{}\x0F · {} · {} · {} · {}".format(
+                    (page['title'] if not 'scp' in page['tags']
+                     else page['title'] + ": " + "(title goes here)"),
                     "by " + page['created_by'],
-                    page['created_at']
+                    ("" if page['rating'] < 0 else "+") + str(page['rating']),
+                    timeago.format(
+                        iso8601.parse_date(page['created_at']),
+                        datetime.now(timezone.utc)
+                    ),
+                    "http://www.scp-wiki.net/" + page['fullname'],
                 )
             )
 

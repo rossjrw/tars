@@ -46,5 +46,4 @@ class Names:
                     'nick': name['nick'],
                     'mode': None
                 }
-        print(names)
         # just need to log these names to the db now
