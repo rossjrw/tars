@@ -43,8 +43,12 @@ class search:
                         "random n d",
                         "summary s u",
                         "recommend rec m",
+                        "verbose v",
                         "ignorepromoted",
                        ])
+        msg.reply(str(cmd.args.items()))
+        if len(cmd.args) == 1 and len(cmd.args['root']) == 0:
+            raise CommandError("Must specify at least one search term")
         # Set the search mode of the input
         searchmode = 'normal'
         if cmd.hasarg('regex'):
@@ -96,8 +100,8 @@ class search:
                 try:
                     rating = [int(x) for x in rating]
                 except ValueError:
-                    raise CommandError("Ratings in a range must be whole"
-                                       + " numbers")
+                    raise CommandError(("Ratings in a range must be whole "
+                                        "numbers"))
                 ratings['max'] = max(rating)
                 ratings['min'] = min(rating)
             elif rating[0] in "><=":
@@ -128,8 +132,8 @@ class search:
                 try:
                     rating = int(rating)
                 except ValueError:
-                    raise CommandError(("Rating must be a range, comparison"
-                                        " or number"))
+                    raise CommandError(("Rating must be a range, comparison, "
+                                        "or number"))
                 ratings['max'] = rating
                 ratings['min'] = rating
         # Set created date
@@ -138,7 +142,7 @@ class search:
         if cmd.hasarg('created'):
             if len(cmd.getarg('created')) == 0:
                 raise CommandError(("When using the date of creation filter "
-                                    "(--created/-a), at least one date must "
+                                    "(--created/-c), at least one date must "
                                     "be specified"))
             created = cmd.getarg('created').split("..")
             if len(created) > 2:
@@ -174,11 +178,12 @@ class search:
 class regexsearch:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        # TODO set -x to true
+        cmd.args['regex'] = []
         search.command(irc_c, msg, cmd)
 
 class tags:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        # TODO set -t to arguments
+        cmd.args['tags'] = cmd.args['root']
+        cmd.args['root'] = []
         search.command(irc_c, msg, cmd)

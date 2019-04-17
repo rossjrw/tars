@@ -39,6 +39,8 @@ COMMANDS = {
                },
 }
 
+from helpers.error import CommandNotExistError
+
 class Commands_Directory:
     def __init__(self, directory):
         self.COMMANDS = directory
@@ -55,6 +57,10 @@ class Commands_Directory:
                 # return a set of aliases for this command
                 return self.COMMANDS[file][command]
         pass
+
+    def __getattr__(self, name):
+        """Raise an error when a command doesn't exist"""
+        raise CommandNotExistError(name)
 
 from importlib import import_module
 

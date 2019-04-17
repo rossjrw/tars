@@ -150,7 +150,8 @@ class ParsedCommand():
                     continue
                 else:
                     if alias in self.args:
-                        self.args[parent] = self.args[alias]
+                        # Get and delete shorthand property in one swoop
+                        self.args[parent] = self.args.pop(alias, None)
 
 # Parse a command
 def command(message):
