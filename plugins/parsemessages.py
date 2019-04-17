@@ -8,6 +8,7 @@ from commands import COMMANDS
 from pyaib.plugins import observe, plugin_class
 import sys
 import inspect
+from helpers.error import CommandError
 
 @plugin_class("parsemessages")
 class ParseMessages(object):
@@ -36,7 +37,13 @@ class ParseMessages(object):
                 if "'Commands_Directory' object has no attribute" in str(e):
                     msg.reply("That's not a command.")
                 else:
+                    msg.reply("An unexpected error has occurred.")
                     raise
+            except CommandError as e:
+                msg.reply("Invalid command: {}".format(str(e)))
+            except:
+                msg.reply("An unexpected error has occurred.")
+                raise
         elif cmd.pinged:
             # this isn't a command, but we were pinged
             # notify the user that it's a bad command IF not a greeting
@@ -51,10 +58,3 @@ class ParseMessages(object):
         else:
             # we're in a channel
             pass
-
-def colour(irc_c, msg, cmd):
-    msg.reply(parse.nickColor(msg.message))
-
-def search(irc_c, msg, cmd):
-    pass
-

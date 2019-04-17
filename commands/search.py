@@ -54,6 +54,9 @@ class search:
         # Set the tags
         tags = {'include': [], 'exclude': []}
         if cmd.hasarg('tags'):
+            if len(cmd.getarg('tags')) == 0:
+                raise CommandError(("When using the tag filter (--tag/-t), at "
+                                    "least one tag must be specified"))
             for tag in cmd.getarg('tags'):
                 if tag[0] == "-":
                     tags['exclude'].append(tag[1:])
@@ -64,8 +67,12 @@ class search:
                 tags['include'].append(tag)
         # Set the author
         authors = {'include': [], 'exclude': []}
-        if cmd.hasarg('authors'):
-            for author in cmd.getarg('authors'):
+        if cmd.hasarg('author'):
+            if len(cmd.getarg('author')) == 0:
+                raise CommandError(("When using the author filter "
+                                    "(--author/-a), at least one author must "
+                                    "be specified"))
+            for author in cmd.getarg('author'):
                 if author[0] == "-":
                     authors['exclude'].append(author[1:])
                     continue
@@ -77,6 +84,10 @@ class search:
         # Cases to account for: modifiers, range, combination
         ratings = {'max': None, 'min': None}
         if cmd.hasarg('rating'):
+            if len(cmd.getarg('rating')) == 0:
+                raise CommandError(("When using the rating filter "
+                                    "(--rating/-r), at least one rating must "
+                                    "be specified"))
             rating = cmd.getarg('rating')
             if ".." in rating:
                 rating = rating.split("..")
@@ -117,21 +128,24 @@ class search:
                 try:
                     rating = int(rating)
                 except ValueError:
-                    raise CommandError("Rating must be a range, comparison"
-                                       + " or number")
+                    raise CommandError(("Rating must be a range, comparison"
+                                        " or number"))
                 ratings['max'] = rating
                 ratings['min'] = rating
         # Set created date
         # Cases to handle: absolute, relative, range (which can be both)
         createds = {'max': None, 'min': None}
         if cmd.hasarg('created'):
+            if len(cmd.getarg('created')) == 0:
+                raise CommandError(("When using the date of creation filter "
+                                    "(--created/-a), at least one date must "
+                                    "be specified"))
             created = cmd.getarg('created').split("..")
             if len(created) > 2:
                 raise CommandError("Date ranges must have 2 dates only")
             for key,date in enumerate(created):
                 # Convert all dates to timestamps
-                # 1. Relative
-                # 2. Absolute
+                # Need to save the >/</=
                 try:
                     date = iso8601.parse_date(date)
                     msg.reply("Using absolute date")
@@ -148,7 +162,7 @@ class search:
                     (page['title'] if not 'scp' in page['tags']
                      else page['title'] + ": " + "(title goes here)"),
                     "by " + page['created_by'],
-                    ("" if page['rating'] < 0 else "+") + str(page['rating']),
+                    ("+" if page['rating'] >= 0 else "") + str(page['rating']),
                     timeago.format(
                         iso8601.parse_date(page['created_at']),
                         datetime.now(timezone.utc)

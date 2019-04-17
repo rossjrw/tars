@@ -57,21 +57,25 @@ class ParsedCommand():
         # What was the command?
         # Check for regular commands (including chevron)
         if self.pinged:
-            pattern = r"^(?P<signal>[!,\.\?]{0,2})(?P<cmd>[\S]+)(?P<rest>.*)$"
+            pattern = (r"^(?P<signal>[!,\.\?]{0,2})"
+                       r"(?P<cmd>[^!,\.\?\s]+)"
+                       r"(?P<rest>.*)$")
         else:
             # Force the command to be marked if we weren't pinged
-            pattern = r"^(?P<signal>[!,\.\?]{1,2})(?P<cmd>[\S]+)(?P<rest>.*)$"
+            pattern = (r"^(?P<signal>[!,\.\?]{1,2})"
+                       r"(?P<cmd>[^!,\.\?\s]+)"
+                       r"(?P<rest>.*)$")
         match = re.search(pattern, self.message)
         if match:
             # Remove command from the message
-            self.command = match.group("cmd").strip().lower()
+            self.command = match.group('cmd').strip().lower()
             try:
-                self.message = match.group("rest").strip()
+                self.message = match.group('rest').strip()
             except IndexError:
                 self.message = ""
             parseprint("Doing a " + self.command + "!")
             # if >1 punctuation used, override bot detection later
-            if len(match.group("signal")) > 1:
+            if len(match.group('signal')) > 1:
                 self.force = True
         else:
             # No command - work out what to do here
@@ -101,12 +105,7 @@ class ParsedCommand():
                     self.args[currArg] = []
                 else:
                     self.args[currArg].append(argument)
-            # not let's iterate through args and replace empty w True
-            #for arg in self.args:
-            #    if not self.args[arg]:
-            #        self.args[arg] = True
-            # now arguments should be dict of tag: value, w/ root as start
-
+            # empty args exist as a present but empty list
             # detect a chevron command
             pattern = r"^(\^+)$"
             match = re.match(pattern, self.command)

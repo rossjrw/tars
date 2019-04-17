@@ -65,6 +65,9 @@
         .jarvis.helen::after {
             content: "defers to jarvis, Secretary_Helen";
         }
+        .toc-list-item {
+            line-height: initial;
+        }
         @media (max-width: 1200px) {
             nav {
                 left: 20px;
@@ -179,24 +182,24 @@
             <br> Search for pages whose title contains all of these words. Words are space-separated. If neither <b>-f</b> nor <b>-x</b> are present, anything wrapped in quotes (<code>"</code>) will be treated as a single word. Not case sensitive.
         </li>
         <li><b>--tags, -t</b><br>
-            Filter pages by tags. <code>+scp</code> means pages tagged scp. <code>-scp</code> means pages not tagged scp. Default is "+".
+            Filter pages by tags. <code>+scp</code> means pages tagged scp. <code>-scp</code> means pages not tagged scp. If you don't put either <code>+</code> or <code>-</code>, TARS will assume you meant to add a <code>+</code>.
         </li>
         <li><b>--author, -a</b><br>
-            Filter pages by exact author name.
+            Filter pages by exact author name. You can use <code>+</code> and <code>-</code> to include/exclude authors. Pages must have at least one specified author, but must have all authors that have <code>+</code>.
         </li>
         <li><b>--rating, -r</b><br>
             Filter pages by a rating number. Prefix the number with any of <code>&gt;</code>, <code>&lt;</code>, <code>=</code>. Default is <code>&gt;</code>. Can also specify a range of ratings with two dots, e.g. <code>20..50</code>.
         </li>
         <li><b>--created, -c</b><br>
-            Filter pages by date of creation. Rewrite dates are ignored. Absolute dates must be of the format YYYY-MM-DD, YYYY-MM or YYYY. Relative dates must be a number followed by a letter to specify that many units of time ago; valid units are <code>s m h d W M Y</code>.<br>
+            Filter pages by date of creation. Rewrite dates are ignored. Absolute dates must be in ISO-8601 format (YYYY-MM-DD, YYYY-MM or YYYY). Relative dates must be a number followed by a letter to specify how many units of time ago; valid units are <code>s m h d W M Y</code>.<br>
             Can use the same prefixes as <b>rating</b> (<code>&gt;</code> = "older than", <code>&lt;</code> = "younger than", <code>=</code> = exact match), and also supports ranges of dates in the same way. You can mix relative dates and absolute dates. Don't worry about which order to put them in.
         </li>
         <li><b>--category, -y</b><br>
-            Exactly the same as <b>--tags</b>, except for Wikidot categories instead. Reminder: the default page category is "_default".<br>
+            Exactly the same as <b>--tags</b>, except for Wikidot categories instead.<br>
             If you don't include this argument, TARS will search all categories. If you include this argument but don't specify any categories, TARS will only search "_default".
         </li>
         <li><b>--fullname, -f</b><br>
-            Instead of searching for all words in <b>title</b>, TARS will search for an exact match.
+            Instead of searching for all words in <b>title</b> individually, TARS will search for an exact match.
         </li>
         <li><b>--regex, -x</b><br>
             Instead of treating <b>title</b> as a series of words, TARS will treat it as a single regular expression. You must start and end the regular expression with <code>/</code>.
@@ -219,21 +222,17 @@
     <p>Example: <code>.s Unexplained Location -f -c 20d..40W --random</code> - <em>matches pages whose name is exactly "Unexplained Location" created between 20 days and 40 weeks ago, and returns a random one.</em></p>
     <p>Example: <code>.s /^SCP-\d*2/ -x -m</code> - <em>matches articles that start with "SCP-" followed by any amount of numbers so long as that number ends in a 2, and returns the one that most needs extra attention.</em></p>
     <p>If TARS finds more that one article that matches your criteria (and if you didn't specify <b>--random</b>, <b>--summary</b> or <b>--recommend</b>), it will provide a list of matches and ask if you meant any of them. To pick your article from the list, see the <a href="#showmore"><b><code>showmore</code></b></a> command.</p>
-    <p><a href="#regexsearch"><b><code>.regexsearch</code></b></a>, <a href="#tags"><b><code>.tags</code></b></a> and <a href="#random"><b><code>.random</code></b></a> are aliases of this command.</p>
+    <p><a href="#regexsearch"><b><code>.regexsearch</code></b></a>, <a href="#tags"><b><code>.tags</code></b></a>, <a href="#random"><b><code>.random</code></b></a> and <a href="#lastcreated"><b><code>.lastcreated</code></b></a> are aliases of this command.</p>
 
     <h2 id="lastcreated" class="jarvis helen">.lastcreated, .lc, .l, .recent </h2>
     <p>TARS will generate a list of the 3 most recently created pages.</p>
-    <p><code>.lastcreated [amount] [--tags tags] [--author author] [--rating rating] [--created created] [--fullname]</code></p>
+    <p><code>.lastcreated [amount] [extra arguments]</code></p>
     <ul>
         <li><b>amount</b><br>
             The number of pages to show. Default is 3, max is 10.
         </li>
-        <li><b>--tags, -t</b></li>
-        <li><b>--author, -a</b></li>
-        <li><b>--rating, -r</b></li>
-        <li><b>--created, -c</b></li>
-        <li><b>--category, -y</b><br>
-            Exactly the same implementation as <a href="#search"><b><code>.search</code></b></a> for additional filtering before showing the results.
+        <li><b>extra arguments</b><br>
+            You can use any of the arguments in <a href="#search"><b><code>.search</code></b></a> for additional filtering before showing the results.
         </li>
     </ul>
     <p>Example: <code>.lc -a Croquembouche</code> - <em>shows the last 3 articles posted by Croquembouche.</em></p>
@@ -400,7 +399,7 @@
     // Callback for scroll end.
     scrollEndCallback: function (e) { },
     // Headings offset between the headings and the top of the document (this is meant for minor adjustments).
-    headingsOffset: 50,
+    headingsOffset: 150,
     // Timeout between events firing to make sure it's
     // not too rapid (for performance reasons).
     throttleTimeout: 50,
