@@ -17,3 +17,8 @@ class fish:
         for _ in range(0,repeat):
             output += choice(["🐠","🐟"])
         msg.reply(output)
+
+class fuckingnarcissism:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+            msg.reply("🔴🏠")

@@ -6,6 +6,8 @@ Check here for documentation: https://rossjrw.github.io/tars/help/
 All modules are from PyPI with the exception of pyaib, which is forked
 here: https://github.com/rossjrw/pyaib
 
+TARS is written in Python 3.5.2.
+
 ## Usage
 
 Extact anywhere then

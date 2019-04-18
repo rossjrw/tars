@@ -176,7 +176,7 @@
 
     <h2 id="search" class="jarvis helen">.search, .sea, .s </h2>
     <p>Searches the wiki for pages, and provides URLs and basic info about the page that matches your search criteria.</p>
-    <p><code>.search [title] [--tags tags] [--author author] [--rating rating] [--created created] [--fullname] [--regex] [--summary]</code></p>
+    <p><code>.search [title] [--tags tags] [--author author] [--rating rating] [--created created] [--parent parent] [--fullname] [--regex] [--summary]</code></p>
     <ul>
         <li><b>title</b>
             <br> Search for pages whose title contains all of these words. Words are space-separated. If neither <b>-f</b> nor <b>-x</b> are present, anything wrapped in quotes (<code>"</code>) will be treated as a single word. Not case sensitive.
@@ -197,6 +197,9 @@
         <li><b>--category, -y</b><br>
             Exactly the same as <b>--tags</b>, except for Wikidot categories instead.<br>
             If you don't include this argument, TARS will search all categories. If you include this argument but don't specify any categories, TARS will only search "_default".
+        </li>
+        <li><b>--parent, -p</b><br>
+            Filter pages by their parent page. The parent page's URL must be given exactly (e.g. <code>-p antimemetics-division-hub</code>).
         </li>
         <li><b>--fullname, -f</b><br>
             Instead of searching for all words in <b>title</b> individually, TARS will search for an exact match.

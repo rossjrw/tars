@@ -2,6 +2,7 @@
 # Provides generic text for shit
 
 from random import choice
+import re
 
 def greet(subject):
     user = [
@@ -53,9 +54,17 @@ def kill_bye():
 
 def acronym():
     responses = [
-        "Tool-Assisted Robotic Sassmouth",
-        "TARS: A Recursive Semantic",
-        "Totally Awesome Robot (/s)",
-        "Tantalising And Rambunctious Sexbot",
-        "anoTher bot that Also helps io do pRomotion Stuff",
+        "!Tool-!Assisted !Robotic !Sassmouth",
+        "!TARS: !A !Recursive !Semantic",
+        "!Totally !Awesome !Robot (/!S)",
+        "!Tantalising !And !Rambunctious !Sexbot",
+        "ano!Ther bot that !Also helps io do p!Romotion !Stuff",
+        "!Target !Attack !Radar !System",
+        "!This's !A !Random !Sentence",
+        "!Tell !Aaron !Rocks !Suck",
+        "!There's !A !Rong !Spelling",
+        "!This !Asshole !Robot !Sucks",
+        "!Try !And !Rate !SCPs",
+        "!These !Acronyms !Really !Suck",
     ]
+    return re.sub(r"!([TARS])","\x02\\1\x0F",choice(responses))

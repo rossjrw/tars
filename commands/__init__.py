@@ -24,6 +24,7 @@ COMMANDS = {
     "admin": {"kill": {"kill","die","kys"},
               "join": {"join","rejoin"},
               "leave": {"leave","part"},
+              "fuck": {"fuck","piss"},
              },
     "hug": {"hug": {"hug","hugtars"},
            },
@@ -36,7 +37,10 @@ COMMANDS = {
                },
     "reptile": {"reptile": {"reptile","rep"},
                 "fish": {"fish","reptile+","rep+"},
+                "fuckingnarcissism": {"rounderhouse"},
                },
+    "converse": {"converse": {"converse"},
+                },
 }
 
 from helpers.error import CommandNotExistError

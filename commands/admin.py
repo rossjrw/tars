@@ -36,3 +36,10 @@ class leave:
             irc_c.PART(cmd.args['root'][0], message=leavemsg)
         else:
             irc_c.PART(msg.raw_channel, message=leavemsg)
+
+class fuck:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        if len(cmd.args['root'] > 0):
+            if lower(cmd.args['root'][0]) in ["you","off"]:
+                msg.reply("{}: no u".format(message.nick))
