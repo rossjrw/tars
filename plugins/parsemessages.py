@@ -9,7 +9,6 @@ from pyaib.plugins import observe, plugin_class
 import sys
 import inspect
 from helpers.error import CommandError, CommandNotExistError
-from helpers.greetings import acronym
 
 @plugin_class("parsemessages")
 class ParseMessages(object):
@@ -51,25 +50,8 @@ class ParseMessages(object):
                 msg.reply("{}!".format(msg.nick))
         else:
             # not a command, and not pinged
-            if stripspace(msg.message) in [
-                "whatdoestarsstandfor",
-                "istarsanacronym",
-                "tarswhatdoesyournamemean",
-                "tarswhatdoyoustandfor",
-                "whatdoestarsmean",
-            ]:
-                msg.reply(acronym())
-            if stripspace(msg.message) in [
-                "istarsabot",
-                "tarsareyouabot",
-            ]:
-                msg.reply("Yep.")
-            if stripspace(msg.message) in [
-                "istarsaperson",
-                "tarsareyouaperson",
-            ]:
-                msg.reply("Nope. I'm a bot.")
-            pass
+            # Send the message over to .converse
+            getattr(COMMANDS, 'converse').command(irc_c, msg, cmd)
         if msg.channel is None:
             # we're working in PMs
             pass
