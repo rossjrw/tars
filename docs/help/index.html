@@ -47,10 +47,7 @@
             padding: 0.1em;
             border-radius: 50px;
             margin: 0.25em;
-            position: absolute;
             box-sizing: content-box;
-            right: -1.6em;
-            top: 0;
             height: 1em;
             width: 1em;
             color: white;
@@ -58,13 +55,18 @@
             line-height: 1;
             text-align: center;
         }
+        .markdown-body h2 .jarvis, .markdown-body h2 .helen {
+            position: absolute;
+            right: -1.6em;
+            top: 0;
+        }
         .markdown-body .jarvis {
             background: orange;
         }
         .markdown-body .helen {
             background: skyblue;
         }
-        .jarvis + .helen {
+        h2 .jarvis + .helen {
             right: -3em;
         }
         .toc-list-item {
@@ -166,7 +168,7 @@
     <p>If someone posts a command like <code>.help</code> in a channel, if there are multiple bots there, they may all try to parse it at once! To avoid this, SCP IRC bots are in a hierarchy in which the bot at the top will always try to parse the command,
         and all the other bots will only try to parse it if all the bots above them in the hierarchy are not present.</p>
     <p>jarvis is at the top of the hierarchy. Secretary_Helen is next. TARS is right at the bottom.</p>
-    <p>If jarvis or Secretary_Helen are in the channel, TARS will ignore any commands that they would usually pick up on. Look for 🇯 and/or 🇭 after the command name to see whether or not this is the case for each command.</p>
+    <p>If jarvis or Secretary_Helen are in the channel, TARS will ignore any commands that they would usually pick up on. Look for <span class="jarvis">J</span> and/or <span class="helen">H</span> after the command name to see whether or not this is the case for each command.</p>
     <p>However, if either of those bots fails the request (e.g. not finding anything in a <a href="#search"><b><code>.search</code></b></a>) then TARS will automatically try as well. (If TARS also fails to find anything, it won't say anything.)</p>
     <p>To force TARS to parse a command, either ping it at the start of the message, or prefix the command with two dots, e.g. <a href="#search"><b><code>..search</code></b></a>. jarvis and Secretary_Helen won't pick up on it, but TARS will.</p>
     <p>If your command includes any TARS-specific syntax, then TARS will answer it anyway (in private messages), even if another bot gets there first.</p>
