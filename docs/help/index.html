@@ -32,6 +32,7 @@
             border-radius: 50px 0 0 50px;
             padding-right: 999rem;
             margin-right: -999rem;
+            border: none;
         }
         .markdown-body h2 {
             padding: 0.2em 0.5em;
@@ -40,16 +41,31 @@
             border-radius: 50px;
             margin: 0.2em;
             position: relative;
+            border: none;
         }
         .markdown-body .jarvis, .markdown-body .helen {
-            padding: 0.2em 0.5em 0.2em 3em;
+            padding: 0.1em;
             border-radius: 50px;
-            margin: 0.2em;
+            margin: 0.25em;
             position: absolute;
             box-sizing: content-box;
-            right: 0;
+            right: -1.6em;
+            top: 0;
+            height: 1em;
+            width: 1em;
             color: white;
             white-space: nowrap;
+            line-height: 1;
+            text-align: center;
+        }
+        .markdown-body .jarvis {
+            background: orange;
+        }
+        .markdown-body .helen {
+            background: blue;
+        }
+        .markdown-body .jarvis + .markdown-body .helen {
+            right: -3.2em;
         }
         .toc-list-item {
             line-height: initial;
