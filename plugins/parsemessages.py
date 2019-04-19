@@ -1,4 +1,4 @@
-"""parsemessages
+"""parsemessages.py
 
 Plugin that parses messages into commands and then does stuff
 """

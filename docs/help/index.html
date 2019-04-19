@@ -41,29 +41,15 @@
             margin: 0.2em;
             position: relative;
         }
-        .markdown-body .jarvis::after, .markdown-body .helen::after {
+        .markdown-body .jarvis, .markdown-body .helen {
             padding: 0.2em 0.5em 0.2em 3em;
             border-radius: 50px;
             margin: 0.2em;
             position: absolute;
-            bottom: 3px;
             box-sizing: content-box;
             right: 0;
-            transform: translate(89%,0);
-            font-size: 0.6em;
             color: white;
-            background: #929292;
             white-space: nowrap;
-            z-index: -1;
-        }
-        .jarvis::after {
-            content: "defers to jarvis";
-        }
-        .helen::after {
-            content: "defers to Secretary_Helen";
-        }
-        .jarvis.helen::after {
-            content: "defers to jarvis, Secretary_Helen";
         }
         .toc-list-item {
             line-height: initial;
@@ -171,10 +157,10 @@
 
     <h1 id="generalcommands">General Commands</h1>
 
-    <h2 id="help" class="jarvis helen">.help </h2>
+    <h2 id="help">.help <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p>Provides a link to both this page and <a href="https://github.com/rossjrw/tars/wiki/Quick-Commands">Quick Commands</a>.</p>
 
-    <h2 id="search" class="jarvis helen">.search, .sea, .s </h2>
+    <h2 id="search">.search, .sea, .s <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p>Searches the wiki for pages, and provides URLs and basic info about the page that matches your search criteria.</p>
     <p><code>.search [title] [--tags tags] [--author author] [--rating rating] [--created created] [--parent parent] [--fullname] [--regex] [--summary]</code></p>
     <ul>
@@ -199,7 +185,7 @@
             If you don't include this argument, TARS will search all categories. If you include this argument but don't specify any categories, TARS will only search "_default".
         </li>
         <li><b>--parent, -p</b><br>
-            Filter pages by their parent page. The parent page's URL must be given exactly (e.g. <code>-p antimemetics-division-hub</code>).
+            Filter pages by their parent page. The parent page's URL must be given exactly (e.g. <code>-p antimemetics-division-hub</code>). 
         </li>
         <li><b>--fullname, -f</b><br>
             Instead of searching for all words in <b>title</b> individually, TARS will search for an exact match.
@@ -227,7 +213,7 @@
     <p>If TARS finds more that one article that matches your criteria (and if you didn't specify <b>--random</b>, <b>--summary</b> or <b>--recommend</b>), it will provide a list of matches and ask if you meant any of them. To pick your article from the list, see the <a href="#showmore"><b><code>showmore</code></b></a> command.</p>
     <p><a href="#regexsearch"><b><code>.regexsearch</code></b></a>, <a href="#tags"><b><code>.tags</code></b></a>, <a href="#random"><b><code>.random</code></b></a> and <a href="#lastcreated"><b><code>.lastcreated</code></b></a> are aliases of this command.</p>
 
-    <h2 id="lastcreated" class="jarvis helen">.lastcreated, .lc, .l, .recent </h2>
+    <h2 id="lastcreated">.lastcreated, .lc, .l, .recent <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p>TARS will generate a list of the 3 most recently created pages.</p>
     <p><code>.lastcreated [amount] [extra arguments]</code></p>
     <ul>
@@ -243,7 +229,7 @@
     <h2 id="regexsearch">.regexsearch, .regexsea, .rsea, .rs</h2>
     <p>Exactly the same as <a href="#search"><b><code>search</code></b></a>, except the <b>--regex</b> flag is enabled.</p>
 
-    <h2 id="showmore" class="jarvis helen">.showmore, .sm </h2>
+    <h2 id="showmore">.showmore, .sm <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p>When TARS presents you with a list of articles to pick from, use this command to pick which one you want to see.</p>
     <p>Example: <code>.sm 2</code> - <em>pick the 2nd article from the list.</em></p>
     <p>Anyone can <a href="#sm"><b><code>.sm</code></b></a> one of TARS' lists, even if they didn't send the command that created it.</p>
@@ -251,7 +237,7 @@
     <p>Over time, TARS will learn which articles are picked more often than others, and will move those to the top of the list.</p>
     <p>Use <code>.sm</code> or <code>.sm 0</code> to see the whole list.</p>
 
-    <h2 id="authorpage" class="jarvis helen">.authorpage, .author, .au </h2>
+    <h2 id="authorpage">.authorpage, .author, .au <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p><code>.au [username]</code></p>
     <p>Fetches the author page for a given user. You must specify their Wikidot name exactly, although if you name an IRC user, TARS will check its list of aliases (see <a href="#alias"><b><code>.alias</code></b></a>) as well. If you don't specify anyone, TARS will try to find your author page instead (and it'll check your aliases, too).</p>
 
@@ -276,7 +262,7 @@
     <p>Example: <code>.alias --add "James Bond" James_Bond 007</code> - add these names to your alias.</p>
     <p>Please be aware that aliases are moderated. Don't try to abuse the system.</p>
 
-    <h2 id="seen" class="jarvis helen">.seen </h2>
+    <h2 id="seen">.seen <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p><code>.seen name</code></p>
     <p>TARS will tell you when this user last sent a message in the current channel, and when they last sent a message in any channel.</p>
 
