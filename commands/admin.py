@@ -42,3 +42,13 @@ class reload:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         msg.reply("Fuck off")
+
+class say:
+    """Make TARS say something"""
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        if len(cmd.args['root']) == 0:
+            raise CommandError("Must specify a recipient and message")
+        if len(cmd.args['root']) == 1:
+            raise CommandError("Must specify a message")
+        irc_c.PRIVMSG(cmd.args['root'][0], " ".join(cmd.args['root'][1:]))

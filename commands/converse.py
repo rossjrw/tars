@@ -12,13 +12,19 @@ class converse:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         # Recieves text in msg.message
-        message = msg.message
-        if cmd.pinged and any(x in msg.message for x in [
-            "fuck you",
-            "piss off",
-        ]):
-            msg.reply("{}: no u".format(msg.nick))
-            return
+        message = cmd.unping
+        # pinged section, for specifics
+        if cmd.pinged:
+            if any(x in message.lower() for x in [
+                "fuck you",
+                "piss off",
+            ]):
+                msg.reply("{}: no u".format(msg.nick))
+                return
+            if message.lower() == "tars!":
+                msg.reply("{}!".format(msg.nick))
+                return
+        # unpinged section
         if matches_any_of(message, [
             "what does tars stand for?",
             "is tars an acronym?",
@@ -37,6 +43,9 @@ class converse:
         ]):
             msg.reply("Nope. I'm a bot.")
             return
+        # everything else is returned, so this only happens if no matches
+        if cmd.command:
+            msg.reply("That's not a command.")
 
 def strip(string):
     return ''.join(l for l in string if l.isalnum()).lower()

@@ -10,6 +10,11 @@ import sys
 import inspect
 from helpers.error import CommandError, CommandNotExistError
 
+def converse(irc_c, msg, cmd):
+    # .converse is used to parse non-command strings
+    # we can't always tell if a message is a command or not
+    getattr(COMMANDS, 'converse').command(irc_c, msg, cmd)
+
 @plugin_class("parsemessages")
 class ParseMessages(object):
     def __init__(self, irc_c, config):
@@ -28,25 +33,24 @@ class ParseMessages(object):
                 # getattr instead of commands[cmd] bc module subscriptability
                 getattr(COMMANDS, cmd.command).command(irc_c, msg, cmd)
             except CommandNotExistError:
-                msg.reply("That's not a command.")
+                if cmd.pinged:
+                    # there are .converse strings for pinged
+                    converse(irc_c, msg, cmd)
+                else:
+                    msg.reply("That's not a command.")
             except CommandError as e:
                 msg.reply("Invalid command: {}".format(str(e)))
             except Exception as e:
                 msg.reply("An unexpected error has occurred.")
                 # need to log the error somewhere - why not #tars?
-                irc_c.PRIVMSG("#tars",("\x02Error report:\x0F: {} "
-                                       " issued {} --> {}"
+                irc_c.PRIVMSG("#tars",("\x02Error report:\x0F {} "
+                                       "issued `{}` --> `{}`"
                                       .format(msg.sender,msg.message,e)))
                 raise
-        elif cmd.pinged:
-            # this isn't a command, but we were pinged
-            # notify the user that it's a bad command IF not a greeting
-            if msg.message.lower() == "tars!":
-                msg.reply("{}!".format(msg.nick))
         else:
             # not a command, and not pinged
             # Send the message over to .converse
-            getattr(COMMANDS, 'converse').command(irc_c, msg, cmd)
+            converse(irc_c, msg, cmd)
         if msg.channel is None:
             # we're working in PMs
             pass

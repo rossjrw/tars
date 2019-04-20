@@ -27,12 +27,13 @@ class ParsedCommand():
     def __init__(self, message):
         # Check that the message is a string
         self.raw = str(message)
-        self.ping = None
-        self.pinged = False
-        self.command = None
-        self.message = None
-        self.quote_error = False
-        self.args = None
+        self.ping = None # identity of the ping
+        self.unping = None # raw command without ping
+        self.pinged = False # was the ping TARS?
+        self.command = None # base command
+        self.message = None # varies
+        self.quote_error = False # was there a shlex error?
+        self.args = None # command arguments as dict w/ subargs as list
         parseprint("Raw input: " + self.raw)
 
         # Was someone pinged?
@@ -41,9 +42,11 @@ class ParsedCommand():
         if match:
             # Remove ping from the message
             self.message = match.group(2).strip()
+            self.unping = self.message
             self.ping = match.group(1).strip()
         else:
             self.message = self.raw
+            self.unping = self.message
 
         if isinstance(self.ping, str):
             if self.ping.upper() == "TARS":
