@@ -16,6 +16,7 @@ import timeago
 import iso8601
 from iso8601 import ParseError
 from datetime import datetime, timezone
+from calendar import monthrange
 
 date_offsets = {'s': 1,
                 'm': 60,
@@ -168,6 +169,8 @@ class search:
                 try:
                     date = iso8601.parse_date(date)
                     msg.reply("Using absolute date")
+                    # We don't want precise datetimes here, actually
+                    # Use a minidate object
                 except ParseError:
                     msg.reply("Using relative date")
                 pass
@@ -290,3 +293,50 @@ class MinMax:
 
 class MinMaxError(Exception):
     pass
+
+class MiniDate:
+    """A non-precise date for creating date ranges"""
+    # Each MiniDate should have 2 datetimes:
+        # 1. when it starts
+        # 2. when it ends
+    # Then when we make a range with the date, we take the one that gives the
+    # largest range
+    datestr = "{}-{}-{} {}:{}:{}"
+    def __init__(self, date):
+        # date is a string eg 2004, 2004-06, 2004-06-14
+        self.year = None
+        self.month = None
+        self.day = None
+        pattern = (r"^([0-9]{4})"
+                   r"(?:-([0-9]{2}))?"
+                   r"(?:-([0-9]{2}))?"
+                   r"(.*)$")
+        match = re.search(pattern, date)
+        if match:
+            if len(match.group(4)) > 0:
+                raise CommandError(("Absolute dates must be no more precise "
+                                    "than YYYY-MM-DD"))
+            if len(match.group(1)) > 0: self.year = match.group(1)
+            else: raise CommandError(("Absolute dates must have a year"))
+            if len(match.group(2)) > 0: self.month = match.group(2)
+            if len(match.group(3)) > 0: self.month = match.group(3)
+            self.max = iso8601.parse_date(datestr.format(
+                self.year,
+                self.month if self.month else 12,
+                self.day if self.day else monthrange(
+                    self.year,
+                    self.month if self.month else 12
+                )[1],
+                23, 59, 59
+            ))
+            self.min = iso8601.parse_date(datestr.format(
+                self.year,
+                self.month if self.month else 1,
+                self.day if self.day else monthrange(
+                    self.year,
+                    self.month if self.month else 1
+                )[1],
+                0, 0, 0
+            ))
+        else:
+            raise CommandError(("Invalid absolute date"))
