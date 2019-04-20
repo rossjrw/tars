@@ -18,6 +18,7 @@ class converse:
             if any(x in message.lower() for x in [
                 "fuck you",
                 "piss off",
+                "fuck off",
             ]):
                 msg.reply("{}: no u".format(msg.nick))
                 return

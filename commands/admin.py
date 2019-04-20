@@ -4,6 +4,7 @@ A bunch of commands for Controllers to use.
 """
 
 from helpers.greetings import kill_bye
+from helpers.error import CommandError
 
 class kill:
     """Kills the bot"""
@@ -51,4 +52,14 @@ class say:
             raise CommandError("Must specify a recipient and message")
         if len(cmd.args['root']) == 1:
             raise CommandError("Must specify a message")
+        if cmd.args['root'][0].lower() not in [
+            "#tars",
+            "croquembouche",
+            "rounderhouse",
+            "cutegirl",
+            "tsatpwtcotttadc",
+            "jazstar",
+        ]:
+            raise CommandError("You can only .say to #tars occupants atm")
         irc_c.PRIVMSG(cmd.args['root'][0], " ".join(cmd.args['root'][1:]))
+        msg.reply("Saying that to {}".format(cmd.args['root'][0]))
