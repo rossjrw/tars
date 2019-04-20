@@ -14,14 +14,9 @@ from helpers.error import CommandError, CommandNotExistError
 class ParseMessages(object):
     def __init__(self, irc_c, config):
         print("Parse plugin loaded!")
-        # The config is conf's plugin.parse
-        # TODO generate COMMANDS from commands folder
-        self.COMMANDS = {}
-        # for cmd_group in commands:
-        # do we really need this?
-        # could just attempt the command and if it fails assume that the
-        # command doesn't exist
 
+# TODO: if plugins are just object instances, then we should be able to
+# wipe em and remake em to .reload
     @observe("IRC_MSG_PRIVMSG")
     def handleMessage(self, irc_c, msg):
         cmd = parse.command(msg.message)

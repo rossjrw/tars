@@ -13,21 +13,30 @@ class converse:
     def command(cls, irc_c, msg, cmd):
         # Recieves text in msg.message
         message = msg.message
+        if cmd.pinged and any(x in msg.message for x in [
+            "fuck you",
+            "piss off",
+        ]):
+            msg.reply("{}: no u".format(msg.nick))
+            return
         if matches_any_of(message, [
             "what does tars stand for?",
             "is tars an acronym?",
         ]):
             msg.reply(acronym())
+            return
         if matches_any_of(message, [
             "is tars a bot?",
             "tars are you a bot?",
         ]):
             msg.reply("Yep.")
+            return
         if matches_any_of(message, [
             "is tars a person?",
             "tars are you a person?",
         ]):
             msg.reply("Nope. I'm a bot.")
+            return
 
 def strip(string):
     return ''.join(l for l in string if l.isalnum()).lower()

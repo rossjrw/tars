@@ -37,9 +37,8 @@ class leave:
         else:
             irc_c.PART(msg.raw_channel, message=leavemsg)
 
-class fuck:
+class reload:
+    """Theoretically, reloads all plugins"""
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        if len(cmd.args['root'] > 0):
-            if lower(cmd.args['root'][0]) in ["you","off"]:
-                msg.reply("{}: no u".format(message.nick))
+        msg.reply("Fuck off")
