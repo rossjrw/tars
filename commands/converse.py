@@ -53,6 +53,6 @@ def strip(string):
 
 def matches_any_of(subject, matches, threshold=80):
     for match in matches:
-        if fuzz.partial_ratio(subject.lower(), match) >= threshold:
+        if fuzz.ratio(subject.lower(), match) >= threshold:
             return True
     return False

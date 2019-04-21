@@ -12,11 +12,11 @@ from helpers.api import api_key
 from helpers.error import CommandError
 from xmlrpc.client import ServerProxy
 import re
-import timeago
-import iso8601
-from iso8601 import ParseError
-from datetime import datetime, timezone
 from calendar import monthrange
+import pendulum
+from edtf import parse_edtf
+from edtf.parser.edtf_exceptions import EDTFParseException
+from time import mktime
 
 date_offsets = {'s': 1,
                 'm': 60,
@@ -157,23 +157,14 @@ class search:
                 raise CommandError(("When using the date of creation filter "
                                     "(--created/-c), at least one date must "
                                     "be specified"))
-            created = cmd.getarg('created').split("..")
-            if len(created) > 2:
-                raise CommandError("Date ranges must have 2 dates only")
-            comp = ""
-            for key,date in enumerate(created):
-                # Convert all dates to timestamps
-                # Need to save the >/</=
-                if date[0] in "><=":
-                    pass
-                try:
-                    date = iso8601.parse_date(date)
-                    msg.reply("Using absolute date")
-                    # We don't want precise datetimes here, actually
-                    # Use a minidate object
-                except ParseError:
-                    msg.reply("Using relative date")
-                pass
+            created = cmd.getarg('created')
+            # created is a list of date selectors - ranges, abs and rels
+            # but ALL dates are ranges!
+            for key,selector in enumerate(created):
+                created[key] = DateRange(selector)
+                msg.reply("Searching for articles created between {} and {}"
+                          .format(created[key].min.to_datetime_string(),
+                                  created[key].max.to_datetime_string()))
         # FINAL BIT - summarise commands
         if cmd.hasarg('verbose'):
             verbose = "Searching for articles "
@@ -294,49 +285,82 @@ class MinMax:
 class MinMaxError(Exception):
     pass
 
-class MiniDate:
+class DateRange:
     """A non-precise date for creating date ranges"""
-    # Each MiniDate should have 2 datetimes:
+    # Each DateRange should have 2 datetimes:
         # 1. when it starts
         # 2. when it ends
     # Then when we make a range with the date, we take the one that gives the
     # largest range
+    # Takes BOTH explicit ranges and implicit dates
     datestr = "{}-{}-{} {}:{}:{}"
     def __init__(self, date):
-        # date is a string eg 2004, 2004-06, 2004-06-14
-        self.year = None
-        self.month = None
-        self.day = None
-        pattern = (r"^([0-9]{4})"
-                   r"(?:-([0-9]{2}))?"
-                   r"(?:-([0-9]{2}))?"
-                   r"(.*)$")
-        match = re.search(pattern, date)
+        self.input = date
+        self.min = None
+        self.max = None
+        self.compare = None
+        # possible values:
+            # 1. absolute date
+            # 2. relative date
+            # 3. range (relative or absolute)
+        # for absolute:
+            # parse
+            # create max and min
+        # for relative:
+            # create a timedelta
+            # subtract that from now
+            # no need for max and min, subtraction is precise
+        # for range:
+            # create a DateRange for each
+            # select max and min from both to create largest possible range
+        # first let's handle the range
+        if ".." in self.input:
+            self.input = self.input.split("..")
+            if len(self.input) is not 2:
+                raise CommandError("Date ranges must have 2 dates")
+            # if the date is a manual range, convert to a DateRange
+            # do other stuff
+            return
+        # strip the comparison
+        match = re.match(r"([<>=]{1,2}).*", self.input)
         if match:
-            if len(match.group(4)) > 0:
-                raise CommandError(("Absolute dates must be no more precise "
-                                    "than YYYY-MM-DD"))
-            if len(match.group(1)) > 0: self.year = match.group(1)
-            else: raise CommandError(("Absolute dates must have a year"))
-            if len(match.group(2)) > 0: self.month = match.group(2)
-            if len(match.group(3)) > 0: self.month = match.group(3)
-            self.max = iso8601.parse_date(datestr.format(
-                self.year,
-                self.month if self.month else 12,
-                self.day if self.day else monthrange(
-                    self.year,
-                    self.month if self.month else 12
-                )[1],
-                23, 59, 59
-            ))
-            self.min = iso8601.parse_date(datestr.format(
-                self.year,
-                self.month if self.month else 1,
-                self.day if self.day else monthrange(
-                    self.year,
-                    self.month if self.month else 1
-                )[1],
-                0, 0, 0
-            ))
+            self.compare = match.group(1)
+        if self.date_is_absolute():
+            # the date is absolute
+            self.date = parse_edtf(self.input)
+            # minimise the date
+            self.min = pendulum.datetime(*self.date.lower_strict()[:6])
+            self.min = self.min.set(hour=0, minute=0, second=0)
+            # maximise the date
+            self.max = pendulum.datetime(*self.date.upper_strict()[:6])
+            self.max = self.max.set(hour=23, minute=59, second=59)
+            pass
+        elif re.match(r"([0-9]+[A-Za-z])+$", self.input):
+            # the date is relative
+            for sel in [i for i
+                        in re.split(r"([0-9]+[A-Za-z])", self.input)
+                        if i]:
+                # sel is a number-letter combo
+                sel = [i for i
+                       in re.split(r"([0-9]+)", sel)
+                       if i]
+                for sel in sel:
+                    print(sel)
+                print("==")
+                # now it's a list
         else:
-            raise CommandError(("Invalid absolute date"))
+            raise CommandError("'" + self.input + "' isn't a valid date type")
+
+    def date_is_absolute(self):
+        try:
+            parse_edtf(self.input)
+        except EDTFParseException:
+            try:
+                pendulum.parse(self.input)
+            except pendulum.parsing.exceptions.ParserError:
+                return False
+            else:
+                raise CommandError(("Absolute dates must be of the format "
+                                    "YYYY, YYYY-MM or YYYY-MM-DD"))
+        else:
+            return True
