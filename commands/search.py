@@ -319,6 +319,32 @@ class DateRange:
             if len(self.input) is not 2:
                 raise CommandError("Date ranges must have 2 dates")
             # if the date is a manual range, convert to a DateRange
+            self.max = []
+            self.min = []
+            for date in self.input:
+                date = DateRange(date)
+                self.max.append(date.max)
+                self.min.append(date.min)
+            # max and min are now both lists of possible dates
+            # pick max and min to yield the biggest date
+            # max: None is always Now
+            # min: None is alwyas The Beginning of Time
+            # for 2 absolute dates this is easy, just pick biggest diff
+            # for 2 relative dates, pick both of whichever is not None
+            # for 1:1, pick not None of relative then ->largest of absolute
+            # filter None from lists
+            self.max = [i for i in self.max if i]
+            self.min = [i for i in self.min if i]
+            diffs = []
+            for i,min in enumerate(self.min):
+                for j,max in enumerate(self.max):
+                    diffs.append(
+                        {'i': i, 'j': j,
+                         'diff': self.min[i].diff(self.max[j]).in_seconds()}
+                    )
+            diffs = max(diffs, key=lambda x: x['diff'])
+            self.max = diffs['j']
+            self.min = diffs['i']
             # do other stuff
             return
         # strip the comparison
@@ -337,19 +363,45 @@ class DateRange:
             pass
         elif re.match(r"([0-9]+[A-Za-z])+$", self.input):
             # the date is relative
-            for sel in [i for i
-                        in re.split(r"([0-9]+[A-Za-z])", self.input)
-                        if i]:
-                # sel is a number-letter combo
-                sel = [i for i
-                       in re.split(r"([0-9]+)", sel)
-                       if i]
-                for sel in sel:
-                    print(sel)
-                print("==")
-                # now it's a list
+            sel = [i for i
+                   in re.split(r"([0-9]+)", self.input)
+                   if i]
+                # sel is now a number-letter-repeat list
+                # convert list to dict via pairwise
+            sel = DateRange.reverse_pairwise(sel)
+            self.date = pendulum.now()
+            # check time units
+            for key,value in sel:
+                if key not in "smhdDWMY":
+                    raise CommandError(("{} isn't a valid unit of time in a "
+                                        "relative date. Valid units are s, m, "
+                                        "h, d (or D), W, M, and Y.")
+                                       .format(key))
+                elif key == 'D':
+                    sel['d'] = sel.pop('D')
+            self.date = pendulum.now().subtract(
+                years=sel['Y'] if sel['Y'] else 0,
+                months=sel['M'] if sel['M'] else 0,
+                weeks=sel['W'] if sel['W'] else 0,
+                days=sel['d'] if sel['d'] else 0,
+                hours=sel['h'] if sel['h'] else 0,
+                minutes=sel['m'] if sel['m'] else 0,
+                seconds=sel['s'] if sel['s'] else 0,
+            )
+            if self.comparen in ["<","<="]:
+                self.min = self.date
+            elif self.compare in [">",">="] or self.compare is None:
+                self.max = self.date
+            elif self.compare == "=":
+                self.max = self.date
+                self.min = self.date
+                # possible broken - may match to the second
+            else:
+                raise CommandError(("Unknown operator in relative date "
+                                    "comparison"))
         else:
-            raise CommandError("'" + self.input + "' isn't a valid date type")
+            raise CommandError(("'" + self.input + "' isn't a valid absolute "
+                                "or relative date type"))
 
     def date_is_absolute(self):
         try:
@@ -364,3 +416,7 @@ class DateRange:
                                     "YYYY, YYYY-MM or YYYY-MM-DD"))
         else:
             return True
+
+    @staticmethod
+    def reverse_pairwise(iterable):
+        return dict(zip(*[iter(reversed(iterable))]*2))

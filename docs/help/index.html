@@ -226,7 +226,7 @@
     </ul>
     <p>Example: <code>TARS: search -t +scp +meta -r &gt;100 -c 2014</code> - <em>matches pages tagged both "scp" and "meta", with a rating of more than 100, posted in 2014.</em></p>
     <p>Example: <code>.s Insurgency --rating 20..80 --created 2018-06..2018</code> - <em>matches pages that contain the word "Insurgency" in the title, which have a rating of between 20 and 80, and were created between June 1st 2018 and the end of 2018.</em></p>
-    <p>Example: <code>.s Unexplained Location -f -c 20d..40W --random</code> - <em>matches pages whose name is exactly "Unexplained Location" created between 20 days and 40 weeks ago, and returns a random one.</em></p>
+    <p>Example: <code>.s Unexplained Location -f -c 20d..40W3d --random</code> - <em>matches pages whose name is exactly "Unexplained Location" created between 20 days and [40 weeks + 3 days] ago, and returns a random one.</em></p>
     <p>Example: <code>.s /^SCP-\d*2/ -x -m</code> - <em>matches articles that start with "SCP-" followed by any amount of numbers so long as that number ends in a 2, and returns the one that most needs extra attention.</em></p>
     <p>If TARS finds more that one article that matches your criteria (and if you didn't specify <b>--random</b>, <b>--summary</b> or <b>--recommend</b>), it will provide a list of matches and ask if you meant any of them. To pick your article from the list, see the <a href="#showmore"><b><code>showmore</code></b></a> command.</p>
     <p><a href="#regexsearch"><b><code>.regexsearch</code></b></a>, <a href="#tags"><b><code>.tags</code></b></a>, <a href="#random"><b><code>.random</code></b></a> and <a href="#lastcreated"><b><code>.lastcreated</code></b></a> are aliases of this command.</p>
