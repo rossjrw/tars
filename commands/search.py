@@ -12,20 +12,10 @@ from helpers.api import api_key
 from helpers.error import CommandError
 from xmlrpc.client import ServerProxy
 import re
-from calendar import monthrange
 import pendulum
 from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
 from time import mktime
-
-date_offsets = {'s': 1,
-                'm': 60,
-                'h': 3600,
-                'd': 86400,
-                'W': 604800,
-                'M': 2592000,
-                'Y': 31557600
-               }
 
 class search:
     @classmethod
@@ -126,7 +116,9 @@ class search:
                             elif comp == "<=": ratings <= rating
                             elif comp == "<": ratings < rating
                             elif comp == ">": ratings > rating
-                            elif comp == "=": ratings = rating
+                            elif comp == "=":
+                                ratings >= rating
+                                ratings <= rating
                             elif comp == ">=" or comp == "<=":
                                 raise CommandError(("Rating comparisons do not "
                             "support 'greater than' or 'lesser than' operators"))
@@ -195,11 +187,16 @@ class search:
                             ", ".join(authors['exclude']) +
                             "; ")
             if ratings['max'] is not None and ratings['min'] is not None:
-                verbose += ("with a rating between " +
-                            str(ratings['max']) +
-                            " and " +
-                            str(ratings['min']) +
-                           "; ")
+                if ratings['max'] == ratings['min']:
+                    verbose += ("with a rating of " +
+                                str(ratings['max']) +
+                               "; ")
+                else:
+                    verbose += ("with a rating between " +
+                                str(ratings['max']) +
+                                " and " +
+                                str(ratings['min']) +
+                               "; ")
             elif ratings['max'] is not None:
                 verbose += ("with a rating less than " +
                             str(ratings['max']) +
@@ -299,10 +296,10 @@ class MinMax:
     @staticmethod
     def throw(type):
         if type == 'discrep':
-            raise MinMaxError("Minimum {} cannot be greater than maximum {}")
+            raise MinMaxError("Minimum {0} cannot be greater than maximum {0}")
         else:
             # Do I look like I give a damn
-            raise MinMaxError("Can only have one " + type + "imum {}")
+            raise MinMaxError("Can only have one " + type + "imum {0}")
 
 class MinMaxError(Exception):
     pass
@@ -357,6 +354,11 @@ class DateRange:
             # filter None from lists
             self.max = [i for i in self.max if i]
             self.min = [i for i in self.min if i]
+            # special case for 2 relative dates - both will only have max
+            if len(self.max) == 2 and len(self.min) == 0:
+                self.min = min(self.max)
+                self.max = max(self.max)
+                return
             diffs = []
             for i,minimum in enumerate(self.min):
                 for j,maximum in enumerate(self.max):
@@ -376,7 +378,6 @@ class DateRange:
             self.input = match.group(2)
         if self.date_is_absolute():
             # the date is absolute
-            self.date = parse_edtf(self.input)
             # minimise the date
             self.min = pendulum.datetime(*self.date.lower_strict()[:6])
             self.min = self.min.set(hour=0, minute=0, second=0)
@@ -430,7 +431,7 @@ class DateRange:
 
     def date_is_absolute(self):
         try:
-            parse_edtf(self.input)
+            self.date = parse_edtf(self.input)
         except EDTFParseException:
             try:
                 pendulum.parse(self.input)
