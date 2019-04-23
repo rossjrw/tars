@@ -107,8 +107,11 @@ class search:
                     except ValueError:
                         raise CommandError(("Ratings in a range must be plain "
                                             "numbers"))
-                    ratings >= min(rating)
-                    ratings <= max(rating)
+                    try:
+                        ratings >= min(rating)
+                        ratings <= max(rating)
+                    except MinMaxError as e:
+                        raise CommandError(str(e).format("rating"))
                 elif rating[0] in "><=":
                     pattern = r"^(?P<comp>[<>=]{1,2})(?P<value>[0-9]+)"
                     match = re.search(pattern, rating)
@@ -131,7 +134,7 @@ class search:
                                 raise CommandError(("Unknown operator in rating "
                                                     "comparison"))
                         except MinMaxError as e:
-                            raise CommandError(str(e) + " rating")
+                            raise CommandError(str(e).format("rating"))
                     else:
                         raise CommandError("Invalid rating comparison")
                 else:
@@ -141,14 +144,11 @@ class search:
                         raise CommandError(("Rating must be a range, "
                                             "comparison, or number"))
                     # Assume =, assign both
-                    if ratings['max'] is None:
-                        ratings['max'] = max(rating)
-                    else:
-                        raise CommandError("Can only have one maximum rating")
-                    if ratings['min'] is None:
-                        ratings['min'] = max(rating)
-                    else:
-                        raise CommandError("Can only have one minimum rating")
+                    try:
+                        ratings >= rating
+                        ratings <= rating
+                    except MinMaxError as e:
+                        raise CommandError(str(e).format("rating"))
         # Set created date
         # Cases to handle: absolute, relative, range (which can be both)
         createds = MinMax()
@@ -170,7 +170,7 @@ class search:
                     if selector.min is not None:
                         createds >= selector.min
             except MinMaxError as e:
-                raise CommandError(str(e) + " rating")
+                raise CommandError(str(e).format("date"))
         # FINAL BIT - summarise commands
         if cmd.hasarg('verbose'):
             verbose = "Searching for articles "
@@ -196,15 +196,17 @@ class search:
                             "; ")
             if ratings['max'] is not None and ratings['min'] is not None:
                 verbose += ("with a rating between " +
-                            ratings['max'] + " and " + ratings['min'] +
+                            str(ratings['max']) +
+                            " and " +
+                            str(ratings['min']) +
                            "; ")
             elif ratings['max'] is not None:
                 verbose += ("with a rating less than " +
-                            ratings['max'] +
+                            str(ratings['max']) +
                             "; ")
             elif ratings['min'] is not None:
                 verbose += ("with a rating greater than " +
-                            ratings['min'] +
+                            str(ratings['min']) +
                             "; ")
             if createds['min'] is not None and createds['max'] is not None:
                 verbose += ("created between " +
@@ -240,10 +242,7 @@ class search:
                      else page['title'] + ": " + "(title goes here)"),
                     "by " + page['created_by'],
                     ("+" if page['rating'] >= 0 else "") + str(page['rating']),
-                    timeago.format(
-                        iso8601.parse_date(page['created_at']),
-                        datetime.now(timezone.utc)
-                    ),
+                    pendulum.parse(page['created_at']).diff_for_humans(),
                     "http://www.scp-wiki.net/" + page['fullname'],
                 )
             )
@@ -371,9 +370,10 @@ class DateRange:
             # do other stuff
             return
         # strip the comparison
-        match = re.match(r"([<>=]{1,2}).*", self.input)
+        match = re.match(r"([<>=]{1,2})(.*)", self.input)
         if match:
             self.compare = match.group(1)
+            self.input = match.group(2)
         if self.date_is_absolute():
             # the date is absolute
             self.date = parse_edtf(self.input)
