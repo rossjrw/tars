@@ -3,6 +3,9 @@ IRC bot for IO automation
 
 Check here for documentation: https://rossjrw.github.io/tars/help/
 
+Documentation is currently far ahead of implementation. Many features described
+in the documentation are not yet present.
+
 All modules are from PyPI with the exception of pyaib, which is forked
 here: https://github.com/rossjrw/pyaib
 
