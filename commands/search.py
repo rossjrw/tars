@@ -151,7 +151,7 @@ class search:
                         raise CommandError("Can only have one minimum rating")
         # Set created date
         # Cases to handle: absolute, relative, range (which can be both)
-        createds = {'max': None, 'min': None}
+        createds = MinMax()
         if cmd.hasarg('created'):
             if len(cmd.getarg('created')) == 0:
                 raise CommandError(("When using the date of creation filter "
@@ -162,9 +162,15 @@ class search:
             # but ALL dates are ranges!
             for key,selector in enumerate(created):
                 created[key] = DateRange(selector)
-                msg.reply("Searching for articles created between {} and {}"
-                          .format(created[key].min.to_datetime_string(),
-                                  created[key].max.to_datetime_string()))
+            # created is now a list of DateRanges with min and max
+            try:
+                for key,selector in enumerate(created):
+                    if selector.max is not None:
+                        createds <= selector.max
+                    if selector.min is not None:
+                        createds >= selector.min
+            except MinMaxError as e:
+                raise CommandError(str(e) + " rating")
         # FINAL BIT - summarise commands
         if cmd.hasarg('verbose'):
             verbose = "Searching for articles "
@@ -200,6 +206,22 @@ class search:
                 verbose += ("with a rating greater than " +
                             ratings['min'] +
                             "; ")
+            if createds['min'] is not None and createds['max'] is not None:
+                verbose += ("created between " +
+                            createds['min'].to_datetime_string() +
+                            " and " +
+                            createds['max'].to_datetime_string() +
+                            "; ")
+            elif createds['max'] is not None:
+                verbose += ("created before " +
+                            createds['max'].to_datetime_string() +
+                            "; ")
+            elif createds['min'] is not None:
+                verbose += ("created after " +
+                            createds['min'].to_datetime_string() +
+                            "; ")
+            if verbose.endswith("; "):
+                verbose = verbose[:-2]
             msg.reply(verbose)
         # \/ Test stuff to be moved elsewhere after DB stuff
         s = ServerProxy('https://TARS:{}@www.wikidot.com/xml-rpc-api.php' \
@@ -241,31 +263,32 @@ class tags:
 
 class MinMax:
     """A dictionary whose keys are only mutable if they are None"""
+    # this MIGHT work for datetime, let's see
     def __init__(self, min=None, max=None):
         self.min = min
         self.max = min
 
     def __lt__(self, other): # MinMax < 20
         if self.max == None:
-            if self.min > other: MinMax.throw('discrep')
+            if self.min != None and self.min > other: MinMax.throw('discrep')
             else: self.max = other - 1
         else: MinMax.throw('max')
 
     def __gt__(self, other): # MinMax > 20
         if self.min == None:
-            if self.max < other: MinMax.throw('discrep')
+            if self.max != None and self.max < other: MinMax.throw('discrep')
             else: self.min = other + 1
         else: MinMax.throw('min')
 
-    def __lte__(self, other): # MinMax <= 20
+    def __le__(self, other): # MinMax <= 20
         if self.max == None:
-            if self.min > other: MinMax.throw('discrep')
+            if self.min != None and self.min > other: MinMax.throw('discrep')
             else: self.max = other
         else: MinMax.throw('max')
 
-    def __gte__(self, other): # MinMax <= 20
+    def __ge__(self, other): # MinMax <= 20
         if self.min == None:
-            if self.max < other: MinMax.throw('discrep')
+            if self.max != None and self.max < other: MinMax.throw('discrep')
             else: self.min = other
         else: MinMax.throw('min')
 
@@ -336,15 +359,15 @@ class DateRange:
             self.max = [i for i in self.max if i]
             self.min = [i for i in self.min if i]
             diffs = []
-            for i,min in enumerate(self.min):
-                for j,max in enumerate(self.max):
+            for i,minimum in enumerate(self.min):
+                for j,maximum in enumerate(self.max):
                     diffs.append(
                         {'i': i, 'j': j,
                          'diff': self.min[i].diff(self.max[j]).in_seconds()}
                     )
             diffs = max(diffs, key=lambda x: x['diff'])
-            self.max = diffs['j']
-            self.min = diffs['i']
+            self.max = self.max[diffs['j']]
+            self.min = self.min[diffs['i']]
             # do other stuff
             return
         # strip the comparison
@@ -369,9 +392,11 @@ class DateRange:
                 # sel is now a number-letter-repeat list
                 # convert list to dict via pairwise
             sel = DateRange.reverse_pairwise(sel)
+            # convert all numbers to int
+            sel = dict([a, int(x)] for a, x in sel.items())
             self.date = pendulum.now()
             # check time units
-            for key,value in sel:
+            for key,value in sel.items():
                 if key not in "smhdDWMY":
                     raise CommandError(("{} isn't a valid unit of time in a "
                                         "relative date. Valid units are s, m, "
@@ -380,15 +405,15 @@ class DateRange:
                 elif key == 'D':
                     sel['d'] = sel.pop('D')
             self.date = pendulum.now().subtract(
-                years=sel['Y'] if sel['Y'] else 0,
-                months=sel['M'] if sel['M'] else 0,
-                weeks=sel['W'] if sel['W'] else 0,
-                days=sel['d'] if sel['d'] else 0,
-                hours=sel['h'] if sel['h'] else 0,
-                minutes=sel['m'] if sel['m'] else 0,
-                seconds=sel['s'] if sel['s'] else 0,
+                years=sel.get('Y', 0),
+                months=sel.get('M', 0),
+                weeks=sel.get('W', 0),
+                days=sel.get('d', 0),
+                hours=sel.get('h', 0),
+                minutes=sel.get('m', 0),
+                seconds=sel.get('s', 0),
             )
-            if self.comparen in ["<","<="]:
+            if self.compare in ["<","<="]:
                 self.min = self.date
             elif self.compare in [">",">="] or self.compare is None:
                 self.max = self.date
@@ -420,3 +445,8 @@ class DateRange:
     @staticmethod
     def reverse_pairwise(iterable):
         return dict(zip(*[iter(reversed(iterable))]*2))
+
+    def __getitem__(self, arg): # MinMax['min']
+        if arg is 'min': return self.min
+        elif arg is 'max': return self.max
+        else: raise KeyError(arg + " not in a DateRange object")

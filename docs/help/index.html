@@ -192,11 +192,11 @@
             Filter pages by exact author name. You can use <code>+</code> and <code>-</code> to include/exclude authors. Pages must have at least one specified author, but must have all authors that have <code>+</code>.
         </li>
         <li><b>--rating, -r</b><br>
-            Filter pages by a rating number. Prefix the number with any of <code>&gt;</code>, <code>&lt;</code>, <code>=</code>. Default is <code>&gt;</code>. Can also specify a range of ratings with two dots, e.g. <code>20..50</code>.
+            Filter pages by a rating number. Prefix the number with any of <code>&gt;</code>, <code>&lt;</code>, <code>=</code>. Default is <code>&gt;</code>. Can also specify a range of ratings with two dots, e.g. <code>20..50</code>. Ranges are always inclusive.
         </li>
         <li><b>--created, -c</b><br>
-            Filter pages by date of creation. Rewrite dates are ignored. Absolute dates must be in ISO-8601 format (YYYY-MM-DD, YYYY-MM or YYYY). Relative dates must be a number followed by a letter to specify how many units of time ago; valid units are <code>s m h d W M Y</code>.<br>
-            Can use the same prefixes as <b>rating</b> (<code>&gt;</code> = "older than", <code>&lt;</code> = "younger than", <code>=</code> = exact match), and also supports ranges of dates in the same way. You can mix relative dates and absolute dates. Don't worry about which order to put them in.
+            Filter pages by date of creation. Rewrite dates are ignored. Absolute dates must be in ISO-8601 format (YYYY-MM-DD, YYYY-MM or YYYY). Relative dates must be a number followed by a letter to specify how many units of time ago; valid units are <code>s m h d w M y</code>. These units are not case-sensitive, <b>except for m/M!</b> Use <code>m</code> for minutes and <code>M</code> for Months.<br>
+            Can use the same prefixes as <b>rating</b> (<code>&gt;</code> = "older than", <code>&lt;</code> = "younger than", <code>=</code> = exact match), and also supports ranges of dates with two dots e.g. <code>2018..2019</code>. Ranges are <b>always</b> inclusive, and you can mix relative dates and absolute dates. Don't worry about which order to put them in.
         </li>
         <li><b>--category, -y</b><br>
             Exactly the same as <b>--tags</b>, except for Wikidot categories instead.<br>
@@ -219,6 +219,9 @@
         </li>
         <li><b>--recommend, --rec, -m</b><br>
             If your search matches more than one article, TARS will determine and return which of those articles most needs extra attention.
+        </li>
+        <li><b>--verbose, -v</b><br>
+            TARS will explicity state exactly what search criteria it thinks you want. Probably not useful for anything other than debugging.
         </li>
         <li><b>--ignorepromoted</b><br>
             Ignore articles that have already been promoted. TODO remove this from documentation
