@@ -28,6 +28,10 @@ class ParseMessages(object):
         # cmd is the parsed msg (used to be msg.parsed)
         if cmd.command:
             # this is a command!
+            # notify of a shlex error, if present
+            if cmd.quote_error:
+                msg.reply(("I wasn't able to correctly parse your quotemarks, "
+                           "so I have interpreted them literally."))
             try:
                 # Call the command from the right file in commands/
                 # getattr instead of commands[cmd] bc module subscriptability

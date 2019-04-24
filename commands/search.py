@@ -38,18 +38,27 @@ class search:
                         "verbose v",
                         "ignorepromoted",
                        ])
+        # Set the search mode of the input
+        searchmode = 'normal'
+        if cmd.hasarg('regex'): searchmode = 'regex'
+        elif cmd.hasarg('fullname'): searchmode = 'fullname'
+        # Set the return mode of the output
+        returnmode = 'normal'
+        if cmd.hasarg('random'): returnmode = 'random'
+        elif cmd.hasarg('summary'): returnmode = 'summary'
+        elif cmd.hasarg('recommend'): returnmode = 'recommend'
         # What are we searching for?
         searches = []
         if len(cmd.args) == 1 and len(cmd.args['root']) == 0:
             raise CommandError("Must specify at least one search term")
         else:
-            searches = cmd.args['root']
-        # Set the search mode of the input
-        searchmode = 'normal'
-        if cmd.hasarg('regex'):
-            searchmode = 'regex'
-        if cmd.hasarg('fullname'):
-            searchmode = 'fullname'
+            if searchmode == 'normal':
+                searches = cmd.args['root']
+            elif searchmode == 'fullname':
+                searches = [" ".join(cmd.args['root'])]
+            elif searchmode == 'regex':
+                for search in cmd.args['root']:
+                    searches.append(re.compile(search))
         # Set the tags
         tags = {'include': [], 'exclude': []}
         if cmd.hasarg('tags'):
@@ -163,12 +172,44 @@ class search:
                         createds >= selector.min
             except MinMaxError as e:
                 raise CommandError(str(e).format("date"))
+        # Set category
+        categories = {'include': [], 'exclude': []}
+        if cmd.hasarg('category'):
+            if len(cmd.getarg('category')) == 0:
+                raise CommandError(("When using the category filter "
+                                    "(--category/-y), at least one category must "
+                                    "be specified"))
+            for category in cmd.getarg('category'):
+                if category[0] == "-":
+                    categories['exclude'].append(category[1:])
+                    continue
+                if category[0] == "+":
+                    categories['include'].append(category[1:])
+                    continue
+                categories['include'].append(category)
+        # Set parent page
+        parents = None
+        if cmd.hasarg('parent'):
+            if len(cmd.getarg('parent')) != 1:
+                raise CommandError(("When using the parent page filter "
+                                    "(--parent/-p), exactly one parent URL "
+                                    "must be specified"))
+            parents = cmd.getarg('parent')[0]
         # FINAL BIT - summarise commands
         if cmd.hasarg('verbose'):
             verbose = "Searching for articles "
             if len(searches) > 0:
-                verbose += ("containing " +
-                            ", ".join(searches) +
+                if searchmode == 'normal':
+                    verbose += ("containing '" +
+                                "', '".join(searches) +
+                                "'; ")
+                elif searchmode == 'regex':
+                    verbose += ("matching the regex /" +
+                                "/ & /".join([s.pattern for s in searches]) +
+                                "/; ")
+            if parents is not None:
+                verbose += ("whose parent page is " +
+                            parents +
                             "; ")
             if len(tags['include']) > 0:
                 verbose += ("with the tags " +
@@ -398,17 +439,18 @@ class DateRange:
             self.date = pendulum.now()
             # check time units
             for key,value in sel.items():
-                if key not in "smhdDWMY":
+                # make units not case sensitive
+                if key != 'M':
+                    sel[key.lower()] = sel.pop(key)
+                if key not in 'smhdwMy':
                     raise CommandError(("{} isn't a valid unit of time in a "
                                         "relative date. Valid units are s, m, "
-                                        "h, d (or D), W, M, and Y.")
+                                        "h, d, w, M, and y.")
                                        .format(key))
-                elif key == 'D':
-                    sel['d'] = sel.pop('D')
             self.date = pendulum.now().subtract(
-                years=sel.get('Y', 0),
+                years=sel.get('y', 0),
                 months=sel.get('M', 0),
-                weeks=sel.get('W', 0),
+                weeks=sel.get('w', 0),
                 days=sel.get('d', 0),
                 hours=sel.get('h', 0),
                 minutes=sel.get('m', 0),
