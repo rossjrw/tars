@@ -33,6 +33,7 @@ COMMANDS = {
                },
     "info": {"help": {"help"},
              "version": {"version","tars"},
+             "github": {"github","gh"},
             },
     "promote": {"promote": {"promote"},
                },

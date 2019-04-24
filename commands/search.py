@@ -15,7 +15,6 @@ import re2 as re
 import pendulum
 from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
-from time import mktime
 
 class search:
     @classmethod
