@@ -6,8 +6,9 @@ Check here for documentation: https://rossjrw.github.io/tars/help/
 Documentation is currently far ahead of implementation. Many features described
 in the documentation are not yet present.
 
-All modules are from PyPI with the exception of pyaib, which is forked
-here: https://github.com/rossjrw/pyaib
+All modules are from PyPI except:
+- pyaib, which is forked here: https://github.com/rossjrw/pyaib
+- re2, which is forked here: https://github.com/andreasvc/pyre2
 
 TARS is written in Python 3.5.2.
 
