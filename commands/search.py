@@ -11,7 +11,7 @@ from helpers.defer import defer
 from helpers.api import api_key
 from helpers.error import CommandError
 from xmlrpc.client import ServerProxy
-import re2 as re # better performance for user-input regexes
+import re2 as re
 import pendulum
 from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
