@@ -183,7 +183,8 @@
     <p><code>.search [title] [--tags tags] [--author author] [--rating rating] [--created created] [--parent parent] [--fullname] [--regex] [--summary]</code></p>
     <ul>
         <li><b>title</b>
-            <br> Search for pages whose title contains all of these words. Words are space-separated. If neither <b>-f</b> nor <b>-x</b> are present, anything wrapped in quotes (<code>"</code>) will be treated as a single word. Not case sensitive.
+            <br> Search for pages whose title contains all of these words. Words are space-separated. If neither <b>-f</b> nor <b>-x</b> are present, anything wrapped in quotemarks (<code>"</code>) will be treated as a single word. Not case sensitive.
+            If you actually need to search for quotemarks, escape them with a backslash - e.g. <code>.s \"The Administrator\"</code>
         </li>
         <li><b>--tags, -t</b><br>
             Filter pages by tags. <code>+scp</code> means pages tagged scp. <code>-scp</code> means pages not tagged scp. If you don't put either <code>+</code> or <code>-</code>, TARS will assume you meant to add a <code>+</code>.

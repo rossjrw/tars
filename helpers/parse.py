@@ -90,6 +90,10 @@ class ParsedCommand():
             self.message = self.message.replace("'", "<<APOSTROPHE>>")
             try:
                 self.message = shlex.split(self.message, posix=False)
+                # posix=False does not remove quotes
+                for i,word in enumerate(self.message):
+                    if word.startswith('"') and word.endswith('"'):
+                        self.message[i] = word[1:-1]
             except ValueError:
                 # raised if shlex detects fucked up quotemarks
                 self.message = self.message.split()
