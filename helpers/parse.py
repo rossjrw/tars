@@ -89,11 +89,10 @@ class ParsedCommand():
             # remove apostrophes because they'll fuck with shlex
             self.message = self.message.replace("'", "<<APOSTROPHE>>")
             try:
-                self.message = shlex.split(self.message)
+                self.message = shlex.split(self.message, posix=False)
             except ValueError:
                 # raised if shlex detects fucked up quotemarks
                 self.message = self.message.split()
-                print("shlex error")
                 self.quote_error = True
             for i,word in enumerate(self.message):
                 self.message[i] = word.replace("<<APOSTROPHE>>", "'")
