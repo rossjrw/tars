@@ -15,7 +15,8 @@ import re2 as re
 import pendulum
 from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
-from google import google
+from googleapiclient.discovery import build
+import pprint
 
 class search:
     @classmethod
@@ -272,15 +273,15 @@ class search:
         })
         if len(pages) == 0:
             if len(cmd.args) == 1 and len(cmd.args['root']) != 0:
-                url = google.search('site:scp-wiki.net "' +
-                                    '" "'.join(cmd.args['root']) +
-                                    '"', 1)[0]
-                if url.name.endswith(" - SCP Foundation"):
-                    url.name = url.name[:-17]
-                msg.reply(("No matches found. Did you mean: "
-                           "\x02{}\x0F? {}")
-                           .format(url.name, url.link))
-            msg.reply("No matches found.")
+                url = google_search('"' + '" "'.join(cmd.args['root']) + '"',
+                                   num=1)[0]
+                pprint.pprint(url)
+                if url['title'].endswith(" - SCP Foundation"):
+                    url['title'] = url['title'][:-17]
+                msg.reply("No matches found. Did you mean: \x02{}\x0F? {}"
+                           .format(url['title'], url['link']))
+            else:
+                msg.reply("No matches found.")
             return
         for title,page in pages.items():
             msg.reply(
@@ -502,3 +503,8 @@ class DateRange:
         if arg is 'min': return self.min
         elif arg is 'max': return self.max
         else: raise KeyError(arg + " not in a DateRange object")
+
+def google_search(search_term, **kwargs):
+    service = build("customsearch", "v1", developerKey=google_api_key)
+    res = service.cse().list(q=search_term, cx=cse_key, **kwargs).execute()
+    return res['items']

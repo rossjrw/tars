@@ -15,10 +15,10 @@ cse_key = None
 
 try:
     with open(os.path.dirname(__file__) + "/../wikidot.secret.txt") as file:
-        wikidot_api_key = file.read()
+        wikidot_api_key = file.read().rstrip()
     with open(os.path.dirname(__file__) + "/../google.secret.txt") as file:
-        google_api_key = file.read()
+        google_api_key = file.read().rstrip()
     with open(os.path.dirname(__file__) + "/../cse.secret.txt") as file:
-        cse_key = file.read()
+        cse_key = file.read().rstrip()
 except:
     raise

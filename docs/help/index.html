@@ -234,7 +234,7 @@
     <p>Example: <code>.s Unexplained Location -f -c 20d..40W3d --random</code> - <em>matches pages whose name is exactly "Unexplained Location" created between 20 days and [40 weeks + 3 days] ago, and returns a random one.</em></p>
     <p>Example: <code>.s ^SCP-\\d*2 -x -m</code> - <em>matches articles that start with "SCP-" followed by any amount of numbers so long as that number ends in a 2, and returns the one that most needs extra attention.</em></p>
     <p>If TARS finds more that one article that matches your criteria (and if you didn't specify <b>--random</b>, <b>--summary</b> or <b>--recommend</b>), it will provide a list of matches and ask if you meant any of them. To pick your article from the list, see the <a href="#showmore"><b><code>showmore</code></b></a> command.</p>
-    <p><a href="#regexsearch"><b><code>.regexsearch</code></b></a>, <a href="#tags"><b><code>.tags</code></b></a>, <a href="#random"><b><code>.random</code></b></a> and <a href="#lastcreated"><b><code>.lastcreated</code></b></a> are aliases of this command.</p>
+    <p><a href="#regexsearch"><b><code>.regexsearch</code></b></a>, <a href="#random"><b><code>.random</code></b></a> and <a href="#lastcreated"><b><code>.lastcreated</code></b></a> are aliases of this command.</p>
 
     <h2 id="lastcreated">.lastcreated, .lc, .l, .recent <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p>TARS will generate a list of the 3 most recently created pages.</p>
@@ -289,6 +289,11 @@
     <h2 id="seen">.seen <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p><code>.seen name</code></p>
     <p>TARS will tell you when this user last sent a message in the current channel, and when they last sent a message in any channel.</p>
+
+    <h2 id="seen">.tag <div class="jarvis">J</div></h2>
+    <p><code>.tag tag</code></p>
+    <p>TARS will provide a link to the page that lists all the pages with this tag.</p>
+    <p>Note that jarvis' implementation of this command is different, being equivalent to <code>.s -t [tag]</code>.
 
     <h1 id="staffonlycommands">Staff-Only Commands</h1>
     
@@ -353,7 +358,6 @@
         <li><b>..id user/channel/article search:</b> Get the ID of a given user/channel/article</li>
         <li><b>..names [channel]:</b> See who's in a given channel</li>
         <li><b>..promoted:</b> See all articles that have been promoted already.</li>
-        <li><b>.search [--verbose/-v]:</b> Print all database information about the article.</li>
     </ul>
 
     <h1 id="gimmickcommands">Gimmicks and Aliases</h1>
@@ -361,13 +365,11 @@
     <p>The following commands are just simple gimmicks or aliases. You can request gimmick commands if you want.</p>
     <ul>
         <li class="jarvis helen"><b>.user:</b> Fetches the Wikidot user page for a given user.</li>
-        <li id="regexsearch"><b>.regexsearch, .rsea, .rs:</b> Same as <a href="#search"><b><code>.search</code></b></a> except with <b>--regex</b> enabled.</li>
-        <li class="jarvis" id="tags"><b>.tags:</b> Search for a page with the given tags. <code>.tags tale alchemy-department</code> is the same as <code>.search -t +tale +alchemy-department</code>.</li>
-        <li class="jarvis" id="random"><b>.random, .ran, .r:</b> Same as <a href="#search"><b><code>.search</code></b></a> except with <b>--random</b> enabled.</li>
+        <li class="jarvis"><b>.random, .ran, .r:</b> Same as <a href="#search"><b><code>.search</code></b></a> except with <b>--random</b> enabled.</li>
         <li><b>.hugtars, .hug:</b> Hugs!</li>
         <li><b>.reptile, .rep:</b> rawr xD</li>
         <li><b>.ff:</b> Returns a meaningful and inspirational quote.</li>
-        <li><b>.checkjarvis:</b> Marks Secretary_Helen as active or inactive depending on whether or not jarvis is present. TARS will not respond to this command.</li>
+        <li><b>.checkjarvis:</b> Internally marks Secretary_Helen as active or inactive depending on whether or not jarvis is present. TARS will not respond to this command. Does not defer.</li>
     </ul>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.4.2/tocbot.min.js"></script>
