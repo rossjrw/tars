@@ -27,7 +27,7 @@ class Log:
         msg = parse.output(msg)
         if not msg:
             return
-        print("[{}] to {}: {}".format(
+        print("[{}] --> {}: {}".format(
             time.strftime('%H:%M:%S'),
             parse.nickColor(msg['channel']),
             msg['message']

@@ -8,13 +8,14 @@ Commands:
 """
 
 from helpers.defer import defer
-from helpers.api import api_key
+from helpers.api import wikidot_api_key, google_api_key, cse_key
 from helpers.error import CommandError
 from xmlrpc.client import ServerProxy
 import re2 as re
 import pendulum
 from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
+from google import google
 
 class search:
     @classmethod
@@ -110,7 +111,7 @@ class search:
                         ratings <= max(rating)
                     except MinMaxError as e:
                         raise CommandError(str(e).format("rating"))
-                elif rating[0] in "><=":
+                elif rating[0] in [">","<","="]:
                     pattern = r"^(?P<comp>[<>=]{1,2})(?P<value>[0-9]+)"
                     match = re.search(pattern, rating)
                     if match:
@@ -176,8 +177,8 @@ class search:
         if cmd.hasarg('category'):
             if len(cmd.getarg('category')) == 0:
                 raise CommandError(("When using the category filter "
-                                    "(--category/-y), at least one category must "
-                                    "be specified"))
+                                    "(--category/-y), at least one category "
+                                    "must be specified"))
             for category in cmd.getarg('category'):
                 if category[0] == "-":
                     categories['exclude'].append(category[1:])
@@ -264,12 +265,21 @@ class search:
             msg.reply(verbose)
         # \/ Test stuff to be moved elsewhere after DB stuff
         s = ServerProxy('https://TARS:{}@www.wikidot.com/xml-rpc-api.php' \
-                        .format(api_key))
+                        .format(wikidot_api_key))
         pages = s.pages.get_meta({
             'site': 'scp-wiki',
             'pages': cmd.args['root']
         })
         if len(pages) == 0:
+            if len(cmd.args) == 1 and len(cmd.args['root']) != 0:
+                url = google.search('site:scp-wiki.net "' +
+                                    '" "'.join(cmd.args['root']) +
+                                    '"', 1)[0]
+                if url.name.endswith(" - SCP Foundation"):
+                    url.name = url.name[:-17]
+                msg.reply(("No matches found. Did you mean: "
+                           "\x02{}\x0F? {}")
+                           .format(url.name, url.link))
             msg.reply("No matches found.")
             return
         for title,page in pages.items():
