@@ -16,7 +16,7 @@ import pendulum
 from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
 from googleapiclient.discovery import build
-import pprint
+# import pprint
 
 class search:
     @classmethod
@@ -275,7 +275,9 @@ class search:
             if len(cmd.args) == 1 and len(cmd.args['root']) != 0:
                 url = google_search('"' + '" "'.join(cmd.args['root']) + '"',
                                    num=1)[0]
-                pprint.pprint(url)
+                if url is None:
+                    msg.reply("No matches found.")
+                #pprint.pprint(url)
                 if url['title'].endswith(" - SCP Foundation"):
                     url['title'] = url['title'][:-17]
                 msg.reply("No matches found. Did you mean: \x02{}\x0F? {}"
@@ -507,4 +509,7 @@ class DateRange:
 def google_search(search_term, **kwargs):
     service = build("customsearch", "v1", developerKey=google_api_key)
     res = service.cse().list(q=search_term, cx=cse_key, **kwargs).execute()
-    return res['items']
+    if 'items' in res:
+        return res['items']
+    else:
+        return [None]
