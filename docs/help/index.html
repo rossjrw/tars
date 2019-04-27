@@ -234,7 +234,7 @@
     <p>Example: <code>.s Unexplained Location -f -c 20d..40W3d --random</code> - <em>matches pages whose name is exactly "Unexplained Location" created between 20 days and [40 weeks + 3 days] ago, and returns a random one.</em></p>
     <p>Example: <code>.s ^SCP-\\d*2 -x -m</code> - <em>matches articles that start with "SCP-" followed by any amount of numbers so long as that number ends in a 2, and returns the one that most needs extra attention.</em></p>
     <p>If TARS finds more that one article that matches your criteria (and if you didn't specify <b>--random</b>, <b>--summary</b> or <b>--recommend</b>), it will provide a list of matches and ask if you meant any of them. To pick your article from the list, see the <a href="#showmore"><b><code>showmore</code></b></a> command.</p>
-    <p><a href="#regexsearch"><b><code>.regexsearch</code></b></a>, <a href="#random"><b><code>.random</code></b></a> and <a href="#lastcreated"><b><code>.lastcreated</code></b></a> are aliases of this command.</p>
+    <p><a href="#regexsearch"><b><code>.regexsearch</code></b></a>, <a href="#tags"><b><code>.tags</code></b></a>, <a href="#random"><b><code>.random</code></b></a> and <a href="#lastcreated"><b><code>.lastcreated</code></b></a> are aliases of this command.</p>
 
     <h2 id="lastcreated">.lastcreated, .lc, .l, .recent <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p>TARS will generate a list of the 3 most recently created pages.</p>
@@ -290,10 +290,19 @@
     <p><code>.seen name</code></p>
     <p>TARS will tell you when this user last sent a message in the current channel, and when they last sent a message in any channel.</p>
 
-    <h2 id="seen">.tag <div class="jarvis">J</div></h2>
+    <h2 id="tags">.tags <div class="jarvis">J</div></h2>
+    <p><code>.tags [tags]</code></p>
+    <p>Equivalent to <code>.s -t [tag]</code>.
+
+    <h2 id="tag">.tag <div class="jarvis">J</div></h2>
     <p><code>.tag tag</code></p>
     <p>TARS will provide a link to the page that lists all the pages with this tag.</p>
-    <p>Note that jarvis' implementation of this command is different, being equivalent to <code>.s -t [tag]</code>.
+    <p>Note that jarvis uses this command as an alias for <code>.tags</code>.
+
+    <h2 id="user">.user <div class="jarvis">J</div><div class="helen">S</div></h2>
+    <p><code>.user user</code></p>
+    <p>TARS will provide a link to the user's Wikidot page.</p>
+    <p>Multiple arguments will be interpreted as a single username that contains spaces.</p>
 
     <h1 id="staffonlycommands">Staff-Only Commands</h1>
     
@@ -339,6 +348,9 @@
             If you don't specify anything, the command will just tell you whether or not automatic promotion is active.
         </li>
     </ul>
+    
+    <h2 id="config">.config</h2>
+    <p>Provides a link to the config page.</p>
 
     <h1 id="controlleronlycommands">Controller-only Commands</h1>
     
@@ -364,7 +376,6 @@
     
     <p>The following commands are just simple gimmicks or aliases. You can request gimmick commands if you want.</p>
     <ul>
-        <li class="jarvis helen"><b>.user:</b> Fetches the Wikidot user page for a given user.</li>
         <li class="jarvis"><b>.random, .ran, .r:</b> Same as <a href="#search"><b><code>.search</code></b></a> except with <b>--random</b> enabled.</li>
         <li><b>.hugtars, .hug:</b> Hugs!</li>
         <li><b>.reptile, .rep:</b> rawr xD</li>

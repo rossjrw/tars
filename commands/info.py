@@ -27,13 +27,6 @@ class github:
         else:
             msg.reply("https://github.com/rossjrw/tars")
 
-class config:
-    """Provide a link to the config page"""
-    @classmethod
-    def command(cls, irc_c, msg, cmd):
-        msg.reply("http://scp-sandbox-3.wikidot.com/collab:tars")
-        # TODO update this to final page (or src from .conf?)
-
 class user:
     """Provide link to a user's Wikidot page"""
     @classmethod

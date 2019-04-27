@@ -63,3 +63,10 @@ class say:
             raise CommandError("You can only .say to #tars occupants atm")
         irc_c.PRIVMSG(cmd.args['root'][0], " ".join(cmd.args['root'][1:]))
         msg.reply("Saying that to {}".format(cmd.args['root'][0]))
+
+class config:
+    """Provide a link to the config page"""
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        msg.reply("http://scp-sandbox-3.wikidot.com/collab:tars")
+        # TODO update this to final page (or src from .conf?)
