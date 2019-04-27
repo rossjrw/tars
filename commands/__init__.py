@@ -87,8 +87,11 @@ for file in COMMANDS.get():
     for cmd in COMMANDS.get(file):
         cmdprint("Importing {}".format(cmd))
         for alias in COMMANDS.get(file,cmd):
-            setattr(COMMANDS, alias, getattr(locals()[file], cmd))
-            pass
+            try:
+                setattr(COMMANDS, alias, getattr(locals()[file], cmd))
+            except AttributeError as e:
+                cmdprint(e, True)
+                raise SystemExit(0)
     import_module(".{}".format(file),"commands")
     # now each command is at commands.file.cmdname.command()
     # but we want to skip the file step, ideally
