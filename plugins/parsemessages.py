@@ -4,16 +4,19 @@ Plugin that parses messages into commands and then does stuff
 """
 
 from helpers import parse
-from commands import COMMANDS
+import commands
 from pyaib.plugins import observe, plugin_class
 import sys
 import inspect
 from helpers.error import CommandError, CommandNotExistError
+from importlib import reload
+
+test = "PARSEMESSAGES"
 
 def converse(irc_c, msg, cmd):
     # .converse is used to parse non-command strings
     # we can't always tell if a message is a command or not
-    getattr(COMMANDS, 'converse').command(irc_c, msg, cmd)
+    getattr(commands.COMMANDS, 'converse').command(irc_c, msg, cmd)
 
 @plugin_class("parsemessages")
 class ParseMessages(object):
@@ -24,6 +27,17 @@ class ParseMessages(object):
 # wipe em and remake em to .reload
     @observe("IRC_MSG_PRIVMSG")
     def handleMessage(self, irc_c, msg):
+        if msg.message == ".reload":
+            # special case for .reload - needs high priority
+            msg.reply("Reloading commands...")
+            try:
+                reload(commands)
+            except:
+                msg.reply("Reload failed.")
+                raise
+            else:
+                msg.reply("Reload successful.")
+            return
         cmd = parse.command(msg.message)
         # cmd is the parsed msg (used to be msg.parsed)
         if cmd.command:
@@ -35,7 +49,7 @@ class ParseMessages(object):
             try:
                 # Call the command from the right file in commands/
                 # getattr instead of commands[cmd] bc module subscriptability
-                getattr(COMMANDS, cmd.command).command(irc_c, msg, cmd)
+                getattr(commands.COMMANDS, cmd.command).command(irc_c, msg, cmd)
             except CommandNotExistError:
                 if cmd.pinged:
                     # there are .converse strings for pinged
@@ -61,3 +75,8 @@ class ParseMessages(object):
         else:
             # we're in a channel
             pass
+
+    @observe('IRC_MSG_INVITE')
+    def invited(self, irc_c, msg):
+        # TODO check for controller
+        irc_c.JOIN(msg.message)

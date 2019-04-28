@@ -39,10 +39,10 @@ class leave:
             irc_c.PART(msg.raw_channel, message=leavemsg)
 
 class reload:
-    """Theoretically, reloads all plugins"""
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        msg.reply("Fuck off")
+        # do nothing - this is handled by parsemessage
+        pass
 
 class say:
     """Make TARS say something"""

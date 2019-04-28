@@ -71,7 +71,8 @@ class Commands_Directory:
         """Raise an error when a command doesn't exist"""
         raise CommandNotExistError(name)
 
-from importlib import import_module
+from importlib import import_module, reload
+import sys
 
 def cmdprint(text, error=False):
     bit = "[\x1b[38;5;75mCommands\x1b[0m] "
@@ -82,16 +83,26 @@ def cmdprint(text, error=False):
 COMMANDS = Commands_Directory(COMMANDS)
 
 for file in COMMANDS.get():
-    cmdprint("Importing commands from commands/{}.py".format(file))
-    import_module(".{}".format(file),"commands")
-    for cmd in COMMANDS.get(file):
-        cmdprint("Importing {}".format(cmd))
-        for alias in COMMANDS.get(file,cmd):
-            try:
-                setattr(COMMANDS, alias, getattr(locals()[file], cmd))
-            except AttributeError as e:
-                cmdprint(e, True)
-                raise SystemExit(0)
-    import_module(".{}".format(file),"commands")
-    # now each command is at commands.file.cmdname.command()
-    # but we want to skip the file step, ideally
+    if "commands.{}".format(file) in sys.modules:
+        cmdprint("Reloading commands from commands/{}.py".format(file))
+        reload(sys.modules["commands.{}".format(file)])
+        for cmd in COMMANDS.get(file):
+            cmdprint("Importing {}".format(cmd))
+            for alias in COMMANDS.get(file,cmd):
+                try:
+                    setattr(COMMANDS, alias, getattr(locals()[file], cmd))
+                except AttributeError as e:
+                    cmdprint(e, True)
+                    # consider stopping the script here
+    else:
+        cmdprint("Importing commands from commands/{}.py".format(file))
+        import_module(".{}".format(file),"commands")
+        for cmd in COMMANDS.get(file):
+            cmdprint("Importing {}".format(cmd))
+            for alias in COMMANDS.get(file,cmd):
+                try:
+                    setattr(COMMANDS, alias, getattr(locals()[file], cmd))
+                except AttributeError as e:
+                    cmdprint(e, True)
+                    # consider stopping the script here
+        # now each command is at commands.file.cmdname.command()
