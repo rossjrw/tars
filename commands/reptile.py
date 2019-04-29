@@ -21,4 +21,4 @@ class fish:
 class fuckingnarcissism:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-            msg.reply("🔴🏠")
+        msg.reply("🔴🏠")
