@@ -12,8 +12,9 @@ import sqlite3
 DB_FILE = "../TARS.db"
 
 class Database:
-    def __init__(self):
-        conn = sqlite3.connect(DB_FILE)
+    def __init__(self, db_file):
+        self.db_file = db_file
+        conn = sqlite3.connect(self.db_file)
         conn.close()
         self.create_tables()
 
@@ -84,3 +85,5 @@ class Database:
          );""")
         # Will also need a messages table for each channel
         conn.commit()
+
+database = Database(DB_FILE)
