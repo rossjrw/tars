@@ -273,10 +273,12 @@ class search:
         })
         if len(pages) == 0:
             if len(cmd.args) == 1 and len(cmd.args['root']) != 0:
-                url = google_search('"' + '" "'.join(cmd.args['root']) + '"',
-                                   num=1)[0]
+                # google only takes 10 args
+                url = google_search('"' + '" "'.join(cmd.args['root'][:10]) +
+                                    '"', num=1)[0]
                 if url is None:
                     msg.reply("No matches found.")
+                    return
                 #pprint.pprint(url)
                 if url['title'].endswith(" - SCP Foundation"):
                     url['title'] = url['title'][:-17]

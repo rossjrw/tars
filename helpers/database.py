@@ -27,7 +27,7 @@ class Database:
             channel_name TEXT NOT NULL,
             date_checked TEXT NOT NULL,
             autojoin BOOLEAN NOT NULL CHECK (autojoin IN (0,1)),
-            helen_active BOOLEAN NOT NULL CHECK (helen_active IN (0,1)),
+            helen_active BOOLEAN NOT NULL CHECK (helen_active IN (0,1))
          );""")
         # users stores wiki, irc and discord users
         c.execute("""
@@ -79,7 +79,7 @@ class Database:
         c.execute("""
           CREATE TABLE IF NOT EXISTS showmore_list (
             channel_id INTEGER NOT NULL,
-            index INTEGER NOT NULL,
+            id INTEGER NOT NULL,
             article_id INTEGER NOT NULL,
             FOREIGN KEY(channel_id) REFERENCES channels(id)
          );""")

@@ -3,6 +3,11 @@
 from pyaib.ircbot import IrcBot
 import sys
 import argparse
+try:
+    from helpers.database import Database
+except ImportError:
+    print("Database module is missing")
+    raise
 
 # Parse the command line argument
 parser = argparse.ArgumentParser(description="TARS bot")
