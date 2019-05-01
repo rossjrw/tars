@@ -67,5 +67,8 @@ def acronym():
         "!Try !And !Rate !SCPs",
         "!These !Acronyms !Really !Suck",
         "I stand for robot rights.",
+        "!Top !And !Rear !Suggested",
+        "!Tales !Are !Real !Shit",
+        "!TARS' !Ass? !Real !Soft.",
     ]
     return re.sub(r"!([TARS])","\x02\\1\x0F",choice(responses))
