@@ -52,7 +52,7 @@ def kill_bye():
     ]
     return choice(responses)
 
-def acronym():
+def acronym_gen():
     responses = [
         "!Tool-!Assisted !Robotic !Sassmouth",
         "!TARS: !A !Recursive !Semantic",
@@ -71,4 +71,13 @@ def acronym():
         "!Tales !Are !Real !Shit",
         "!TARS' !Ass? !Real !Soft.",
     ]
-    return re.sub(r"!([TARS])","\x02\\1\x0F",choice(responses))
+    last_response = []
+    while True:
+        response = choice(responses)
+        if response not in last_response:
+            yield re.sub(r"!([TARS])", "\x02\\1\x0F", response)
+            last_response.insert(0, response)
+            last_response = last_response[:5]
+acro = acronym_gen()
+def acronym():
+    return next(acro)
