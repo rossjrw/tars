@@ -70,6 +70,7 @@ def acronym_gen():
         "!Top !And !Rear !Suggested",
         "!Tales !Are !Real !Shit",
         "!TARS' !Ass? !Real !Soft.",
+        "It's just SRAT but backwards.",
     ]
     last_response = []
     while True:
