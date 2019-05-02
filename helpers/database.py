@@ -55,19 +55,19 @@ class SqliteDriver:
             );""")
         c.execute("""
             CREATE TABLE IF NOT EXISTS channels_users (
-                channel_id INTEGER NOT NULL,
-                user_id INTEGER NOT NULL,
-                user_mode CHARACTER(1),
-                FOREIGN KEY(channel_id) REFERENCES channels(id),
-                FOREIGN KEY(user_id) REFERENCES users(id)
+                channel_id INTEGER NOT NULL
+                    REFERENCES channels(id),
+                user_id INTEGER NOT NULL
+                    REFERENCES users(id),
+                user_mode CHARACTER(1)
             );""")
         c.execute("""
             CREATE TABLE IF NOT EXISTS user_aliases (
-                user_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL
+                    REFERENCES users(id),
                 alias TEXT NOT NULL,
                 type TEXT NOT NULL
-                    CHECK (type IN ('irc','wiki','discord')),
-                FOREIGN KEY(user_id) REFERENCES users(id)
+                    CHECK (type IN ('irc','wiki','discord'))
             );""")
         c.execute("""
             CREATE TABLE IF NOT EXISTS articles (
@@ -87,22 +87,22 @@ class SqliteDriver:
             );""")
         c.execute("""
             CREATE TABLE IF NOT EXISTS articles_tags (
-                article_id INTEGER NOT NULL,
-                tag TEXT NOT NULL,
-                FOREIGN KEY(article_id) REFERENCES articles(id)
+                article_id INTEGER NOT NULL
+                    REFERENCES articles(id),
+                tag TEXT NOT NULL
             );""")
         c.execute("""
             CREATE TABLE IF NOT EXISTS articles_authors (
-                article_id INTEGER NOT NULL,
-                author TEXT NOT NULL,
-                FOREIGN KEY(article_id) REFERENCES articles(id)
+                article_id INTEGER NOT NULL
+                    REFERENCES articles(id),
+                author TEXT NOT NULL
             );""")
         c.execute("""
             CREATE TABLE IF NOT EXISTS showmore_list (
-                channel_id INTEGER NOT NULL,
+                channel_id INTEGER NOT NULL
+                    REFERENCES channels(id),
                 id INTEGER NOT NULL,
-                article_id INTEGER NOT NULL,
-                FOREIGN KEY(channel_id) REFERENCES channels(id)
+                article_id INTEGER NOT NULL
             );""")
         # Will also need a messages table for each channel
         self.conn.commit()
