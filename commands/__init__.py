@@ -46,6 +46,8 @@ COMMANDS = {
                },
     "converse": {"converse": {"converse"},
                 },
+    "dbq": {"query": {"query"},
+           },
 }
 
 from helpers.error import CommandNotExistError

@@ -12,6 +12,12 @@ Provides functions for manipulating the database.
 from pyaib.db import db_driver
 import sqlite3
 
+def dbprint(text, error=False):
+    bit = "[\x1b[38;5;28mdb_driver\x1b[0m] "
+    if error:
+        bit += "[\x1b[38;5;196mError\x1b[0m] "
+    print(bit + str(text))
+
 # mark this file as the driver instead of pyaib.dbd.sqlite
 # also set by db.backend in the config
 @db_driver
@@ -27,10 +33,23 @@ class SqliteDriver:
             # can't open db!
             raise
         print("Database Driver loaded!")
-        self.create_database()
+        self._create_database()
 
-    def create_database(self):
+    def _check_exists(self, name, type='table'):
+        """Check if something exists in the database"""
+        c = self.conn.cursor()
+        c.execute("""
+            SELECT name FROM sqlite_master
+            WHERE type='{}' AND name='{}'
+                  """.format(type, name))
+        return bool(c.fetchone())
+
+    def _create_database(self):
         """Create tables if they don't already exist"""
+        if self._check_exists('channels'):
+            dbprint("DB already exists")
+        else:
+            dbprint("Creating database...")
         c = self.conn.cursor()
         c.execute("""
             CREATE TABLE IF NOT EXISTS channels (
@@ -50,7 +69,7 @@ class SqliteDriver:
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 controller BOOLEAN NOT NULL
-                    CHECK (controller IN (0,1)),
+                    CHECK (controller IN (0,1))
                     DEFAULT 0
             );""")
         c.execute("""
@@ -109,9 +128,34 @@ class SqliteDriver:
 
     def join_channel(self, channel):
         """Populate a new channel in the database"""
+        dbprint("Created a new channel")
+        c = self.conn.cursor()
         # create a new entry in channels
+        # will be IGNOREd if channel already exists (UNIQUE constraint)
+        c.execute("""
+            INSERT OR IGNORE INTO channels
+                (channel_name)
+            VALUES (?)
+                  """, (channel))
+        # create a new messages_x channel for message logging
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS messages_{} (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                sender INTEGER NOT NULL
+                    REFERENCES users(id),
+                date TEXT NOT NULL
+                    DEFAULT CURRENT_TIMESTAMP,
+                message TEXT NOT NULL
+            )""".format(channel))
+        self.conn.commit()
+        # each channel in channels shoud have a messages_channelname
+        # might be an idea to make a function that checks
+
+    def get_all_tables(self):
+        """Returns a list of all tables"""
         c = self.conn.cursor()
         c.execute("""
-            INSERT INTO channels
-                (channel_name, date_checked, autojoin)
-            VALUES (
+            SELECT name FROM sqlite_master WHERE type='table'
+                  """)
+        # convert list of tuples to list of strings
+        return [''.join(names) for names in c.fetchall()]

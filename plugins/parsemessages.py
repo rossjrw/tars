@@ -18,7 +18,8 @@ def converse(irc_c, msg, cmd):
     # we can't always tell if a message is a command or not
     getattr(commands.COMMANDS, 'converse').command(irc_c, msg, cmd)
 
-@plugin_class("parsemessages")
+@plugin_class('parsemessages')
+@plugin_class.requires('db')
 class ParseMessages(object):
     def __init__(self, irc_c, config):
         print("Parse plugin loaded!")
