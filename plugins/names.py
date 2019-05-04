@@ -11,6 +11,12 @@ from pyaib.plugins import observe, plugin_class
 import re
 from pprint import pprint
 
+def nameprint(text, error=False):
+    bit = "[\x1b[38;5;218mNames\x1b[0m] "
+    if error:
+        bit += "[\x1b[38;5;196mError\x1b[0m] "
+    print(bit + str(text))
+
 @plugin_class('names')
 @plugin_class.requires('db')
 class Names:
@@ -38,5 +44,11 @@ class Names:
                     'mode': None
                 }
         # just need to log these names to the db now
-        pprint(names)
+        nameprint("Getting NAMES from {}".format(msg.raw_channel))
         irc_c.db._driver.sort_names(channel, names)
+
+    @observe('IRC_MSG_NICK') # someone changes their name
+    def change_name(self, irc_c, msg):
+        assert msg.kind == 'NICK'
+        nameprint("{} changed their name to {}".format(msg.nick, msg.args))
+        irc_c.db._driver.rename_user(msg.nick, msg.args)

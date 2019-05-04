@@ -6,6 +6,7 @@ Logs all input and output for recordkeeping purposes.
 import time
 from pyaib.plugins import observe, plugin_class
 from helpers import parse
+from pprint import pprint
 
 @plugin_class('log')
 class Log:

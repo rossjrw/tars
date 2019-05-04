@@ -18,7 +18,7 @@ import sqlite3
 from pprint import pprint
 
 def dbprint(text, error=False):
-    bit = "[\x1b[38;5;28mdb_driver\x1b[0m] "
+    bit = "[\x1b[38;5;108mDatabase\x1b[0m] "
     if error:
         bit += "[\x1b[38;5;196mError\x1b[0m] "
     print(bit + str(text))
@@ -27,7 +27,7 @@ def norm(thing):
     """fetchX often returns a tuple or a list of tuples because it's dumb"""
     if thing is None:
         return None
-    if all(isinstance(el, list) for el in thing):
+    if all(isinstance(el, (list, tuple)) for el in thing):
         thing = [norm(el) for el in thing]
     else:
         # thing is either a 0 or 1 length tuple
@@ -255,13 +255,13 @@ class SqliteDriver:
             SELECT user_id FROM user_aliases WHERE alias=? AND type=?
                   """, (alias, type))
         result = c.fetchall()
-        dbprint("Adding user {}".format(alias))
-        pprint(result)
         if result:
             # this alias already exists
             if len(result) == 1:
+                dbprint("User {} already exists as ID {}"
+                        .format(alias, norm(result)))
                 # unambiguous user, yay!
-                return result[0]
+                return norm(result)
             else:
                 # BIG PROBLEM
                 # TODO
@@ -272,6 +272,7 @@ class SqliteDriver:
             c.execute("""
                 INSERT INTO users DEFAULT VALUES
                       """)
+            dbprint("Adding user {} as ID {}".format(alias, c.lastrowid))
             # 2. add the alias
             c.execute("""
                 INSERT INTO user_aliases (alias, type, user_id)
@@ -279,7 +280,78 @@ class SqliteDriver:
                        """, (alias, type, c.lastrowid))
             self.conn.commit()
 
-    def rename_user(self, old, new):
+    def rename_user(self, old, new, force=False):
         """Adds a new alias for a user"""
-        # make sure to handle when a user renames to an alias that already
-        # exists
+        # make sure to handle when a user renames to an alias that exists
+        # check if either name already exists (old should)
+        c = self.conn.cursor()
+        c.execute("""
+            SELECT user_id FROM user_aliases
+            WHERE alias=?
+                  """, (old, ))
+        old_result = c.fetchall()
+        if len(old_result) == 0:
+            # the old name does not exist
+            old_result = None
+        elif len(old_result) == 1:
+            old_result = norm(old_result)
+        else:
+            # there's more than one user with this nick
+            # ignore for now?
+            pass
+        c.execute("""
+            SELECT user_id FROM user_aliases
+            WHERE alias=?
+                  """, (new, ))
+        new_result = c.fetchall()
+        if len(new_result) == 0:
+            # the new name does not exist
+            new_result = None
+        elif len(new_result) == 1:
+            new_result = norm(new_result)
+        else:
+            # there's more than one user with this nick
+            # ignore for now?
+            pass
+        if old_result == new_result:
+            if old_result is None:
+                # this is a new user who joined after the last names
+                self.add_user(old)
+                self.rename_user(new)
+                pass
+            else:
+                # both already marked as the same user, nothing to do here
+                pass
+        else:
+            if old_result is None:
+                # an old user happened to join with a new name
+                pass
+            elif new_result is None:
+                # new is unassociated, but old is
+                # merge the new name into the old
+                dbprint("Adding a new nick to {}".format(old))
+                c.execute("""
+                    INSERT INTO user_aliases (user_id, alias, type)
+                    VALUES ( ? , ? , ? )
+                          """, (old_result, new, 'irc'))
+                self.conn.commit()
+            else:
+                # both nicks are associated with different users
+                # what the fuck do we do here??
+                if force:
+                    # force the change
+                    dbprint("Stealing {} from {}" .format(new, old))
+                    # ^TODO make that more informative (wikiname?)
+                    c.execute("""
+                        DELETE FROM user_aliases
+                        WHERE alias=?
+                              """, (new, ))
+                    c.execute("""
+                        INSERT INTO user_aliases (user_id, alias, type)
+                        VALUES ( ? , ? , ? )
+                              """, (new_result, new, 'irc'))
+                    self.conn.commit()
+                else:
+                    # prompt the user for confirmation?
+                    pass
+                pass
