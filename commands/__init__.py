@@ -46,7 +46,7 @@ COMMANDS = {
                },
     "converse": {"converse": {"converse"},
                 },
-    "dbq": {"query": {"query"},
+    "dbq": {"query": {"query","dbq"},
            },
 }
 
