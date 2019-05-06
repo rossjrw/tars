@@ -7,6 +7,11 @@ from pprint import pprint
 from helpers.error import CommandError
 from helpers.parse import nickColor
 
+class alias:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        pass
+
 class query:
     @classmethod
     def command(cls, irc_c, msg, cmd):
@@ -40,8 +45,24 @@ class query:
                     msg.reply("{}'s ID is {}.".format(search, id))
             else:
                 if type == 'channel':
-                    msg.reply("I don't know that channel.")
+                    msg.reply("I don't know the channel '{}'."
+                             .format(search))
                 else:
-                    msg.reply("I don't know that name.")
+                    msg.reply("I don't know anything called '{}'."
+                              .format(search))
+        elif cmd.args['root'][0].startswith('alias'):
+            search = cmd.args['root'][1] if len(cmd.args['root']) > 1 \
+                                         else msg.sender
+            aliases = irc_c.db._driver.get_aliases(search)
+            # should be None or a list of lists
+            if aliases is None:
+                msg.reply("I don't know anyone with the alias '{}'."
+                          .format(search))
+            else:
+                msg.reply("I know {} users with the alias '{}'."
+                          .format(len(aliases), search))
+                for i,group in enumerate(aliases):
+                    msg.reply("\x02{}.\x0F {}"
+                              .format(i+1, ", ".join(group)))
         else:
             raise CommandError("Unknown argument")

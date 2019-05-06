@@ -199,6 +199,27 @@ class SqliteDriver:
                   """)
         return norm(c.fetchall())
 
+    def get_aliases(self, nick):
+        """Returns all of someone's aliases"""
+        c = self.conn.cursor()
+        c.execute("""
+            SELECT user_id FROM user_aliases
+            WHERE alias=?
+                  """, (nick, ))
+        ids = norm(c.fetchall())
+        if len(ids) == 0:
+            return None
+        else:
+            result = []
+            # list of lists
+            for id in ids:
+                c.execute("""
+                    SELECT alias FROM user_aliases
+                    WHERE user_id=?
+                          """, (id, ))
+                result.append(norm(c.fetchall()))
+            return result
+
     def get_generic_id(self, search):
         """Returns from users, channels, articles"""
         c = self.conn.cursor()
@@ -308,7 +329,7 @@ class SqliteDriver:
             # the new name does not exist
             new_result = None
         elif len(new_result) == 1:
-            new_result = norm(new_result)
+            new_result = norm(new_result)[0]
         else:
             # there's more than one user with this nick
             # ignore for now?
@@ -317,7 +338,7 @@ class SqliteDriver:
             if old_result is None:
                 # this is a new user who joined after the last names
                 self.add_user(old)
-                self.rename_user(new)
+                self.rename_user(old, new)
                 pass
             else:
                 # both already marked as the same user, nothing to do here
@@ -338,6 +359,11 @@ class SqliteDriver:
             else:
                 # both nicks are associated with different users
                 # what the fuck do we do here??
+                force = True # fuck it, just steal the nick
+                # probably need to work out which nick is regged
+                    # we can do that!
+                    # save the modes of channels when we NAMES them
+                    # if the channel is +R, then each name THAT JOINS must be r
                 if force:
                     # force the change
                     dbprint("Stealing {} from {}" .format(new, old))
@@ -354,4 +380,3 @@ class SqliteDriver:
                 else:
                     # prompt the user for confirmation?
                     pass
-                pass
