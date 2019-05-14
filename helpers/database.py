@@ -16,6 +16,7 @@ Provides functions for manipulating the database.
 from pyaib.db import db_driver
 import sqlite3
 from pprint import pprint
+from helpers.parse import nickColor
 
 def dbprint(text, error=False):
     bit = "[\x1b[38;5;108mDatabase\x1b[0m] "
@@ -82,7 +83,7 @@ class SqliteDriver:
         c = self.conn.cursor()
         c.execute("""
             CREATE TABLE IF NOT EXISTS channels (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id INTEGER PRIMARY KEY,
                 channel_name TEXT NOT NULL,
                 date_checked TEXT NOT NULL
                     DEFAULT CURRENT_TIMESTAMP,
@@ -94,32 +95,29 @@ class SqliteDriver:
                     DEFAULT 0
             );""")
         # users stores wiki, irc and discord users
-        c.execute("""
+        c.executescript("""
             CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id INTEGER PRIMARY KEY,
                 controller BOOLEAN NOT NULL
                     CHECK (controller IN (0,1))
                     DEFAULT 0
-            );""")
-        c.execute("""
+            );
             CREATE TABLE IF NOT EXISTS channels_users (
                 channel_id INTEGER NOT NULL
                     REFERENCES channels(id),
                 user_id INTEGER NOT NULL
                     REFERENCES users(id),
                 user_mode CHARACTER(1)
-            );""")
-        c.execute("""
+            );
             CREATE TABLE IF NOT EXISTS user_aliases (
                 user_id INTEGER NOT NULL
                     REFERENCES users(id),
                 alias TEXT NOT NULL,
                 type TEXT NOT NULL
                     CHECK (type IN ('irc','wiki','discord'))
-            );""")
-        c.execute("""
+            );
             CREATE TABLE IF NOT EXISTS articles (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id INTEGER PRIMARY KEY,
                 url TEXT NOT NULL UNIQUE,
                 title TEXT NOT NULL,
                 scp_num TEXT,
@@ -132,20 +130,17 @@ class SqliteDriver:
                     DEFAULT 0,
                 date_checked TEXT NOT NULL
                     DEFAULT CURRENT_TIMESTAMP
-            );""")
-        c.execute("""
+            );
             CREATE TABLE IF NOT EXISTS articles_tags (
                 article_id INTEGER NOT NULL
                     REFERENCES articles(id),
                 tag TEXT NOT NULL
-            );""")
-        c.execute("""
+            );
             CREATE TABLE IF NOT EXISTS articles_authors (
                 article_id INTEGER NOT NULL
                     REFERENCES articles(id),
                 author TEXT NOT NULL
-            );""")
-        c.execute("""
+            );
             CREATE TABLE IF NOT EXISTS showmore_list (
                 channel_id INTEGER NOT NULL
                     REFERENCES channels(id),
@@ -281,7 +276,7 @@ class SqliteDriver:
             # this alias already exists
             if len(result) == 1:
                 dbprint("User {} already exists as ID {}"
-                        .format(alias, norm(result)))
+                        .format(nickColor(alias), norm(result)))
                 # unambiguous user, yay!
                 return norm(result)
             else:
@@ -294,7 +289,8 @@ class SqliteDriver:
             c.execute("""
                 INSERT INTO users DEFAULT VALUES
                       """)
-            dbprint("Adding user {} as ID {}".format(alias, c.lastrowid))
+            dbprint("Adding user {} as ID {}"
+                    .format(nickColor(alias), c.lastrowid))
             # 2. add the alias
             c.execute("""
                 INSERT INTO user_aliases (alias, type, user_id)

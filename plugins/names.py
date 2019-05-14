@@ -10,6 +10,7 @@ Whenever we gets a NAMES response from the server, save that info to the db.
 from pyaib.plugins import observe, plugin_class
 import re
 from pprint import pprint
+from helpers.parse import nickColor
 
 def nameprint(text, error=False):
     bit = "[\x1b[38;5;218mNames\x1b[0m] "
@@ -44,7 +45,7 @@ class Names:
                     'mode': None
                 }
         # just need to log these names to the db now
-        nameprint("Getting NAMES from {}".format(msg.raw_channel))
+        nameprint("Getting NAMES from {}".format(nickColor(channel)))
         irc_c.db._driver.sort_names(channel, names)
 
     @observe('IRC_MSG_NICK') # someone changes their name

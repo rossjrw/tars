@@ -28,7 +28,7 @@ class query:
             else:
                 msg.reply("Printed a list of users to console. {} total."
                           .format(len(users)))
-                pprint(" ".join([nickColor(u) for u in users]))
+                print(" ".join([nickColor(u) for u in users]))
         elif cmd.args['root'][0] == 'id':
             # we want to find the id of something
             if len(cmd.args['root']) != 2:
