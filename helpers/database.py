@@ -37,7 +37,8 @@ def norm(thing):
             return thing[0]
         else:
             # shouldn't be norming this thing
-            raise IndexError
+            raise IndexError("norming something of length {}"
+                             .format(len(thing)))
     return thing
 
 # mark this file as the driver instead of pyaib.dbd.sqlite
