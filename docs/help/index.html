@@ -150,15 +150,16 @@
         it doesn't find anything, it'll move up to the previous message, and will keep doing so until it finds a command.</p>
     <p>Chevronning has a variety of effects:</p>
     <ul>
+        <li>If TARS finds a command that it previously ignored because another bot was present, it will execute it</li>
+        <li>If TARS finds a command that starts with the wrong character (e.g. <code>!search</code> or <code>search</code>), it will execute it</li>
         <li>If the message contains any SCP numbers, TARS will provide links for them all</li>
         <li>If the whole message body, minus any pings, is a match for an article on the wiki, TARS will provide a link for it</li>
-        <li>If TARS finds a command that starts with the wrong character (e.g. <code>!search</code> or <code>search</code>), it will execute it</li>
-        <li>If TARS finds a command that it previously ignored because another bot was present, it will execute it</li>
         <li>Otherwise, TARS will not do anything.</li>
     </ul>
     <p>Append a number after the chevron to change how many messages are checked, e.g. <code>TARS: ^ 20</code>. There is a hard limit of 50, and the default is 10.</p>
     <p>Change the number of chevrons to skip commands. <code>^</code> will execute the first command that is found, <code>^^</code> will skip the first command and execute the second command, and so on.</p>
     <p>An empty message that pings TARS and nothing else, eg <code>TARS:</code>, is equivalent to <code>TARS: ^ 1</code>.</p>
+    <p>When chevronning, TARS will always ignore any other chevrons.</p>
 
     <h2 id="joiningleaving">Joining/Leaving</h2>
     <p>TARS will join any channel that it's invited to. This channel will be added to the auto-join list.</p>

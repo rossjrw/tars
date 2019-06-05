@@ -17,8 +17,18 @@ class query:
     def command(cls, irc_c, msg, cmd):
         if len(cmd.args['root']) == 0:
             raise CommandError("Missing argument")
-        if cmd.args['root'][0] == 'tables':
-            msg.reply(", ".join(irc_c.db._driver.get_all_tables()))
+        if cmd.args['root'][0].startswith('table'):
+            if len(cmd.args['root']) >= 2:
+                # print a specific table
+                msg.reply("Printing contents of table {} to console."
+                          .format(cmd.args['root'][1]))
+                irc_c.db._driver.print_one_table(cmd.args['root'][1])
+            else:
+                # print a list of all tables
+                tables = irc_c.db._driver.get_all_tables()
+                msg.reply("Printed a list of tables to console. {} total."
+                          .format(len(tables)))
+                print(" ".join(tables))
         elif cmd.args['root'][0] == 'users':
             users = irc_c.db._driver.get_all_users()
             if len(users) == 0:

@@ -17,6 +17,7 @@ from pyaib.db import db_driver
 import sqlite3
 from pprint import pprint
 from helpers.parse import nickColor
+import pandas as pd
 
 def dbprint(text, error=False):
     bit = "[\x1b[38;5;108mDatabase\x1b[0m] "
@@ -81,10 +82,10 @@ class SqliteDriver:
         else:
             dbprint("Creating database...")
         c = self.conn.cursor()
-        c.execute("""
+        c.executescript("""
             CREATE TABLE IF NOT EXISTS channels (
                 id INTEGER PRIMARY KEY,
-                channel_name TEXT NOT NULL,
+                channel_name TEXT NOT NULL UNIQUE,
                 date_checked TEXT NOT NULL
                     DEFAULT CURRENT_TIMESTAMP,
                 autojoin BOOLEAN NOT NULL
@@ -93,9 +94,7 @@ class SqliteDriver:
                 helen_active BOOLEAN NOT NULL
                     CHECK (helen_active IN (0,1))
                     DEFAULT 0
-            );""")
-        # users stores wiki, irc and discord users
-        c.executescript("""
+            );
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
                 controller BOOLEAN NOT NULL
@@ -107,7 +106,8 @@ class SqliteDriver:
                     REFERENCES channels(id),
                 user_id INTEGER NOT NULL
                     REFERENCES users(id),
-                user_mode CHARACTER(1)
+                user_mode CHARACTER(1),
+                UNIQUE(channel_id, user_id)
             );
             CREATE TABLE IF NOT EXISTS user_aliases (
                 user_id INTEGER NOT NULL
@@ -185,6 +185,15 @@ class SqliteDriver:
         # convert list of tuples to list of strings
         return norm(c.fetchall())
 
+    def print_one_table(self, table):
+        """Pretty print a single table"""
+        try:
+            print(pd.read_sql_query("SELECT * FROM {}".format(table),
+                                    self.conn))
+        except pd.io.sql.DatabaseError:
+            # fail silently so that users can't see what channels exist
+            print("The table {} does not exist.".format(table))
+
     def get_all_users(self):
         """Returns a list of all users"""
         # For now, just return aliases
@@ -252,18 +261,36 @@ class SqliteDriver:
         if not self._check_exists(channel, 'channel'):
             dbprint('{} does not exist, creating'.format(channel), True)
             self.join_channel(channel)
-        # names is a list of objects {name, mode}
-        just_names = [user['nick'] for user in names]
+        # names is a list of objects {nick, mode}
         # 1. add new users and user_aliases
-        for name in just_names:
-            self.add_user(name)
+        for name in names:
+            name['id'] = self.add_user(name['nick'])
         # 2. add NAMES to channels_users
         c = self.conn.cursor()
         c.execute("""
-            INSERT OR REPLACE INTO
-                  """)
+            SELECT id FROM channels WHERE channel_name=?
+                  """, (channel, ))
+        channel = norm(c.fetchone())
+        assert isinstance(channel, int)
+        # need to delete old NAMES data for this channel
+        # (may want to waive this in the future for single user changes)
+        c.execute("""
+            DELETE FROM channels_users WHERE channel_id=?
+                  """, (channel, ))
+        # then add new NAMES data
+        for name in names:
+            c.execute("""
+                INSERT OR REPLACE INTO channels_users
+                    (channel_id, user_id, user_mode)
+                VALUES( ? , ? , ? )
+                      """, (channel, name['id'], name['mode']))
         # 3. updates in channels when this channel was last checked
-        # 4. 
+        c.execute("""
+            UPDATE channels
+            SET date_checked=CURRENT_TIMESTAMP
+            WHERE channel_name=?
+                  """, (channel, ))
+        # 4. TODO what else needs to be done?
 
     def add_user(self, alias, type='irc'):
         """Adds/updates a user and returns their ID"""
@@ -276,12 +303,14 @@ class SqliteDriver:
             # this alias already exists
             if len(result) == 1:
                 dbprint("User {} already exists as ID {}"
-                        .format(nickColor(alias), norm(result)))
+                        .format(nickColor(alias), norm(result)[0]))
                 # unambiguous user, yay!
-                return norm(result)
+                # result = [(3,)] - we only want the number
+                return norm(result)[0]
             else:
                 # BIG PROBLEM
                 # TODO
+                dbprint("USER {} IS AMBIGUOUS".format(alias), True)
                 return result
         else:
             # this alias does not already exist
@@ -289,14 +318,16 @@ class SqliteDriver:
             c.execute("""
                 INSERT INTO users DEFAULT VALUES
                       """)
+            new_user_id = c.lastrowid
             dbprint("Adding user {} as ID {}"
-                    .format(nickColor(alias), c.lastrowid))
+                    .format(nickColor(alias), new_user_id))
             # 2. add the alias
             c.execute("""
                 INSERT INTO user_aliases (alias, type, user_id)
                 VALUES ( ? , ? , ? )
-                       """, (alias, type, c.lastrowid))
+                       """, (alias, type, new_user_id))
             self.conn.commit()
+            return new_user_id
 
     def rename_user(self, old, new, force=False):
         """Adds a new alias for a user"""

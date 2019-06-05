@@ -4,6 +4,7 @@ Commands that output basic information about the bot.
 """
 
 from helpers.error import CommandError
+from helpers.greetings import acronym
 
 class help:
     @classmethod
@@ -13,7 +14,7 @@ class help:
 class version:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        msg.reply("Made by Croquembouche")
+        msg.reply(acronym() + " · made by Croquembouche")
 
 class github:
     """Provide links to the github"""

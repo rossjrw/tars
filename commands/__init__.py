@@ -33,7 +33,7 @@ COMMANDS = {
     "chevron": {"chevron": {"chevron"},
                },
     "info": {"help": {"help"},
-             "version": {"version","tars"},
+             "version": {"tars"},
              "github": {"github","gh"},
              "user": {"user"},
              "tag": {"tag"},
