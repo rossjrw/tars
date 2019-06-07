@@ -33,7 +33,7 @@ class leave:
             leavemsg = " ".join(cmd.getarg('message','m'))
         else:
             leavemsg = None
-        if 'root' in cmd.args:
+        if len(cmd.args['root']) > 0:
             irc_c.PART(cmd.args['root'][0], message=leavemsg)
         else:
             irc_c.PART(msg.raw_channel, message=leavemsg)
@@ -61,8 +61,22 @@ class say:
             "jazstar",
         ]:
             raise CommandError("You can only .say to #tars occupants atm")
-        irc_c.PRIVMSG(cmd.args['root'][0], " ".join(cmd.args['root'][1:]))
-        msg.reply("Saying that to {}".format(cmd.args['root'][0]))
+        if cmd.args['root'][0][0] == '/' or cmd.args['root'][1][0] == '/':
+            # This is an IRC command
+            say.issue_raw(irc_c, msg, cmd)
+        else:
+            irc_c.PRIVMSG(cmd.args['root'][0], " ".join(cmd.args['root'][1:]))
+            msg.reply("Saying that to {}".format(cmd.args['root'][0]))
+
+    @staticmethod
+    def issue_raw(irc_c, msg, cmd):
+        if msg.nick == "Croquembouche":
+            if cmd.args['root'][1][0] == '/':
+                cmd.args['root'].pop(0)
+            msg.reply("Issuing that...")
+            irc_c.RAW(" ".join(cmd.args['root'][1:]))
+        else:
+            raise CommandError("Only Croquembouche can do that.")
 
 class config:
     """Provide a link to the config page"""

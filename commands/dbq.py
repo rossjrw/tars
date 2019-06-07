@@ -74,5 +74,12 @@ class query:
                 for i,group in enumerate(aliases):
                     msg.reply("\x02{}.\x0F {}"
                               .format(i+1, ", ".join(group)))
+        elif cmd.args['root'][0].startswith('occ'):
+            if len(cmd.args['root']) < 2:
+                raise CommandError("Specify a channel to get the occupants of")
+            msg.reply("Printing occupants of {} to console"
+                      .format(cmd.args['root'][1]))
+            users = irc_c.db._driver.get_occupants(cmd.args['root'][1])
+            pprint([nickColor(user) for user in users])
         else:
             raise CommandError("Unknown argument")

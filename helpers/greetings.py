@@ -10,6 +10,7 @@ def greet(subject):
         "Howdy, {}.",
         "Hi, {}.",
         "👉😎👉",
+        "Hello, {}.",
     ]
     channel = [
         "Hey everyone.",

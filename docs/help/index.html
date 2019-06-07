@@ -379,8 +379,9 @@
     <p>For checking the integrity of the database.</p>
     <ul>
         <li><b>..promoted:</b> See all articles that have been promoted already.</li>
-        <li><b>..dbq tables|users:</b> List all of something.</li>
-        <li><b>..dbq id [channel|user|article]:</b> Get something's ID.</li>
+        <li><b>..dbq users:</b> List all users to console.</li>
+        <li><b>..dbq table[s] [table]:</b> Prints the specified table to the console (but does not confirm in IRC whether or not said table actually exists), or lists all tables if none is specified.</li>
+        <li><b>..dbq id [channel|user|article]:</b> Get something's ID. If nothing is specified, gets your own ID.</li>
         <li><b>..state [channel]:</b> Get the state of either the given channel or the current one. Useful for other bots. The user issuing the query must also be present in that channel.</li>
     </ul>
 

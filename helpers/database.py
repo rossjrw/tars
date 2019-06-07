@@ -114,7 +114,10 @@ class SqliteDriver:
                     REFERENCES users(id),
                 alias TEXT NOT NULL,
                 type TEXT NOT NULL
-                    CHECK (type IN ('irc','wiki','discord'))
+                    CHECK (type IN ('irc','wiki','discord')),
+                most_recent_irc BOOLEAN NOT NULL
+                    CHECK (most_recent_irc IN (0,1))
+                    DEFAULT 0
             );
             CREATE TABLE IF NOT EXISTS articles (
                 id INTEGER PRIMARY KEY,
@@ -149,6 +152,15 @@ class SqliteDriver:
             );""")
         # Will also need a messages table for each channel
         self.conn.commit()
+
+    def issue(query):
+        """For accepting refactoring (commands/refactor.py)"""
+        dbprint("Refactoring database")
+        c = self.conn.cursor()
+        dbprint("Executing...")
+        c.executescript(query)
+        dbprint("Committing...")
+        c.commit()
 
     def join_channel(self, channel):
         """Populate a new channel in the database"""
@@ -255,6 +267,37 @@ class SqliteDriver:
                     return None, type
         return id, type
 
+    def get_occupants(self, channel, convert_to_nicks=False):
+        """Get a list of current occupants of a channel."""
+        if channel[0] != '#':
+            raise ValueError("Channel name must start with #.")
+        c = self.conn.cursor()
+        # find out the channel id
+        c.execute("""
+            SELECT id FROM channels WHERE channel_name=?
+                  """, (channel, ))
+        id = norm(c.fetchone())
+        dbprint("get_occupants: id is {}".format(id))
+        assert id is not None, "Channel {} does not exist.".format(channel)
+        # get the occupants
+        c.execute("""
+            SELECT user_id FROM channels_users WHERE channel_id=?
+                  """, (id, ))
+        users = norm(c.fetchall())
+        dbprint("get_occupants: users is {}".format(join(",",users)))
+        assert len(users) > 0, "There are no users in {}.".format(channel)
+        if convert_to_nicks:
+            users = [self.get_current_nick(id) for id in users]
+        return users
+
+    def get_current_nick(self, id):
+        """Gets the current nick of a user."""
+        c = self.conn.cursor()
+        c.execute("""
+            SELECT current_nick FROM users WHERE id=?
+                  """, (id, ))
+        return norm(c.fetchone())
+
     def sort_names(self, channel, names):
         """Sort the results of a NAMES query"""
         # should already have channel row + table set up.
@@ -339,6 +382,8 @@ class SqliteDriver:
             WHERE alias=?
                   """, (old, ))
         old_result = c.fetchall()
+        print("old_result:")
+        print(old_result)
         if len(old_result) == 0:
             # the old name does not exist
             old_result = None
@@ -353,6 +398,8 @@ class SqliteDriver:
             WHERE alias=?
                   """, (new, ))
         new_result = c.fetchall()
+        print("new_result:")
+        print(new_result)
         if len(new_result) == 0:
             # the new name does not exist
             new_result = None
@@ -379,6 +426,8 @@ class SqliteDriver:
                 # new is unassociated, but old is
                 # merge the new name into the old
                 dbprint("Adding a new nick to {}".format(old))
+                print(old_result)
+                print(new)
                 c.execute("""
                     INSERT INTO user_aliases (user_id, alias, type)
                     VALUES ( ? , ? , ? )
