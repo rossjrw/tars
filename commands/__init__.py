@@ -28,6 +28,8 @@ COMMANDS = {
               "say": {"say"},
               "config": {"config"},
              },
+    "refactor": {"refactor": {"refactor"},
+                },
     "hug": {"hug": {"hug","hugtars"},
            },
     "chevron": {"chevron": {"chevron"},

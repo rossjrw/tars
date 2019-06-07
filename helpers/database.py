@@ -153,14 +153,14 @@ class SqliteDriver:
         # Will also need a messages table for each channel
         self.conn.commit()
 
-    def issue(query):
+    def issue(self, query):
         """For accepting refactoring (commands/refactor.py)"""
         dbprint("Refactoring database")
         c = self.conn.cursor()
         dbprint("Executing...")
         c.executescript(query)
         dbprint("Committing...")
-        c.commit()
+        self.conn.commit()
 
     def join_channel(self, channel):
         """Populate a new channel in the database"""
