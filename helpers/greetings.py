@@ -72,6 +72,14 @@ def acronym_gen():
         "!Tales !Are !Real !Shit",
         "!TARS' !Ass? !Real !Soft.",
         "It's just SRAT but backwards.",
+        "!Tummy & !Ass !Rubs, !Sergeant",
+        "!Thanks, !Anderson !Robotics. !Sweet.",
+        "!Trying !Acronyms !Repeatedly? !Super!",
+        "!Tried !Adding !Rounderhouse - !Sorry!",
+        "!That's !A !Regretful !Sentence",
+        "!These !Are !Really !Something.",
+        "!TARS !Acronym !Repeating !Successfully",
+        "!Turnt !At #!Romanticpenthouse!Suite",
     ]
     last_response = []
     while True:

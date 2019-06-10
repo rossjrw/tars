@@ -79,7 +79,10 @@ class query:
                 raise CommandError("Specify a channel to get the occupants of")
             msg.reply("Printing occupants of {} to console"
                       .format(cmd.args['root'][1]))
-            users = irc_c.db._driver.get_occupants(cmd.args['root'][1])
-            pprint([nickColor(user) for user in users])
+            users = irc_c.db._driver.get_occupants(cmd.args['root'][1], True)
+            if isinstance(users[0], int):
+                pprint(users)
+            else:
+                pprint([nickColor(user) for user in users])
         else:
             raise CommandError("Unknown argument")

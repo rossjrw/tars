@@ -117,6 +117,9 @@ class SqliteDriver:
                     CHECK (type IN ('irc','wiki','discord')),
                 most_recent_irc BOOLEAN NOT NULL
                     CHECK (most_recent_irc IN (0,1))
+                    DEFAULT 0,
+                weight BOOLEAN NOT NULL
+                    CHECK (weight IN (0,1))
                     DEFAULT 0
             );
             CREATE TABLE IF NOT EXISTS articles (
@@ -284,7 +287,8 @@ class SqliteDriver:
             SELECT user_id FROM channels_users WHERE channel_id=?
                   """, (id, ))
         users = norm(c.fetchall())
-        dbprint("get_occupants: users is {}".format(join(",",users)))
+        print(users)
+        dbprint("get_occupants: users is {}".format(",".join(map(str,users))))
         assert len(users) > 0, "There are no users in {}.".format(channel)
         if convert_to_nicks:
             users = [self.get_current_nick(id) for id in users]
@@ -294,9 +298,19 @@ class SqliteDriver:
         """Gets the current nick of a user."""
         c = self.conn.cursor()
         c.execute("""
-            SELECT current_nick FROM users WHERE id=?
+            SELECT alias FROM user_aliases
+            WHERE most_recent_irc=1 AND user_id=?
                   """, (id, ))
-        return norm(c.fetchone())
+        name = norm(c.fetchone())
+        if name:
+            return name
+        else:
+            c.execute("""
+                SELECT alias FROM user_aliases
+                WHERE user_id=?
+                      """, (id, ))
+            name = random.choice(norm(c.fechall()))
+            return "??{}".format(name)
 
     def sort_names(self, channel, names):
         """Sort the results of a NAMES query"""
@@ -344,6 +358,10 @@ class SqliteDriver:
         result = c.fetchall()
         if result:
             # this alias already exists
+            # c.execute("""
+            #     UPDATE user_aliases SET most_recent_irc=0
+            #     WHERE alias=?
+            #           """, (
             if len(result) == 1:
                 dbprint("User {} already exists as ID {}"
                         .format(nickColor(alias), norm(result)[0]))
@@ -365,6 +383,7 @@ class SqliteDriver:
             dbprint("Adding user {} as ID {}"
                     .format(nickColor(alias), new_user_id))
             # 2. add the alias
+            # 2.1 mark the previous alias as not current
             c.execute("""
                 INSERT INTO user_aliases (alias, type, user_id)
                 VALUES ( ? , ? , ? )
@@ -372,8 +391,11 @@ class SqliteDriver:
             self.conn.commit()
             return new_user_id
 
+    def add_alias(self,
+
     def rename_user(self, old, new, force=False):
         """Adds a new alias for a user"""
+        # when a user renames, add the new nick at weight 0
         # make sure to handle when a user renames to an alias that exists
         # check if either name already exists (old should)
         c = self.conn.cursor()

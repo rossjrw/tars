@@ -282,7 +282,7 @@ class search:
                 #pprint.pprint(url)
                 if url['title'].endswith(" - SCP Foundation"):
                     url['title'] = url['title'][:-17]
-                msg.reply("No matches found. Did you mean: \x02{}\x0F? {}"
+                msg.reply("No matches found. Did you mean \x02{}\x0F? {}"
                            .format(url['title'], url['link']))
             else:
                 msg.reply("No matches found.")

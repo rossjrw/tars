@@ -10,6 +10,7 @@ import sys
 import inspect
 from helpers.error import CommandError, CommandNotExistError
 from importlib import reload
+from pprint import pprint
 
 test = "PARSEMESSAGES"
 
@@ -60,10 +61,13 @@ class ParseMessages(object):
             except CommandError as e:
                 msg.reply("Invalid command: {}".format(str(e)))
             except Exception as e:
-                msg.reply("An unexpected error has occurred.")
+                if msg.channel != '#tars':
+                    msg.reply(("An unexpected error has occurred. "
+                               "I've already reported it — you don't need to "
+                               "do anything."))
                 # need to log the error somewhere - why not #tars?
                 irc_c.PRIVMSG("#tars",("\x02Error report:\x0F {} "
-                                       "issued `{}` --> `{}`"
+                                       "issued `{}` → `{}`"
                                       .format(msg.sender,msg.message,e)))
                 raise
         else:
