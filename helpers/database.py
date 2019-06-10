@@ -120,7 +120,8 @@ class SqliteDriver:
                     DEFAULT 0,
                 weight BOOLEAN NOT NULL
                     CHECK (weight IN (0,1))
-                    DEFAULT 0
+                    DEFAULT 0,
+                UNIQUE(user_id, alias, type)
             );
             CREATE TABLE IF NOT EXISTS articles (
                 id INTEGER PRIMARY KEY,
@@ -140,18 +141,21 @@ class SqliteDriver:
             CREATE TABLE IF NOT EXISTS articles_tags (
                 article_id INTEGER NOT NULL
                     REFERENCES articles(id),
-                tag TEXT NOT NULL
+                tag TEXT NOT NULL,
+                UNIQUE(article_id, tag)
             );
             CREATE TABLE IF NOT EXISTS articles_authors (
                 article_id INTEGER NOT NULL
                     REFERENCES articles(id),
-                author TEXT NOT NULL
+                author TEXT NOT NULL,
+                UNIQUE(article_id, author)
             );
             CREATE TABLE IF NOT EXISTS showmore_list (
                 channel_id INTEGER NOT NULL
                     REFERENCES channels(id),
                 id INTEGER NOT NULL,
-                article_id INTEGER NOT NULL
+                article_id INTEGER NOT NULL,
+                UNIQUE(channel_id,id)
             );""")
         # Will also need a messages table for each channel
         self.conn.commit()
@@ -391,7 +395,10 @@ class SqliteDriver:
             self.conn.commit()
             return new_user_id
 
-    def add_alias(self,
+    def add_alias(self, user, alias, weight=0):
+        """Adds a new alias to a user"""
+        # if weight=0 then /nick, if =1 then .alias
+        assert isinstance(user, int)
 
     def rename_user(self, old, new, force=False):
         """Adds a new alias for a user"""
