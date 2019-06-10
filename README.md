@@ -5,14 +5,21 @@ This README contains instructions for command line usage and implementation
 details. End users looking for command instruction should look at the
 documentation: https://rossjrw.github.io/tars/help/
 
-Documentation is currently far ahead of implementation. Many features described
-in the documentation are not yet present.
-
 All modules are from PyPI except:
 - pyaib, which is forked here: https://github.com/rossjrw/pyaib
 - re2, which is forked here: https://github.com/andreasvc/pyre2
 
 TARS is written in Python 3.5.2.
+
+## Current state
+
+TARS is not yet finished and has no ETA. TARS is, however, operational.
+
+Documentation is currently far ahead of implementation. Many features described
+in the documentation are not yet present.
+
+Development is currently focused on the core implementation, particularly the
+internal database.
 
 ## Usage
 
