@@ -120,8 +120,8 @@ class SqliteDriver:
                 alias TEXT NOT NULL,
                 type TEXT NOT NULL
                     CHECK (type IN ('irc','wiki','discord')),
-                most_recent_irc BOOLEAN NOT NULL
-                    CHECK (most_recent_irc IN (0,1))
+                most_recent BOOLEAN NOT NULL
+                    CHECK (most_recent IN (0,1))
                     DEFAULT 0,
                 weight BOOLEAN NOT NULL
                     CHECK (weight IN (0,1))
@@ -308,7 +308,7 @@ class SqliteDriver:
         c = self.conn.cursor()
         c.execute('''
             SELECT alias FROM user_aliases
-            WHERE most_recent_irc=1 AND user_id=?
+            WHERE most_recent=1 AND user_id=? AND type='irc'
                   ''', (id, ))
         name = norm(c.fetchone())
         if name:
@@ -368,8 +368,8 @@ class SqliteDriver:
         if result:
             # this alias already exists
             # c.execute('''
-            #     UPDATE user_aliases SET most_recent_irc=0
-            #     WHERE alias=?
+            #     UPDATE user_aliases SET most_recent=0
+            #     WHERE alias=? AND type='irc'
             #           ''', (
             if len(result) == 1:
                 dbprint("User {} already exists as ID {}"
@@ -401,13 +401,14 @@ class SqliteDriver:
             return new_user_id
 
     def add_alias(self, user, alias, weight=0):
-        """Adds a new alias to a user"""
+        """Adds or updates an alias to a user"""
         # if weight=0 then /nick, if =1 then .alias
-        # if weight=0 we can assume that most_recent_irc=True
+        # if weight=0 we can assume that most_recent=True
         assert isinstance(user, int)
         c = self.conn.cursor()
         c.execute('''
-            INSERT OR REPLACE INTO user_aliases(user_id,alias,type
+            INSERT OR REPLACE INTO user_aliases
+                  (user_id, alias, type, most_recent, weight)
                   ''')
 
     def rename_user(self, old, new, force=False):
