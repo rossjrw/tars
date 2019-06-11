@@ -13,6 +13,11 @@ Provides functions for manipulating the database.
 # irc_c.db._driver.methodname()
 # this pretty much bypasses pyaib's db simplifier
 
+f = query('''
+          SELECT foo
+          FROM bar
+          ''')
+
 from pyaib.db import db_driver
 import sqlite3
 from pprint import pprint
@@ -64,15 +69,15 @@ class SqliteDriver:
         """Check if something exists in the database"""
         c = self.conn.cursor()
         if type == 'channel':
-            c.execute("""
+            c.execute('''
                 SELECT name FROM sqlite_master
                 WHERE type='table' AND name='messages_{}'
-                      """.format(name[1:]))
+                      '''.format(name[1:]))
         else:
-            c.execute("""
+            c.execute('''
                 SELECT name FROM sqlite_master
                 WHERE type='{}' AND name='{}'
-                      """.format(type, name))
+                      '''.format(type, name))
         return bool(c.fetchone())
 
     def _create_database(self):
@@ -82,7 +87,7 @@ class SqliteDriver:
         else:
             dbprint("Creating database...")
         c = self.conn.cursor()
-        c.executescript("""
+        c.executescript('''
             CREATE TABLE IF NOT EXISTS channels (
                 id INTEGER PRIMARY KEY,
                 channel_name TEXT NOT NULL UNIQUE,
@@ -121,7 +126,7 @@ class SqliteDriver:
                 weight BOOLEAN NOT NULL
                     CHECK (weight IN (0,1))
                     DEFAULT 0,
-                UNIQUE(user_id, alias, type)
+                UNIQUE(user_id, alias, type, weight)
             );
             CREATE TABLE IF NOT EXISTS articles (
                 id INTEGER PRIMARY KEY,
@@ -156,7 +161,7 @@ class SqliteDriver:
                 id INTEGER NOT NULL,
                 article_id INTEGER NOT NULL,
                 UNIQUE(channel_id,id)
-            );""")
+            );''')
         # Will also need a messages table for each channel
         self.conn.commit()
 
@@ -174,14 +179,14 @@ class SqliteDriver:
         c = self.conn.cursor()
         # create a new entry in channels
         # will be IGNOREd if channel already exists (UNIQUE constraint)
-        c.execute("""
+        c.execute('''
             INSERT OR IGNORE INTO channels
                 (channel_name)
             VALUES (?)
-                  """, (channel, ))
+                  ''', (channel, ))
         # create a new messages_x channel for message logging
         # XXX For messages_channel, # is NOT present XXX
-        c.execute("""
+        c.execute('''
             CREATE TABLE IF NOT EXISTS messages_{} (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 sender INTEGER NOT NULL
@@ -189,7 +194,7 @@ class SqliteDriver:
                 date TEXT NOT NULL
                     DEFAULT CURRENT_TIMESTAMP,
                 message TEXT NOT NULL
-                 )""".format(channel[1:]))
+                 )'''.format(channel[1:]))
         self.conn.commit()
         dbprint("Created {}".format(channel))
         # each channel in channels shoud have a messages_channelname
@@ -198,9 +203,9 @@ class SqliteDriver:
     def get_all_tables(self):
         """Returns a list of all tables"""
         c = self.conn.cursor()
-        c.execute("""
+        c.execute('''
             SELECT name FROM sqlite_master WHERE type='table'
-                  """)
+                  ''')
         # convert list of tuples to list of strings
         return norm(c.fetchall())
 
@@ -218,18 +223,18 @@ class SqliteDriver:
         # For now, just return aliases
         # TODO return actual users
         c = self.conn.cursor()
-        c.execute("""
+        c.execute('''
             SELECT alias FROM user_aliases
-                  """)
+                  ''')
         return norm(c.fetchall())
 
     def get_aliases(self, nick):
         """Returns all of someone's aliases"""
         c = self.conn.cursor()
-        c.execute("""
+        c.execute('''
             SELECT user_id FROM user_aliases
             WHERE alias=?
-                  """, (nick, ))
+                  ''', (nick, ))
         ids = norm(c.fetchall())
         if len(ids) == 0:
             return None
@@ -237,10 +242,10 @@ class SqliteDriver:
             result = []
             # list of lists
             for id in ids:
-                c.execute("""
+                c.execute('''
                     SELECT alias FROM user_aliases
                     WHERE user_id=?
-                          """, (id, ))
+                          ''', (id, ))
                 result.append(norm(c.fetchall()))
             return result
 
@@ -249,26 +254,26 @@ class SqliteDriver:
         c = self.conn.cursor()
         if search[0] == '#':
             type = 'channel'
-            c.execute("""
+            c.execute('''
                 SELECT id FROM channels
                 WHERE channel_name=?
-                      """, (search, ))
+                      ''', (search, ))
             id = norm(c.fetchone())
             if not id:
                 return None, type
         else:
             type = 'user'
-            c.execute("""
+            c.execute('''
                 SELECT user_id FROM user_aliases
                 WHERE alias=?
-                      """, (search, ))
+                      ''', (search, ))
             id = norm(c.fetchone())
             if not id:
                 type = 'article'
-                c.execute("""
+                c.execute('''
                     SELECT id FROM articles
                     WHERE url=?
-                          """, (search, ))
+                          ''', (search, ))
                 id = norm(c.fetchone())
                 if not id:
                     return None, type
@@ -280,16 +285,16 @@ class SqliteDriver:
             raise ValueError("Channel name must start with #.")
         c = self.conn.cursor()
         # find out the channel id
-        c.execute("""
+        c.execute('''
             SELECT id FROM channels WHERE channel_name=?
-                  """, (channel, ))
+                  ''', (channel, ))
         id = norm(c.fetchone())
         dbprint("get_occupants: id is {}".format(id))
         assert id is not None, "Channel {} does not exist.".format(channel)
         # get the occupants
-        c.execute("""
+        c.execute('''
             SELECT user_id FROM channels_users WHERE channel_id=?
-                  """, (id, ))
+                  ''', (id, ))
         users = norm(c.fetchall())
         print(users)
         dbprint("get_occupants: users is {}".format(",".join(map(str,users))))
@@ -301,18 +306,18 @@ class SqliteDriver:
     def get_current_nick(self, id):
         """Gets the current nick of a user."""
         c = self.conn.cursor()
-        c.execute("""
+        c.execute('''
             SELECT alias FROM user_aliases
             WHERE most_recent_irc=1 AND user_id=?
-                  """, (id, ))
+                  ''', (id, ))
         name = norm(c.fetchone())
         if name:
             return name
         else:
-            c.execute("""
+            c.execute('''
                 SELECT alias FROM user_aliases
                 WHERE user_id=?
-                      """, (id, ))
+                      ''', (id, ))
             name = random.choice(norm(c.fechall()))
             return "??{}".format(name)
 
@@ -328,44 +333,44 @@ class SqliteDriver:
             name['id'] = self.add_user(name['nick'])
         # 2. add NAMES to channels_users
         c = self.conn.cursor()
-        c.execute("""
+        c.execute('''
             SELECT id FROM channels WHERE channel_name=?
-                  """, (channel, ))
+                  ''', (channel, ))
         channel = norm(c.fetchone())
         assert isinstance(channel, int)
         # need to delete old NAMES data for this channel
         # (may want to waive this in the future for single user changes)
-        c.execute("""
+        c.execute('''
             DELETE FROM channels_users WHERE channel_id=?
-                  """, (channel, ))
+                  ''', (channel, ))
         # then add new NAMES data
         for name in names:
-            c.execute("""
+            c.execute('''
                 INSERT OR REPLACE INTO channels_users
                     (channel_id, user_id, user_mode)
                 VALUES( ? , ? , ? )
-                      """, (channel, name['id'], name['mode']))
+                      ''', (channel, name['id'], name['mode']))
         # 3. updates in channels when this channel was last checked
-        c.execute("""
+        c.execute('''
             UPDATE channels
             SET date_checked=CURRENT_TIMESTAMP
             WHERE channel_name=?
-                  """, (channel, ))
+                  ''', (channel, ))
         # 4. TODO what else needs to be done?
 
     def add_user(self, alias, type='irc'):
         """Adds/updates a user and returns their ID"""
         c = self.conn.cursor()
-        c.execute("""
+        c.execute('''
             SELECT user_id FROM user_aliases WHERE alias=? AND type=?
-                  """, (alias, type))
+                  ''', (alias, type))
         result = c.fetchall()
         if result:
             # this alias already exists
-            # c.execute("""
+            # c.execute('''
             #     UPDATE user_aliases SET most_recent_irc=0
             #     WHERE alias=?
-            #           """, (
+            #           ''', (
             if len(result) == 1:
                 dbprint("User {} already exists as ID {}"
                         .format(nickColor(alias), norm(result)[0]))
@@ -380,25 +385,30 @@ class SqliteDriver:
         else:
             # this alias does not already exist
             # 1. create a new user
-            c.execute("""
+            c.execute('''
                 INSERT INTO users DEFAULT VALUES
-                      """)
+                      ''')
             new_user_id = c.lastrowid
             dbprint("Adding user {} as ID {}"
                     .format(nickColor(alias), new_user_id))
             # 2. add the alias
             # 2.1 mark the previous alias as not current
-            c.execute("""
+            c.execute('''
                 INSERT INTO user_aliases (alias, type, user_id)
                 VALUES ( ? , ? , ? )
-                       """, (alias, type, new_user_id))
+                       ''', (alias, type, new_user_id))
             self.conn.commit()
             return new_user_id
 
     def add_alias(self, user, alias, weight=0):
         """Adds a new alias to a user"""
         # if weight=0 then /nick, if =1 then .alias
+        # if weight=0 we can assume that most_recent_irc=True
         assert isinstance(user, int)
+        c = self.conn.cursor()
+        c.execute('''
+            INSERT OR REPLACE INTO user_aliases(user_id,alias,type
+                  ''')
 
     def rename_user(self, old, new, force=False):
         """Adds a new alias for a user"""
@@ -406,10 +416,10 @@ class SqliteDriver:
         # make sure to handle when a user renames to an alias that exists
         # check if either name already exists (old should)
         c = self.conn.cursor()
-        c.execute("""
+        c.execute('''
             SELECT user_id FROM user_aliases
             WHERE alias=?
-                  """, (old, ))
+                  ''', (old, ))
         old_result = c.fetchall()
         print("old_result:")
         print(old_result)
@@ -422,10 +432,10 @@ class SqliteDriver:
             # there's more than one user with this nick
             # ignore for now?
             pass
-        c.execute("""
+        c.execute('''
             SELECT user_id FROM user_aliases
             WHERE alias=?
-                  """, (new, ))
+                  ''', (new, ))
         new_result = c.fetchall()
         print("new_result:")
         print(new_result)
@@ -457,10 +467,10 @@ class SqliteDriver:
                 dbprint("Adding a new nick to {}".format(old))
                 print(old_result)
                 print(new)
-                c.execute("""
+                c.execute('''
                     INSERT INTO user_aliases (user_id, alias, type)
                     VALUES ( ? , ? , ? )
-                          """, (old_result, new, 'irc'))
+                          ''', (old_result, new, 'irc'))
                 self.conn.commit()
             else:
                 # both nicks are associated with different users
@@ -474,14 +484,14 @@ class SqliteDriver:
                     # force the change
                     dbprint("Stealing {} from {}" .format(new, old))
                     # ^TODO make that more informative (wikiname?)
-                    c.execute("""
+                    c.execute('''
                         DELETE FROM user_aliases
                         WHERE alias=?
-                              """, (new, ))
-                    c.execute("""
+                              ''', (new, ))
+                    c.execute('''
                         INSERT INTO user_aliases (user_id, alias, type)
                         VALUES ( ? , ? , ? )
-                              """, (new_result, new, 'irc'))
+                              ''', (new_result, new, 'irc'))
                     self.conn.commit()
                 else:
                     # prompt the user for confirmation?
