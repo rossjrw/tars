@@ -94,7 +94,7 @@ A few other important pieces of information:
 ## Database Structure
 
 <p align="center">
-    <img src="https://raw.githubusercontent.com/rossjrw/tars/master/database.png)">
+    <img src="https://raw.githubusercontent.com/rossjrw/tars/master/database.png">
 </p>
 
 * `user_aliases.type` - 'wiki', 'irc' or 'discord'
