@@ -5,6 +5,7 @@ A bunch of commands for Controllers to use.
 
 from helpers.greetings import kill_bye
 from helpers.error import CommandError
+import os, sys
 
 class kill:
     """Kills the bot"""
@@ -43,6 +44,16 @@ class reload:
     def command(cls, irc_c, msg, cmd):
         # do nothing - this is handled by parsemessage
         pass
+
+class reboot:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        # reboot the bot completely
+        if msg.nick == 'Croquembouche':
+            msg.reply("Rebooting...")
+            os.execl(sys.executable, sys.executable, *sys.argv)
+        else:
+            msg.reply("Only Croquembouche can do that.")
 
 class say:
     """Make TARS say something"""

@@ -27,6 +27,7 @@ COMMANDS = {
               "reload": {"reload"},
               "say": {"say"},
               "config": {"config"},
+              "reboot": {"reboot"},
              },
     "refactor": {"refactor": {"refactor"},
                 },

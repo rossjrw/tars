@@ -13,11 +13,6 @@ Provides functions for manipulating the database.
 # irc_c.db._driver.methodname()
 # this pretty much bypasses pyaib's db simplifier
 
-f = query('''
-          SELECT foo
-          FROM bar
-          ''')
-
 from pyaib.db import db_driver
 import sqlite3
 from pprint import pprint
