@@ -93,7 +93,9 @@ A few other important pieces of information:
 
 ## Database Structure
 
-![database layout](https://raw.githubusercontent.com/rossjrw/tars/master/database.png)
+<p align="center">
+    <img src="https://raw.githubusercontent.com/rossjrw/tars/master/database.png)">
+</p>
 
 * `user_aliases.type` - 'wiki', 'irc' or 'discord'
 * `user_aliases.weight` - 0 by default, 1 if the alias is both an IRC name and
