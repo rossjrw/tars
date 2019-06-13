@@ -22,6 +22,7 @@ class Log:
             parse.nickColor(msg.nick),
             msg.message
         ))
+        irc_c.db._driver.log_message(msg)
 
     @observe('IRC_RAW_SEND')
     def debug(self, irc_c, msg):

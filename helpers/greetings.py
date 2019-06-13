@@ -4,14 +4,13 @@
 from random import choice
 import re
 
+greets = [
+    "Hey",
+    "Howdy",
+    "Hi",
+    "Hello",
+]
 def greet(subject):
-    user = [
-        "Hey, {}.",
-        "Howdy, {}.",
-        "Hi, {}.",
-        "👉😎👉",
-        "Hello, {}.",
-    ]
     channel = [
         "Hey everyone.",
         "Great, looks like everyone's here.",
@@ -23,7 +22,10 @@ def greet(subject):
     if subject[0] == "#":
         return choice(channel).format(subject)
     else:
-        return choice(user).format(subject)
+        if subject == "Croquembouche":
+            return "👉😎👉"
+        else:
+            return "{}, {}.".format(choice(greets), subject)
 
 def bad_command(**kwargs):
     response = [

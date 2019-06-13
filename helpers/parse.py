@@ -37,7 +37,7 @@ class ParsedCommand():
         parseprint("Raw input: " + self.raw)
 
         # Was someone pinged?
-        pattern = r"^([A-Za-z0-9\\\[\]\^_-{\|}]+)[!,:\.]+\s*(.*)$"
+        pattern = r"^([A-Za-z0-9\\\[\]\^_-{\|}]+)[,:]+\s*(.*)$"
         match = re.search(pattern, self.raw)
         if match:
             # Remove ping from the message

@@ -6,7 +6,7 @@ and should never be done.
 """
 
 from fuzzywuzzy import fuzz
-from helpers.greetings import acronym
+from helpers.greetings import acronym, greet, greets
 
 class converse:
     @classmethod
@@ -22,10 +22,13 @@ class converse:
             ]):
                 msg.reply("{}: no u".format(msg.nick))
                 return
-            if message.lower() == "tars!":
-                msg.reply("{}!".format(msg.nick))
-                return
         # unpinged section
+        if message.lower() == "tars!":
+            msg.reply("{}!".format(msg.nick))
+            return
+        if strip(message.lower()) in [strip("{}tars".format(g)) for g in greets]:
+            msg.reply(greet(msg.nick))
+            return
         if matches_any_of(message, [
             "what does tars stand for?",
             "is tars an acronym?",
@@ -49,6 +52,7 @@ class converse:
             msg.reply("That's not a command.")
 
 def strip(string):
+    """Strips all non-alphanumeric characters."""
     return ''.join(l for l in string if l.isalnum()).lower()
 
 def matches_any_of(subject, matches, threshold=80):

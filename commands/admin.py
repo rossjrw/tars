@@ -95,3 +95,10 @@ class config:
     def command(cls, irc_c, msg, cmd):
         msg.reply("http://scp-sandbox-3.wikidot.com/collab:tars")
         # TODO update this to final page (or src from .conf?)
+
+class debug:
+    """Random debug command, replaceable"""
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        msg.reply(", ".join("%s: %s" % item for item in vars(msg).items()))
+        msg.reply(", ".join("%s: %s" % item for item in vars(cmd).items()))

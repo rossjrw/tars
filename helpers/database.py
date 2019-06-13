@@ -65,14 +65,24 @@ class SqliteDriver:
         c = self.conn.cursor()
         if type == 'channel':
             c.execute('''
-                SELECT name FROM sqlite_master
-                WHERE type='table' AND name='messages_{}'
-                      '''.format(name[1:]))
-        else:
+                SELECT channel_name FROM channels
+                WHERE channel_name=?
+                      ''', (name, ))
+        elif type == 'alias':
+            c.execute('''
+                SELECT alias FROM user_aliases
+                WHERE alias=?
+                      ''', (name, ))
+        elif type == 'user':
+            raise AttributeError("Seems weird to check for user, not alias")
+        elif type == 'table':
             c.execute('''
                 SELECT name FROM sqlite_master
-                WHERE type='{}' AND name='{}'
-                      '''.format(type, name))
+                WHERE type=? AND name=?
+                      ''', (type, name))
+        else:
+            raise AttributeError("Checking existence of {} of unknown type {}"
+                                 .format(name, type))
         return bool(c.fetchone())
 
     def _create_database(self):
@@ -95,6 +105,8 @@ class SqliteDriver:
                     CHECK (helen_active IN (0,1))
                     DEFAULT 0
             );
+            INSERT OR REPLACE INTO channels (channel_name, autojoin)
+                VALUES (private, 0);
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
                 controller BOOLEAN NOT NULL
@@ -156,6 +168,14 @@ class SqliteDriver:
                 id INTEGER NOT NULL,
                 article_id INTEGER NOT NULL,
                 UNIQUE(channel_id,id)
+            );
+            CREATE TABLE IF NOT EXISTS messages (
+                id INTEGER PRIMARY KEY,
+                channel_id INTEGER NOT NULL
+                    REFERENCES channels(id),
+                sender TEXT NOT NULL,
+                timestamp INTEGER NOT NULL,
+                message TEXT NOT NULL
             );''')
         # Will also need a messages table for each channel
         self.conn.commit()
@@ -179,21 +199,9 @@ class SqliteDriver:
                 (channel_name)
             VALUES (?)
                   ''', (channel, ))
-        # create a new messages_x channel for message logging
-        # XXX For messages_channel, # is NOT present XXX
-        c.execute('''
-            CREATE TABLE IF NOT EXISTS messages_{} (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                sender INTEGER NOT NULL
-                    REFERENCES users(id),
-                date TEXT NOT NULL
-                    DEFAULT CURRENT_TIMESTAMP,
-                message TEXT NOT NULL
-                 )'''.format(channel[1:]))
         self.conn.commit()
         dbprint("Created {}".format(channel))
-        # each channel in channels shoud have a messages_channelname
-        # might be an idea to make a function that checks
+        # messages_x is dead - all messages are now stored in messages
 
     def get_all_tables(self):
         """Returns a list of all tables"""
@@ -207,6 +215,7 @@ class SqliteDriver:
     def print_one_table(self, table):
         """Pretty print a single table"""
         try:
+            # the pandas package handles pretty printing
             print(pd.read_sql_query("SELECT * FROM {}".format(table),
                                     self.conn))
         except pd.io.sql.DatabaseError:
@@ -492,3 +501,43 @@ class SqliteDriver:
                 else:
                     # prompt the user for confirmation?
                     pass
+
+    def log_message(self, msg):
+        """Logs a message in the db."""
+        chname = "private" if msg.channel is None else msg.raw_channel
+        c = self.conn.cursor()
+        # log this message into the messages table
+        c.execute('''
+            SELECT id FROM channels
+            WHERE channel_name=?
+                  ''', (chname, ))
+        channel = norm(c.fetchone())
+        assert isinstance(channel, int), "chname {} id {}".format(chname,channel)
+        c.execute('''
+            INSERT INTO messages
+                (channel_id, sender, timestamp, message)
+            VALUES ( ? , ? , ? , ? )
+                  ''', (channel, msg.nick, round(msg.timestamp), msg.message))
+        # mark current nick as most recent
+        c.execute('''
+            SELECT user_id FROM user_aliases
+            WHERE alias=?
+                 ''', (msg.nick, ))
+        user = norm(c.fetchall())
+        if len(user) == 0:
+            raise ValueError("User {} doesn't exist".format(msg.nick))
+        elif len(user) > 1:
+            raise ValueError("User {} exists more than once".format(msg.nick))
+        user = user[0]
+        assert isinstance(user, int), user
+        c.execute('''
+            UPDATE user_aliases
+            SET most_recent=0
+            WHERE type='irc' AND user_id=?
+                  ''', (user, ))
+        c.execute('''
+            UPDATE user_aliases
+            SET most_recent=1
+            WHERE type='irc' AND user_id=? AND alias=?
+                  ''', (user, msg.nick))
+        self.conn.commit()

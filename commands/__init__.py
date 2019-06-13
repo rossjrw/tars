@@ -28,6 +28,7 @@ COMMANDS = {
               "say": {"say"},
               "config": {"config"},
               "reboot": {"reboot"},
+              "debug": {"debug"},
              },
     "refactor": {"refactor": {"refactor"},
                 },
