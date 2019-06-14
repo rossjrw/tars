@@ -22,7 +22,11 @@ class Log:
             parse.nickColor(msg.nick),
             msg.message
         ))
-        irc_c.db._driver.log_message(msg)
+        try:
+            irc_c.db._driver.log_message(msg)
+        except:
+            irc_c.RAW("PRIVMSG #tars A logging error has occurred.")
+            raise
 
     @observe('IRC_RAW_SEND')
     def debug(self, irc_c, msg):

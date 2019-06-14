@@ -95,7 +95,7 @@ class SqliteDriver:
         c.executescript('''
             CREATE TABLE IF NOT EXISTS channels (
                 id INTEGER PRIMARY KEY,
-                channel_name TEXT NOT NULL UNIQUE,
+                channel_name TEXT NOT NULL,
                 date_checked TEXT NOT NULL
                     DEFAULT CURRENT_TIMESTAMP,
                 autojoin BOOLEAN NOT NULL
@@ -103,10 +103,11 @@ class SqliteDriver:
                     DEFAULT 1,
                 helen_active BOOLEAN NOT NULL
                     CHECK (helen_active IN (0,1))
-                    DEFAULT 0
+                    DEFAULT 0,
+                UNIQUE (channel_name COLLATE NOCASE)
             );
             INSERT OR REPLACE INTO channels (channel_name, autojoin)
-                VALUES (private, 0);
+                VALUES ('private', 0);
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
                 controller BOOLEAN NOT NULL
@@ -133,11 +134,11 @@ class SqliteDriver:
                 weight BOOLEAN NOT NULL
                     CHECK (weight IN (0,1))
                     DEFAULT 0,
-                UNIQUE(user_id, alias, type, weight)
+                UNIQUE(user_id, alias COLLATE NOCASE, type, weight)
             );
             CREATE TABLE IF NOT EXISTS articles (
                 id INTEGER PRIMARY KEY,
-                url TEXT NOT NULL UNIQUE,
+                url TEXT NOT NULL,
                 title TEXT NOT NULL,
                 scp_num TEXT,
                 parent TEXT,
@@ -148,7 +149,8 @@ class SqliteDriver:
                     CHECK (is_promoted IN (0,1))
                     DEFAULT 0,
                 date_checked TEXT NOT NULL
-                    DEFAULT CURRENT_TIMESTAMP
+                    DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(url COLLATE NOCASE)
             );
             CREATE TABLE IF NOT EXISTS articles_tags (
                 article_id INTEGER NOT NULL
@@ -160,14 +162,14 @@ class SqliteDriver:
                 article_id INTEGER NOT NULL
                     REFERENCES articles(id),
                 author TEXT NOT NULL,
-                UNIQUE(article_id, author)
+                UNIQUE(article_id, author COLLATE NOCASE)
             );
             CREATE TABLE IF NOT EXISTS showmore_list (
                 channel_id INTEGER NOT NULL
                     REFERENCES channels(id),
                 id INTEGER NOT NULL,
                 article_id INTEGER NOT NULL,
-                UNIQUE(channel_id,id)
+                UNIQUE(channel_id, id)
             );
             CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY,
@@ -404,7 +406,7 @@ class SqliteDriver:
             self.conn.commit()
             return new_user_id
 
-    def add_alias(self, user, alias, weight=0):
+    def add_alias(self, user, alias, weight=0, nick_type='irc'):
         """Adds or updates an alias to a user"""
         # if weight=0 then /nick, if =1 then .alias
         # if weight=0 we can assume that most_recent=True
@@ -412,8 +414,11 @@ class SqliteDriver:
         c = self.conn.cursor()
         c.execute('''
             INSERT OR REPLACE INTO user_aliases
-                  (user_id, alias, type, most_recent, weight)
-                  ''')
+                  (user_id, alias, type, weight)
+            VALUES ( ? , ? , ? , ? )
+                  ''', (user, alias, nick_type, weight))
+        # this was going to be a more complicated function I swear
+        self.conn.commit()
 
     def rename_user(self, old, new, force=False):
         """Adds a new alias for a user"""
@@ -522,7 +527,7 @@ class SqliteDriver:
         c.execute('''
             SELECT user_id FROM user_aliases
             WHERE alias=?
-                 ''', (msg.nick, ))
+                  ''', (msg.nick, ))
         user = norm(c.fetchall())
         if len(user) == 0:
             raise ValueError("User {} doesn't exist".format(msg.nick))
