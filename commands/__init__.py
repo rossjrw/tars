@@ -52,6 +52,8 @@ COMMANDS = {
                 },
     "dbq": {"query": {"query","dbq"},
            },
+    "prop": {"propagate": {"propagate","prop"},
+            },
 }
 
 from helpers.error import CommandNotExistError

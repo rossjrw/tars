@@ -143,7 +143,7 @@ class SqliteDriver:
                 scp_num TEXT,
                 parent TEXT,
                 ups INTEGER NOT NULL,
-                downs INTEGER NOT NULL,
+                downs INTEGER,
                 date_posted TEXT NOT NULL,
                 is_promoted BOOLEAN NOT NULL
                     CHECK (is_promoted IN (0,1))
@@ -546,3 +546,24 @@ class SqliteDriver:
             WHERE type='irc' AND user_id=? AND alias=?
                   ''', (user, msg.nick))
         self.conn.commit()
+
+    def add_article(self, article, commit=True):
+        """Adds an article and its data to the db.
+        article should be a dict as the response from API.get_meta.
+        Set commit=False for mass addition, then commit afterwards."""
+        c = self.conn.cursor()
+        if 'ups' not in article:
+            article['ups'] = article['rating']
+            article['downs'] = None
+        else:
+            assert 'downs' in article
+        if 'fullname' in article:
+            if ':' in article['fullname']:
+                article['category'] = article['fullname'].split(':')[0]
+                article['url'] = article['fullname'].split(':')[1]
+            else:
+                article['category'] = '_default'
+                article['url'] = article['fullname']
+        c.execute('''
+            SELECT id FROM articles WHERE url=?
+                  ''', (article['url'], ))

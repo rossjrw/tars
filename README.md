@@ -105,3 +105,8 @@ A few other important pieces of information:
 `user_aliases` and `articles_authors` are not linked, although aliass of type
 'wiki' should be searchable in `articles_authors`.
 
+If `articles.downs` is NULL then this indicates that `articles.ups` is the
+net rating, and not the number of upvotes. The ratings have yet to be looked at
+in more detail. If `articles.downs` is 0 then the articles really does have no
+downvotes. This is because the Wikidot API does not provide a method for
+distinguishing between upvotes and downvotes.
