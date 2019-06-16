@@ -18,16 +18,17 @@ Server = ServerProxy('https://TARS:{}@www.wikidot.com/xml-rpc-api.php' \
 class propagate:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        if msg.nick != "Croquembouche":
-            raise CommandError("Only Croquembouche can do that.")
         # arg 1 should be a url name
         if len(cmd.args['root']) > 0:
-            propagate.get_wiki_data_for(cmd.args['root'], reply = msg.reply)
+            propagate.get_wiki_data_for(irc_c, cmd.args['root'], reply = msg.reply)
         else:
-            propagate.get_wiki_data(reply = msg.reply)
+            if msg.nick != "Croquembouche":
+                raise CommandError(("Only Croquembouche can use this command"
+                                    " without an argument."))
+            propagate.get_wiki_data(irc_c, reply = msg.reply)
 
     @classmethod
-    def get_wiki_data(cls, **kwargs):
+    def get_wiki_data(cls, irc_c, **kwargs):
         reply = kwargs.get('reply', lambda x: None)
         # 1. get a list of articles
         # 2. get data for each article
@@ -39,12 +40,12 @@ class propagate:
         reply("Ding")
 
     @classmethod
-    def get_wiki_data_for(cls, url, **kwargs):
+    def get_wiki_data_for(cls, irc_c, url, **kwargs):
         reply = kwargs.get('reply', lambda x: None)
         # get the wiki data for this article
         # we're taking all of root, so url is a list
         articles = Server.pages.get_meta({'site': "scp-wiki",
                                          'pages': url})
         for url,article in articles.items():
-            reply(str(article))
+            reply("Updating {} in the database".format(url))
             irc_c.db._driver.add_article(article)

@@ -60,6 +60,12 @@ class SqliteDriver:
         print("Database Driver loaded!")
         self._create_database()
 
+    def commit(self):
+        """Just commits the database.
+        For use by external functions after batch operations.
+        To be used in conjuction with optional committing."""
+        self.conn.commit()
+
     def _check_exists(self, name, type='table'):
         """Check if something exists in the database"""
         c = self.conn.cursor()
@@ -139,6 +145,8 @@ class SqliteDriver:
             CREATE TABLE IF NOT EXISTS articles (
                 id INTEGER PRIMARY KEY,
                 url TEXT NOT NULL,
+                category TEXT NOT NULL
+                    DEFAULT '_default',
                 title TEXT NOT NULL,
                 scp_num TEXT,
                 parent TEXT,
@@ -551,6 +559,7 @@ class SqliteDriver:
         """Adds an article and its data to the db.
         article should be a dict as the response from API.get_meta.
         Set commit=False for mass addition, then commit afterwards."""
+        dbprint("Adding article {}".format(article['fullname']))
         c = self.conn.cursor()
         if 'ups' not in article:
             article['ups'] = article['rating']
@@ -564,6 +573,29 @@ class SqliteDriver:
             else:
                 article['category'] = '_default'
                 article['url'] = article['fullname']
+        # this dict will be fed into the database
+        article_data = {'url': article['url'],
+                        'category': article['category'],
+                        'title': ('PLACEHOLDER' if 'scp' in article['tags']
+                                  else article['title']),
+                        'scp_num': (None if 'scp' not in article['tags']
+                                    else article['title']),
+                        'parent': article['parent_fullname'],
+                        'ups': article['ups'],
+                        'downs': article['downs'],
+                        'date_posted': article['created_at']}
         c.execute('''
             SELECT id FROM articles WHERE url=?
                   ''', (article['url'], ))
+        if norm(c.fetchone()) is None:
+            # the article does not already exist
+            c.execute('''
+                INSERT OR REPLACE INTO articles
+                      (url, category, title, scp_num, parent,
+                       ups, downs, date_posted)
+                VALUES (:url, :category, :title, :scp_num, :parent,
+                        :ups, :downs, :date_posted)
+                      ''', article_data)
+        else:
+            # the article already exists and must be updated
+            dbprint("This article already exists", True)
