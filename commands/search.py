@@ -33,7 +33,7 @@ class search:
                         "parent p",
                         "fullname f",
                         "regex x",
-                        "random n d",
+                        "random rand ran n d",
                         "summary s u",
                         "recommend rec m",
                         "verbose v",
