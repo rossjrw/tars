@@ -187,7 +187,7 @@
             <br> Search for pages whose title contains all of these words. Words are space-separated. If neither <b>-f</b> nor <b>-x</b> are present, anything wrapped in quotemarks (<code>"</code>) will be treated as a single word. Not case sensitive.
             If you actually need to search for quotemarks, escape them with a backslash - e.g. <code>.s \"The Administrator\"</code>
         </li>
-        <li><b>--tags, -t [tags]</b><br>
+        <li><b>--tags, --tagged, --tag, -t [tags]</b><br>
             Filter pages by tags. <code>+scp</code> means pages tagged scp. <code>-scp</code> means pages not tagged scp. If you don't put either <code>+</code> or <code>-</code>, TARS will assume you meant to add a <code>+</code>.
         </li>
         <li><b>--author, --au, -a [authors]</b><br>
@@ -258,7 +258,7 @@
 
     <h2 id="regexsearch">.regexsearch, .regexsea, .rsea, .rs</h2>
     <p>Exactly the same as <a href="#search"><b><code>search</code></b></a>, except the <b>--regex</b> flag is enabled.</p>
-    <p>Example: <code>.rs ^SCP- -t -scp</code> - <em>shows the last 3 articles posted by Croquembouche.</em></p>
+    <p>Example: <code>.rs ^SCP- -t -scp</code> - <em>searches for articles starting with "SCP-" but that are not tagged 'scp'.</em></p>
 
     <h2 id="showmore">.showmore, .sm <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p>When TARS presents you with a list of articles to pick from, use this command to pick which one you want to see.</p>

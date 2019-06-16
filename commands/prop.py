@@ -19,6 +19,12 @@ class propagate:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         # arg 1 should be a url name
+        if cmd.hasarg('sample'):
+            samples = ['scp-173','scp-1111','scp-3939','cone','scp-series',
+                       'listpages-magic-and-you','scp-4205','omega-k']
+            msg.reply("Adding sample data...")
+            propagate.get_wiki_data_for(irc_c, samples)
+            return
         if len(cmd.args['root']) > 0:
             propagate.get_wiki_data_for(irc_c, cmd.args['root'], reply = msg.reply)
         else:

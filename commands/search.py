@@ -25,18 +25,19 @@ class search:
         # (might have to move to end for defer check)
         defer.check(irc_c, msg, "jarvis")
         # Parse the command itself
-        cmd.expandargs(["tags t",
-                        "author a",
+        cmd.expandargs(["tags tag tagged t",
+                        "author au a",
                         "rating r",
-                        "created c",
-                        "category y",
+                        "created date c",
+                        "category cat y",
                         "parent p",
                         "fullname f",
                         "regex x",
+                        "summary summarise u",
                         "random rand ran n d",
-                        "summary s u",
                         "recommend rec m",
                         "verbose v",
+                        "select s",
                         "ignorepromoted",
                        ])
         # Set the search mode of the input

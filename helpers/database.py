@@ -17,7 +17,8 @@ from pyaib.db import db_driver
 import sqlite3
 from pprint import pprint
 from helpers.parse import nickColor
-import pandas as pd
+import pandas
+import pendulum as pd
 
 def dbprint(text, error=False):
     bit = "[\x1b[38;5;108mDatabase\x1b[0m] "
@@ -226,9 +227,9 @@ class SqliteDriver:
         """Pretty print a single table"""
         try:
             # the pandas package handles pretty printing
-            print(pd.read_sql_query("SELECT * FROM {}".format(table),
+            print(pandas.read_sql_query("SELECT * FROM {}".format(table),
                                     self.conn))
-        except pd.io.sql.DatabaseError:
+        except pandas.io.sql.DatabaseError:
             # fail silently so that users can't see what channels exist
             print("The table {} does not exist.".format(table))
 
@@ -559,6 +560,12 @@ class SqliteDriver:
         """Adds an article and its data to the db.
         article should be a dict as the response from API.get_meta.
         Set commit=False for mass addition, then commit afterwards."""
+        # 1. add to articles
+        # 1.1. make a new entry if it's a new article
+        # 1.2. update the existing entry if the article already exists
+        # 2. add to articles_tags
+        # 3. add to articles_authors
+        # 3.1 [allow metadata to overwrite articles_authors]
         dbprint("Adding article {}".format(article['fullname']))
         c = self.conn.cursor()
         if 'ups' not in article:
@@ -574,16 +581,17 @@ class SqliteDriver:
                 article['category'] = '_default'
                 article['url'] = article['fullname']
         # this dict will be fed into the database
-        article_data = {'url': article['url'],
-                        'category': article['category'],
-                        'title': ('PLACEHOLDER' if 'scp' in article['tags']
-                                  else article['title']),
-                        'scp_num': (None if 'scp' not in article['tags']
-                                    else article['title']),
-                        'parent': article['parent_fullname'],
-                        'ups': article['ups'],
-                        'downs': article['downs'],
-                        'date_posted': article['created_at']}
+        article_data = {
+            'url': article['url'],
+            'category': article['category'],
+            'title': ('PLACEHOLDER' if 'scp' in article['tags']
+                      else article['title']),
+            'scp_num': (None if 'scp' not in article['tags']
+                        else article['title']),
+            'parent': article['parent_fullname'],
+            'ups': article['ups'],
+            'downs': article['downs'],
+            'date_posted': pd.parse(article['created_at']).to_datetime_string()}
         c.execute('''
             SELECT id FROM articles WHERE url=?
                   ''', (article['url'], ))
@@ -599,3 +607,14 @@ class SqliteDriver:
         else:
             # the article already exists and must be updated
             dbprint("This article already exists", True)
+
+    def get_article(self, searches, selection):
+        """Get an article or articles.
+        searches must be a LIST consisting of DICTS.
+        Each dict must contain the following:
+            * 'term' - the search term as a string, MinMax or inc/exc list.
+            * 'type' - the type of search:
+                * None, regex, tags, author, rating, date, categoy, parent
+        selection must be a DICT containing the following:
+            * 'type' - the order of the output list:
+                * None, random, recommend, recent
