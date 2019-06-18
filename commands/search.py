@@ -16,7 +16,7 @@ import pendulum
 from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
 from googleapiclient.discovery import build
-# import pprint
+from pprint import pprint
 
 class search:
     @classmethod
@@ -40,10 +40,12 @@ class search:
                         "select s",
                         "ignorepromoted",
                        ])
+        # check to see if there are any arguments
+        if len(cmd.args) == 1 and len(cmd.args['root']) == 0:
+            raise CommandError("Must specify at least one search term")
         # Set the search mode of the input
         searchmode = 'normal'
-        if cmd.hasarg('regex'): searchmode = 'regex'
-        elif cmd.hasarg('fullname'): searchmode = 'fullname'
+        if cmd.hasarg('fullname'): searchmode = 'fullname'
         # Set the return mode of the output
         returnmode = 'normal'
         if cmd.hasarg('random'): returnmode = 'random'
@@ -51,20 +53,27 @@ class search:
         elif cmd.hasarg('recommend'): returnmode = 'recommend'
         # What are we searching for?
         searches = []
-        if len(cmd.args) == 1 and len(cmd.args['root']) == 0:
-            raise CommandError("Must specify at least one search term")
-        else:
+        strings = []
+        if len(cmd.args['root']) > 0:
             if searchmode == 'normal':
-                searches = cmd.args['root']
+                strings = cmd.args['root']
             elif searchmode == 'fullname':
-                searches = [" ".join(cmd.args['root'])]
-            elif searchmode == 'regex':
-                for search in cmd.args['root']:
-                    try:
-                        searches.append(re.compile(search))
-                    except re.RegexError:
-                        raise CommandError("'{}' isn't a valid regular "
-                                           "expression".format(search))
+                strings = [" ".join(cmd.args['root'])]
+            searches.extend([{'term': s, 'type': None} for s in strings])
+        # Add any regexes
+        regexes = []
+        if cmd.hasarg('regex'):
+            if len(cmd.getarg('regex')) == 0:
+                raise CommandError("When using the regular expression filter "
+                                   "(--regex/-x), at least one regex must "
+                                   "be specified")
+            for regex in cmd.getarg('regex'):
+                try:
+                    regexes.append(re.compile(regex))
+                except re.RegexError:
+                    raise CommandError("'{}' isn't a valid regular expression"
+                                       .format(search))
+            searches.extend([{'term': r, 'type': 'regex'} for r in regexes])
         # Set the tags
         tags = {'include': [], 'exclude': []}
         if cmd.hasarg('tags'):
@@ -203,16 +212,16 @@ class search:
             parents = cmd.getarg('parent')[0]
         # FINAL BIT - summarise commands
         if cmd.hasarg('verbose'):
+            pprint(searches)
             verbose = "Searching for articles "
-            if len(searches) > 0:
-                if searchmode == 'normal':
-                    verbose += ("containing \"" +
-                                "\", \"".join(searches) +
-                                "\"; ")
-                elif searchmode == 'regex':
-                    verbose += ("matching the regex /" +
-                                "/ & /".join([s.pattern for s in searches]) +
-                                "/; ")
+            if len(strings) > 0:
+                verbose += ("containing \"" +
+                            "\", \"".join(strings) +
+                            "\"; ")
+            if len(regexes) > 0:
+                verbose += ("matching the regex /" +
+                            "/ & /".join([r.pattern for r in regexes]) +
+                            "/; ")
             if parents is not None:
                 verbose += ("whose parent page is " +
                             parents +
@@ -308,7 +317,8 @@ class search:
 class regexsearch:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        cmd.args['regex'] = []
+        cmd.args['regex'] = cmd.args['root']
+        cmd.args['root'] = []
         search.command(irc_c, msg, cmd)
 
 class tags:

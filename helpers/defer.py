@@ -3,6 +3,9 @@
 For checking whether a command should defer to jarvis or Secretary_Helen.
 """
 
+# jarvis: "Page not found."
+# helen: "NICK: I'm sorry, I couldn't find anything."
+
 class defer:
     @classmethod
     def check(cls, irc_c, msg, *bots):

@@ -181,11 +181,14 @@
 
     <h2 id="search">.search, .sea, .s <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p>Searches the wiki for pages, and provides URLs and basic info about the page that matches your search criteria.</p>
-    <p><code>.search [title] [--tags tags] [--author author] [--rating rating] [--created created] [--parent parent] [--fullname] [--regex] [--summary] [--select type number offset]</code></p>
+    <p><code>.search [title] [--regex regex] [--tags tags] [--author author] [--rating rating] [--created created] [--parent parent] [--fullname] [--summary] [--select type number offset]</code></p>
     <ul>
         <li><b>[title]</b>
-            <br> Search for pages whose title contains all of these words. Words are space-separated. If neither <b>-f</b> nor <b>-x</b> are present, anything wrapped in quotemarks (<code>"</code>) will be treated as a single word. Not case sensitive.
-            If you actually need to search for quotemarks, escape them with a backslash - e.g. <code>.s \"The Administrator\"</code>
+            <br> Search for pages whose title contains all of these words. Words are space-separated. If neither <b>-f</b> nor <b>-x</b> are present, anything wrapped in quotemarks (<code>"</code>) will be treated as a single word. Not case sensitive. If you leave <b>title</b> empty, then it will match all pages, and you'll need to specify more criteria.
+            If you actually need to search for quotemarks, escape them with a backslash - e.g. <code>.s \"The Administrator\"</code>.
+        </li>
+        <li><b>--regex, -x [regex]</b><br>
+            Filter pages by a regular expression. You may use more than one regex in a single search, still delimited by a space. If you want to include a literal space in the regex, you should either wrap the whole regex in quotes or use <code>\s</code> instead. Not case sensitive.
         </li>
         <li><b>--tags, --tagged, --tag, -t [tags]</b><br>
             Filter pages by tags. <code>+scp</code> means pages tagged scp. <code>-scp</code> means pages not tagged scp. If you don't put either <code>+</code> or <code>-</code>, TARS will assume you meant to add a <code>+</code>.
@@ -209,10 +212,7 @@
             Filter pages by their parent page. The parent page's URL must be given exactly (e.g. <code>-p antimemetics-division-hub</code>). TARS will check the entire parent tree - the page will be found even if it's a great-grandchild of the <b>--parent</b>.
         </li>
         <li><b>--fullname, -f</b><br>
-            Instead of searching for all words in <b>title</b> individually, TARS will search for an exact match.
-        </li>
-        <li><b>--regex, -x</b><br>
-            Instead of treating <b>title</b> as a series of words, TARS will treat it as a regular expression. You may use more than one regex in a single search, still delimited by a space. If you want to include a space in the regex, you should either wrap the whole thing in quotes or use <code>\s</code> instead.
+            Instead of searching for all words in <b>title</b> individually, TARS will search for an exact match. Equivalent to wrapping the whole search term in quotes.
         </li>
         <li><b>--summary, --summarise, -u</b><br>
             Instead of providing a link to a single article, TARS will summarise all articles that match the search criteria.
@@ -239,7 +239,7 @@
     <p>Example: <code>TARS: search -t +scp +meta -r &gt;100 -c 2014</code> - <em>matches pages tagged both "scp" and "meta", with a rating of more than 100, posted in 2014.</em></p>
     <p>Example: <code>.s Insurgency --rating 20..80 --created 2018-06..2018</code> - <em>matches pages that contain the word "Insurgency" in the title, which have a rating of between 20 and 80, and were created between June 1st 2018 and the end of 2018.</em></p>
     <p>Example: <code>.s Unexplained Location -f -c 20d..40W3d --random</code> - <em>matches pages whose name is exactly "Unexplained Location" created between 20 days and [40 weeks + 3 days] ago, and returns a random one.</em></p>
-    <p>Example: <code>.s ^SCP-\\d*2 -x -m</code> - <em>matches articles that start with "SCP-" followed by any amount of numbers so long as that number ends in a 2, and returns the one that most needs extra attention.</em></p>
+    <p>Example: <code>.s -x ^SCP-\d*2$ -m</code> - <em>matches articles that start with "SCP-" followed by any amount of numbers so long as that number ends in a 2, and returns the one that most needs extra attention.</em></p>
     <p>If TARS finds more that one article that matches your criteria (and if you didn't specify <b>--random</b>, <b>--summary</b> or <b>--recommend</b>), it will provide a list of matches and ask if you meant any of them. To pick your article from the list, see the <a href="#showmore"><b><code>showmore</code></b></a> command.</p>
     <p><a href="#regexsearch"><b><code>.regexsearch</code></b></a>, <a href="#tags"><b><code>.tags</code></b></a>, <a href="#random"><b><code>.random</code></b></a> and <a href="#lastcreated"><b><code>.lastcreated</code></b></a> are aliases of this command.</p>
 
@@ -257,7 +257,7 @@
     <p>Example: <code>.lc -a Croquembouche</code> - <em>shows the last 3 articles posted by Croquembouche.</em></p>
 
     <h2 id="regexsearch">.regexsearch, .regexsea, .rsea, .rs</h2>
-    <p>Exactly the same as <a href="#search"><b><code>search</code></b></a>, except the <b>--regex</b> flag is enabled.</p>
+    <p>Exactly the same as <a href="#search"><b><code>search</code></b></a>, except your search terms are parsed as regular expressions.</p>
     <p>Example: <code>.rs ^SCP- -t -scp</code> - <em>searches for articles starting with "SCP-" but that are not tagged 'scp'.</em></p>
 
     <h2 id="showmore">.showmore, .sm <div class="jarvis">J</div><div class="helen">H</div></h2>
