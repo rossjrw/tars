@@ -56,30 +56,32 @@ class search:
             # the first argument, if present, should be a string
             if not isint(cmd.getarg('select')[0]):
                 if cmd.getarg('select')[0] in ['recent','recommend','random','none']:
-                    pass # was there anything else to do here?
+                    if cmd.getarg('select')[0] == 'none':
+                        cmd.args['select'][0] = None
                 else:
                     raise CommandError("Selection return order ('{}') must be "
                                        "one of: recent, recommend, random, "
                                        "none".format(cmd.getarg('select')[0]))
             else:
-                cmd.args['select'].insert(0, 'none')
+                cmd.args['select'].insert(0, None)
+            if len(cmd.args['select']) < 2: cmd.ags['select'].append(1)
             if cmd.getarg('select')[1] < 1:
-                raise CommandError
+                raise CommandError("Selection return limit must be at least 1")
+            if len(cmd.args['select']) < 3: cmd.ags['select'].append(1)
+            if cmd.getarg('select')[2] < 0:
+                raise CommandError("Selection offset must be at least 0")
         else:
-            cmd.args['select'] = ['none', 0, 0]
-        if cmd.hasarg('random'):
-            returnmode = 'random'
-            cmd.args['select']
-        elif cmd.hasarg('recent'):
-            returnmode = 'recent'
-        elif cmd.hasarg('recommend'):
-            returnmode = 'recommend'
-        if sum([cmd.hasarg(x) for x in ['random','recent','recommend']]) > 1:
-            raise CommandError("Only one return order may be set")
+            cmd.args['select'] = [None, 0, 0]
+        if cmd.hasarg('random'): cmd.args['select'][0] = 'random'
+        if cmd.hasarg('recent'): cmd.args['select'][0] = 'recent'
+        if cmd.hasarg('recommend'): cmd.args['select'][0] = 'recommend'
         ignorepromoted = cmd.hasarg('ignorepromoted')
         selection = {
             'ignorepromoted': cmd.hasarg('ignorepromoted'),
-            'order': returnmode
+            'order': cmd.getarg('select')[0],
+            'amount': cmd.getarg('select')[1],
+            'offset': cmd.getarg('select')[2],
+        }
         # TODO add a mode for summarise (not a returnmode!)
         # What are we searching for?
         searches = []
@@ -209,8 +211,7 @@ class search:
             created = cmd.getarg('created')
             # created is a list of date selectors - ranges, abs and rels
             # but ALL dates are ranges!
-            for key,selector in enumerate(created):
-                created[key] = DateRange(selector)
+            created = [DateRange(c) for c in created]
             # created is now a list of DateRanges with min and max
             try:
                 for key,selector in enumerate(created):
@@ -300,9 +301,9 @@ class search:
                                "; ")
                 else:
                     verbose += ("with a rating between " +
-                                str(ratings['max']) +
-                                " and " +
                                 str(ratings['min']) +
+                                " and " +
+                                str(ratings['max']) +
                                "; ")
             elif ratings['max'] is not None:
                 verbose += ("with a rating less than " +
@@ -338,8 +339,14 @@ class search:
         #     'pages': cmd.args['root']
         # })
         pages = irc_c.db._driver.get_articles(searches, selection)
+        if len(pages) < 11:
+            msg.reply(str(pages))
+        else:
+            msg.reply("{} results found.".format(len(pages)))
+            return
         if len(pages) == 0:
-            if len(cmd.args) == 1 and len(cmd.args['root']) != 0:
+            # len args is 2, not 1, because --select is always present
+            if len(cmd.args) == 2 and len(cmd.args['root']) != 0:
                 # google only takes 10 args
                 url = google_search('"' + '" "'.join(cmd.args['root'][:10]) +
                                     '"', num=1)[0]
@@ -382,7 +389,9 @@ class tags:
 
 class MinMax:
     """A dictionary whose keys are only mutable if they are None"""
-    # this MIGHT work for datetime, let's see
+    def __repr__(self):
+        return "MinMax({}..{})".format(self.min, self.max)
+
     def __init__(self, min=None, max=None):
         self.min = min
         self.max = min
@@ -429,6 +438,9 @@ class MinMaxError(Exception):
 
 class DateRange:
     """A non-precise date for creating date ranges"""
+    def __repr__(self):
+        return "DateRange({}..{})".format(self.min, self.max)
+
     # Each DateRange should have 2 datetimes:
         # 1. when it starts
         # 2. when it ends

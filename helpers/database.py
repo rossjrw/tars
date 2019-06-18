@@ -21,6 +21,7 @@ import pandas
 import pendulum as pd
 import re2 as re
 from pypika import Query, Table, Field
+from pprint import pprint
 
 def dbprint(text, error=False):
     bit = "[\x1b[38;5;108mDatabase\x1b[0m] "
@@ -158,7 +159,8 @@ class SqliteDriver:
                 title TEXT NOT NULL,
                 scp_num TEXT,
                 parent TEXT,
-                ups INTEGER NOT NULL,
+                rating INTEGER NOT NULL,
+                ups INTEGER,
                 downs INTEGER,
                 date_posted TEXT NOT NULL,
                 is_promoted BOOLEAN NOT NULL
@@ -576,7 +578,7 @@ class SqliteDriver:
         dbprint("Adding article {}".format(article['fullname']))
         c = self.conn.cursor()
         if 'ups' not in article:
-            article['ups'] = article['rating']
+            article['ups'] = None
             article['downs'] = None
         else:
             assert 'downs' in article
@@ -596,6 +598,7 @@ class SqliteDriver:
             'scp_num': (None if 'scp' not in article['tags']
                         else article['title']),
             'parent': article['parent_fullname'],
+            'rating': article['rating'],
             'ups': article['ups'],
             'downs': article['downs'],
             'date_posted': pd.parse(article['created_at']).to_datetime_string()}
@@ -607,9 +610,9 @@ class SqliteDriver:
             c.execute('''
                 INSERT OR REPLACE INTO articles
                     (url, category, title, scp_num, parent,
-                     ups, downs, date_posted)
+                     rating, ups, downs, date_posted)
                 VALUES (:url, :category, :title, :scp_num, :parent,
-                        :ups, :downs, :date_posted)
+                      :rating, :ups, :downs, :date_posted)
                       ''', article_data)
         else:
             # the article already exists and must be updated
@@ -626,10 +629,31 @@ class SqliteDriver:
             * 'ignorepromoted' - defaults to False
             * 'type' - the order of the output list:
                 * None, random, recommend, recent
-            * 'offset' - how many articles to offset
             * 'amount' - a limit on the list returned
+            * 'offset' - how many articles to offset
         Returns a list of articles. Use get_article_info for more detail on
         each."""
         # loop through searches and query the database, I guess
         # start with the least intensive process, to most intensive:
-        # rating - parent - category - date - author - tags - None - regex
+        keyorder = {'rating': 0, 'parent': 1, 'category': 2, 'date': 3,
+                    'author': 4, 'tags': 5, None: 6, 'regex': 7}
+        searches.sort(key=lambda x: keyorder[x['type']])
+        # begin query
+        articles = Table('articles')
+        q = Query.from_(articles).select(articles.id)
+        for search in searches:
+            if search['type'] == 'rating':
+                if search['term']['max'] is not None:
+                    q = q.where(articles.rating <= search['term']['max'])
+                if search['term']['min'] is not None:
+                    q = q.where(articles.rating >= search['term']['min'])
+            if search['type'] == 'date':
+                if search['term']['max'] is not None:
+                    q = q.where(articles.date_posted <= search['term']['max'])
+                if search['term']['min'] is not None:
+                    q = q.where(articles.date_posted >= search['term']['min'])
+        # query complete
+        print(str(q))
+        c = self.conn.cursor()
+        c.execute(str(q))
+        return norm(c.fetchall())

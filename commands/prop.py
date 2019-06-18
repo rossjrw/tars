@@ -18,17 +18,24 @@ class propagate:
         # arg 1 should be a url name
         if cmd.hasarg('sample'):
             samples = ['scp-173','scp-1111','scp-3939','cone','scp-series',
-                       'listpages-magic-and-you','scp-4205','omega-k']
+                       'listpages-magic-and-you','scp-4205','omega-k',
+                       'component:ar-theme','fragment:scp-3939-64']
             msg.reply("Adding sample data...")
-            propagate.get_wiki_data_for(irc_c, samples)
-            return
-        if len(cmd.args['root']) > 0:
+            propagate.get_wiki_data_for(irc_c, samples, reply=msg.reply)
+        elif cmd.hasarg('tales'):
+            msg.reply("Fetching all tales...")
+            tales = Wikidot.pages.select({'site':'scp-wiki', 'tags_all':['tale']})
+            pprint(tales)
+            propagate.get_wiki_data_for(irc_c, tales, reply=msg.reply)
+        elif len(cmd.args['root']) > 0:
             propagate.get_wiki_data_for(irc_c, cmd.args['root'], reply = msg.reply)
-        else:
+        elif len(cmd.args) == 1:
             if msg.nick != "Croquembouche":
                 raise CommandError(("Only Croquembouche can use this command"
                                     " without an argument."))
             propagate.get_wiki_data(irc_c, reply = msg.reply)
+        else:
+            raise CommandError("Bad command")
 
     @classmethod
     def get_wiki_data(cls, irc_c, **kwargs):
@@ -40,15 +47,23 @@ class propagate:
         pages = Server.pages.select({'site': "scp-wiki",
                                      'categories': ["_default"]})
         prop_print("Found {} pages".format(len(pages)))
-        reply("Ding")
+        reply("Done!")
 
     @classmethod
-    def get_wiki_data_for(cls, irc_c, url, **kwargs):
+    def get_wiki_data_for(cls, irc_c, urls, **kwargs):
+        print("Getting wiki data!")
         reply = kwargs.get('reply', lambda x: None)
         # get the wiki data for this article
         # we're taking all of root, so url is a list
-        articles = Server.pages.get_meta({'site': "scp-wiki",
-                                         'pages': url})
-        for url,article in articles.items():
-            reply("Updating {} in the database".format(url))
-            irc_c.db._driver.add_article(article)
+        for urls in chunks(urls, 10):
+            print(urls)
+            articles = Wikidot.pages.get_meta({'site': "scp-wiki",
+                                             'pages': urls})
+            for url,article in articles.items():
+                prop_print("Updating {} in the database".format(url))
+                irc_c.db._driver.add_article(article)
+        reply("Done!")
+
+def chunks(array, length):
+    for i in range(0, len(array), length):
+        yield array[i:i + length]

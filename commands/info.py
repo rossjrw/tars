@@ -9,7 +9,8 @@ from helpers.greetings import acronym
 class help:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        msg.reply("For usage instructions, see https://git.io/TARS.help")
+        msg.reply("For usage instructions, see https://git.io/TARS.help.")
+        msg.reply("For a short version, see http://git.io/TARS.help.concise")
 
 class version:
     @classmethod
