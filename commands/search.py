@@ -9,7 +9,7 @@ Commands:
 
 from helpers.defer import defer
 from helpers.api import wikidot_api_key, google_api_key, cse_key
-from helpers.error import CommandError
+from helpers.error import CommandError, isint
 from xmlrpc.client import ServerProxy
 import re2 as re
 import pendulum
@@ -36,6 +36,7 @@ class search:
                         "summary summarise u",
                         "random rand ran n d",
                         "recommend rec m",
+                        "recent",
                         "verbose v",
                         "select s",
                         "ignorepromoted",
@@ -47,10 +48,39 @@ class search:
         searchmode = 'normal'
         if cmd.hasarg('fullname'): searchmode = 'fullname'
         # Set the return mode of the output
+        # collapse random,recent,recommend to --select
         returnmode = 'normal'
-        if cmd.hasarg('random'): returnmode = 'random'
-        elif cmd.hasarg('summary'): returnmode = 'summary'
-        elif cmd.hasarg('recommend'): returnmode = 'recommend'
+        if cmd.hasarg('select'):
+            # try to convert all args to ints
+            cmd.args['select'] = [int(_) if isint(_) else _ for _ in cmd.args['select']]
+            # the first argument, if present, should be a string
+            if not isint(cmd.getarg('select')[0]):
+                if cmd.getarg('select')[0] in ['recent','recommend','random','none']:
+                    pass # was there anything else to do here?
+                else:
+                    raise CommandError("Selection return order ('{}') must be "
+                                       "one of: recent, recommend, random, "
+                                       "none".format(cmd.getarg('select')[0]))
+            else:
+                cmd.args['select'].insert(0, 'none')
+            if cmd.getarg('select')[1] < 1:
+                raise CommandError
+        else:
+            cmd.args['select'] = ['none', 0, 0]
+        if cmd.hasarg('random'):
+            returnmode = 'random'
+            cmd.args['select']
+        elif cmd.hasarg('recent'):
+            returnmode = 'recent'
+        elif cmd.hasarg('recommend'):
+            returnmode = 'recommend'
+        if sum([cmd.hasarg(x) for x in ['random','recent','recommend']]) > 1:
+            raise CommandError("Only one return order may be set")
+        ignorepromoted = cmd.hasarg('ignorepromoted')
+        selection = {
+            'ignorepromoted': cmd.hasarg('ignorepromoted'),
+            'order': returnmode
+        # TODO add a mode for summarise (not a returnmode!)
         # What are we searching for?
         searches = []
         strings = []
@@ -88,6 +118,7 @@ class search:
                     tags['include'].append(tag[1:])
                     continue
                 tags['include'].append(tag)
+            searches.append({'term': tags, 'type': 'tags'})
         # Set the author
         authors = {'include': [], 'exclude': []}
         if cmd.hasarg('author'):
@@ -103,6 +134,7 @@ class search:
                     authors['include'].append(author[1:])
                     continue
                 authors['include'].append(author)
+            searches.append({'term': authors, 'type': 'author'})
         # Set the rating
         # Cases to account for: modifiers, range, combination
         ratings = MinMax()
@@ -165,6 +197,7 @@ class search:
                         ratings <= rating
                     except MinMaxError as e:
                         raise CommandError(str(e).format("rating"))
+            searches.append({'term': ratings, 'type': 'rating'})
         # Set created date
         # Cases to handle: absolute, relative, range (which can be both)
         createds = MinMax()
@@ -187,6 +220,7 @@ class search:
                         createds >= selector.min
             except MinMaxError as e:
                 raise CommandError(str(e).format("date"))
+            searches.append({'term': createds, 'type': 'date'})
         # Set category
         categories = {'include': [], 'exclude': []}
         if cmd.hasarg('category'):
@@ -202,6 +236,7 @@ class search:
                     categories['include'].append(category[1:])
                     continue
                 categories['include'].append(category)
+            searches.append({'term': categories, 'type': 'category'})
         # Set parent page
         parents = None
         if cmd.hasarg('parent'):
@@ -210,9 +245,9 @@ class search:
                                     "(--parent/-p), exactly one parent URL "
                                     "must be specified"))
             parents = cmd.getarg('parent')[0]
+            searches.append({'term': parents, 'type': 'parent'})
         # FINAL BIT - summarise commands
         if cmd.hasarg('verbose'):
-            pprint(searches)
             verbose = "Searching for articles "
             if len(strings) > 0:
                 verbose += ("containing \"" +
@@ -223,8 +258,24 @@ class search:
                             "/ & /".join([r.pattern for r in regexes]) +
                             "/; ")
             if parents is not None:
-                verbose += ("whose parent page is " +
+                verbose += ("whose parent page is '" +
                             parents +
+                            "'; ")
+            if len(categories['include']) == 1:
+                verbose += ("in the category '" +
+                            categories['include'][0] +
+                            "'; ")
+            elif len(categories['include']) > 1:
+                verbose += ("in the categories '" +
+                            "', '".join(categories) +
+                            "; ")
+            if len(categories['exclude']) == 1:
+                verbose += ("not in the category '" +
+                            categories['exclude'][0] +
+                            "'; ")
+            elif len(categories['exclude']) > 1:
+                verbose += ("not in the categories '" +
+                            "', '".join(categories) +
                             "; ")
             if len(tags['include']) > 0:
                 verbose += ("with the tags '" +
@@ -278,6 +329,7 @@ class search:
             if verbose.endswith("; "):
                 verbose = verbose[:-2]
             msg.reply(verbose)
+            pprint(searches)
         # \/ Test stuff to be moved elsewhere after DB stuff
         # s = ServerProxy('https://TARS:{}@www.wikidot.com/xml-rpc-api.php' \
         #                 .format(wikidot_api_key))

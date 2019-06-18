@@ -10,3 +10,11 @@ class CommandError(Exception):
 class CommandNotExistError(Exception):
     """Used when a command does not exist"""
     pass
+
+def isint(i):
+    """Checks if something is an integer."""
+    try:
+        int(i)
+        return True
+    except ValueError:
+        return False

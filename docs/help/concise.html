@@ -1,0 +1,324 @@
+<head>
+    <title>TARS Help</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/3.0.1/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.4.2/tocbot.css">
+    <style>
+        .markdown-body {
+            box-sizing: border-box;
+            min-width: 467px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 45px;
+            padding-left: 345px;
+            overflow-x: hidden;
+            position: relative;
+            z-index: 1;
+        }
+        a.toc-link {
+            color: 0366d6;
+        }
+        nav {
+            width: 300px;
+            position: fixed;
+            transform: translate(0,-50%);
+            top: 50%;
+            left: calc(50vw - 600px);
+        }
+        .markdown-body h1 {
+            background: lightgray;
+            padding: 0.2em 0.5em;
+            margin-left: -1em;
+            border-radius: 50px 0 0 50px;
+            padding-right: 999rem;
+            margin-right: -999rem;
+            border: none;
+        }
+        .markdown-body h2 {
+            padding: 0.2em 0.5em;
+            background: #eaeaea;
+            display: inline-block;
+            border-radius: 50px;
+            margin: 0.2em;
+            position: relative;
+            border: none;
+        }
+        .markdown-body .jarvis, .markdown-body .helen {
+            padding: 0.1em;
+            border-radius: 50px;
+            margin: 0.25em;
+            box-sizing: content-box;
+            height: 1em;
+            width: 1em;
+            color: white;
+            white-space: nowrap;
+            line-height: 1;
+            text-align: center;
+        }
+        .markdown-body h2 .jarvis, .markdown-body h2 .helen {
+            position: absolute;
+            right: -1.6em;
+            top: 0;
+        }
+        .markdown-body .jarvis {
+            background: orange;
+        }
+        .markdown-body .helen {
+            background: skyblue;
+        }
+        h2 .jarvis + .helen {
+            right: -3em;
+        }
+        .toc-list-item {
+            line-height: initial;
+        }
+        @media (max-width: 1200px) {
+            nav {
+                left: 20px;
+            }
+        }
+        @media (max-width: 767px) {
+            .markdown-body {
+                padding: 15px;
+            }
+            nav {
+                left: unset;
+                transform: none;
+                top: 0;
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body class="markdown-body">
+<nav class="contents js-toc">
+    <h3 id="tableofcontents">Table of Contents</h3>
+    <ul>
+    </ul>
+</nav>
+
+<article class="js-toc-content">
+    <h1>Quick Commands</h1>
+    
+    <p>This page is a quick and rough summary of commands. If you'd prefer a more detailed version, see <a href="https://rossjrw.github.io/tars/help/">the full documentation</a>.</p>
+
+    <h3 id="whatistars">What is TARS?</h3>
+    <p>It's an IRC bot to aid SCP Wiki staff.</p>
+    <p>Whenever you see a command such as <code>.search</code>, keep in mind that you can also use this command by pinging TARS at the start of your message: <code>TARS: search</code>. Anything in [square brackets] is optional.</p>
+    
+    <br>
+
+    <h1 id="features">Features</h1>
+
+    <h2 id="scpmatching">SCP-matching</h2>
+    <p>TARS will provide a link for a message that's just "SCP-XXXX" or that contains "!SCP-XXXX".</p>
+
+    <h2 id="chevronning">Chevronning</h2>
+    <p><code>TARS: ^</code></p>
+    <p>Forces TARS to reevaluate previous messages until it finds something that meets one of the following criteria:</p>
+    <ul>
+        <li>A command that it previously ignored because another bot was present</li>
+        <li>A command that starts with the wrong character (e.g. <code>!search</code> or <code>search</code>)</li>
+        <li>A message containing any SCP numbers</li>
+        <li>A message that is equal to the name of a page on the wiki</li>
+    </ul>
+    <p>Append a number after the chevron to change how many messages are checked, e.g. <code>TARS: ^ 20</code>. Limit of 50, default 10. More chevrons skip commands.</p>
+    <p>An empty message that pings TARS and nothing else, eg <code>TARS:</code>, is equivalent to <code>TARS: ^ 1</code>.</p>
+
+    <h2 id="deferral">Deferral (to other bots)</h2>
+    <p>Most commands will not trigger if another bot is in the channel. Look for <span class="jarvis">J</span> and/or <span class="helen">H</span> after the command name to see whether or not this is the case for each command.</p>
+    <p>However, if either of those bots fails the request (e.g. not finding anything in a <a href="#search"><b><code>.search</code></b></a>) then TARS will automatically try as well. (If TARS also fails to find anything, it won't say anything.)</p>
+    <p>To force TARS to parse a command, either ping it at the start of the message, or prefix the command with two dots, e.g. <a href="#search"><b><code>..search</code></b></a>.
+
+    <h1 id="generalcommands">General Commands</h1>
+
+    <h2 id="help">.help <div class="jarvis">J</div><div class="helen">H</div></h2>
+    <p>Provides a link to both this page and <a href="https://rossjrw.github.io/tars/help/">the full documentation</a>.</p>
+
+    <h2 id="search">.search, .sea, .s <div class="jarvis">J</div><div class="helen">H</div></h2>
+    <p>Searches the wiki for pages.</p>
+    <p><code>.search [title] [--regex regex] [--tags tags] [--author author] [--rating rating] [--created created] [--parent parent] [--fullname] [--summary] [--select type number offset]</code></p>
+    <ul>
+        <li><b>[title]</b>
+            <br> Search for pages whose title contains all of these words. Use quotemarks to wrap phrases.
+        </li>
+        <li><b>--regex, -x [regex]</b><br>
+            Filter pages by a regular expression.
+        </li>
+        <li><b>--tags, --tagged, --tag, -t [tags]</b><br>
+            Filter pages by tags. <code>+scp</code> means pages tagged scp. <code>-scp</code> means pages not tagged scp.
+        </li>
+        <li><b>--author, --au, -a [authors]</b><br>
+            Filter pages by exact author name.
+        </li>
+        <li><b>--rating, -r [rating|ratingrange]</b><br>
+            Filter pages by a rating number. Prefix the number with any of <code>&gt;</code>, <code>&lt;</code>, <code>=</code>. Default is <code>&gt;</code>. Can also specify a range of ratings with two dots, e.g. <code>20..50</code>. Ranges are always inclusive.
+        </li>
+        <li><b>--created, --date, -c [date|daterange]</b><br>
+            Filter pages by date of creation. Absolute dates must be in ISO-8601 format (YYYY-MM-DD, YYYY-MM or YYYY). Relative dates must be a number followed by a letter to specify how many units of time ago; valid units are <code>s m h d w M y</code>. These units are not case-sensitive, <b>except for m/M!</b> Use <code>m</code> for minutes and <code>M</code> for Months.
+        </li>
+        <li><b>--category, --cat, -y [category]</b><br>
+            Exactly the same as <b>--tags</b>, except for Wikidot categories instead.
+        </li>
+        <li><b>--parent, -p [url]</b><br>
+            Filter pages by their parent page.
+        </li>
+        <li><b>--fullname, -f</b><br>
+            Instead of searching for all words in <b>title</b> individually, TARS will search for an exact match. Equivalent to wrapping the whole search term in quotes.
+        </li>
+        <li><b>--summary, --summarise, -u</b><br>
+            Instead of providing a link to a single article, TARS will summarise all articles that match the search criteria.
+        </li>
+        <li><b>--random, --rand, --ran, -n, -d</b><br>
+            If your search matches more than one article, TARS will return a random one from the list. Equivalent to <code>--select random 1</code>.
+        </li>
+        <li><b>--recommend, --rec, -m</b><br>
+            If your search matches more than one article, TARS will determine and return which of those articles most needs extra attention. Equivalent to <code>--select recommend 1</code>.
+        </li>
+        <li><b>--verbose, -v</b><br>
+            TARS will explicity state exactly what search criteria it thinks you want.
+        </li>
+        <li><b>--select, -s [order] amount [offset]</b><br>
+            Instead of returning a list of articles, select a specific one from the list.<br>
+            <b>order:</b> <code>random</code>, <code>recommend</code>, <code>recent</code>, <code>none</code>. Defaults to 'none' if no arguments are provided, or if the first argument is a number.<br>
+            <b>amount:</b> How many articles to select? They will all be returned in separate messages, not a <a href="#showmore"><b><code>.showmore</code></b></a> list. Defaults to 1 if not provided.<br>
+            <b>offset:</b> How many results from the top of the list should be ignored? Default is 0.
+        </li>
+        <li><b>--ignorepromoted</b><br>
+            Ignore articles that have already been promoted. TODO remove this from documentation
+        </li>
+    </ul>
+    <p>If TARS finds more than one article that matches your criteria, it will provide a list of matches and ask if you meant any of them. To pick your article from the list, see the <a href="#showmore"><b><code>showmore</code></b></a> command.</p>
+
+    <h2 id="lastcreated">.lastcreated, .lc, .l, .recent <div class="jarvis">J</div><div class="helen">H</div></h2>
+    <p>TARS will generate a list of the 3 most recently created pages.</p>
+    <p><code>.lastcreated [amount] [extra arguments]</code></p>
+    <ul>
+        <li><b>amount</b><br>
+            The number of pages to show. Default is 3, max is 10.
+        </li>
+        <li><b>extra arguments</b><br>
+            You can use any of the arguments in <a href="#search"><b><code>.search</code></b></a>.
+        </li>
+    </ul>
+
+    <h2 id="regexsearch">.regexsearch, .regexsea, .rsea, .rs</h2>
+    <p>Exactly the same as <a href="#search"><b><code>search</code></b></a>, except your search terms are parsed as regular expressions.</p>
+
+    <h2 id="showmore">.showmore, .sm <div class="jarvis">J</div><div class="helen">H</div></h2>
+    <p>When TARS presents you with a list of articles to pick from, use this command to pick which one you want to see.</p>
+    <p>Use <code>.sm</code> or <code>.sm 0</code> to see the whole list.</p>
+
+    <h2 id="authorpage">.authorpage, .author, .au <div class="jarvis">J</div><div class="helen">H</div></h2>
+    <p><code>.au [username]</code></p>
+    <p>Fetches the author page for a given user. You must specify their Wikidot name exactly, although if you name an IRC user, TARS will check its list of aliases (see <a href="#alias"><b><code>.alias</code></b></a>) as well. If you don't specify anyone, TARS will try to find your author page instead (and it'll check your aliases, too).</p>
+
+    <h2 id="alias">.alias</h2>
+    <p><code>.alias [name] [--add names] [--remove names] [--list]</code></p>
+    <p>Add an alternate name(s) for yourself into TARS' database. These names are used for <a href="#authorpage"><b><code>.authorpage</code></b></a> and <a href="#seen"><b><code>.seen</code></b></a>.</p>
+    <ul>
+        <li><b>name</b><br>
+            An IRC name. You can only <b>--add</b> or <b>--remove</b> aliases from this name if it's your current IRC nick (or if it's already one of your aliases), but you can <b>--list</b> anyone's aliases. If you don't include this argument, TARS will assume that you mean your current IRC nick.
+        </li>
+        <li><b>--add, -a</b><br>
+            A list of names to associate with your current IRC name. Separate multiple names with spaces. If your name contains a space, wrap it in quotes.
+        </li>
+        <li><b>--remove, -r:</b><br>
+            A list of names to remove from your list of aliases.
+        </li>
+        <li><b>--list, -l:</b><br>
+            List all aliases associated with the given name. If you don't include any flags at all, TARS will list the names anyway.
+        </li>
+    </ul>
+
+    <h2 id="seen">.seen <div class="jarvis">J</div><div class="helen">H</div></h2>
+    <p><code>.seen name</code></p>
+    <p>TARS will tell you when this user last sent a message in the current channel, and when they last sent a message in any channel.</p>
+
+    <h2 id="tags">.tags <div class="jarvis">J</div></h2>
+    <p><code>.tags [tags]</code></p>
+    <p>Equivalent to <code>.s -t [tag]</code>.
+
+    <h2 id="tag">.tag <div class="jarvis">J</div></h2>
+    <p><code>.tag tag</code></p>
+    <p>TARS will provide a link to the page that lists all the pages with this tag.</p>
+    <p>Note that jarvis uses this command as an alias for <code>.tags</code>.</p>
+
+    <h2 id="tag">.wikiname</h2>
+    <p><code>.wikiname MyWikidotUsername</code></p>
+    <p>Set your Wikidot username in TARS' database.</p>
+
+    <h2 id="user">.user <div class="jarvis">J</div><div class="helen">S</div></h2>
+    <p><code>.user user</code></p>
+    <p>TARS will provide a link to the user's Wikidot page.</p>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.4.2/tocbot.min.js"></script>
+    <script>
+        tocbot.init({
+            // Where to render the table of contents.
+            tocSelector: '.js-toc',
+            // Where to grab the headings to build the table of contents.
+            contentSelector: '.js-toc-content',
+            // Which headings to grab inside of the contentSelector element.
+            headingSelector: 'h1, h2, h3',
+            // Headings that match the ignoreSelector will be skipped.
+            ignoreSelector: '.js-toc-ignore',
+            // Main class to add to links.
+            linkClass: 'toc-link',
+            // Extra classes to add to links.
+            extraLinkClasses: '',
+            // Class to add to active links,
+            // the link corresponding to the top most heading on the page.
+            activeLinkClass: 'is-active-link',
+            // Main class to add to lists.
+            listClass: 'toc-list',
+            // Extra classes to add to lists.
+            extraListClasses: '',
+            // Class that gets added when a list should be collapsed.
+            isCollapsedClass: 'is-collapsed',
+            // Class that gets added when a list should be able
+            // to be collapsed but isn't necessarily collpased.
+            collapsibleClass: 'is-collapsible',
+            // Class to add to list items.
+            listItemClass: 'toc-list-item',
+            // How many heading levels should not be collpased.
+            // For example, number 6 will show everything since
+            // there are only 6 heading levels and number 0 will collpase them all.
+            // The sections that are hidden will open
+            // and close as you scroll to headings within them.
+            collapseDepth: 6,
+            // Smooth scrolling enabled.
+            scrollSmooth: true,
+            // Smooth scroll duration.
+            scrollSmoothDuration: 420,
+            // Callback for scroll end.
+            scrollEndCallback: function (e) { },
+            // Headings offset between the headings and the top of the document (this is meant for minor adjustments).
+            headingsOffset: 150,
+            // Timeout between events firing to make sure it's
+            // not too rapid (for performance reasons).
+            throttleTimeout: 50,
+            // Element to add the positionFixedClass to.
+            positionFixedSelector: null,
+            // Fixed position class to add to make sidebar fixed after scrolling
+            // down past the fixedSidebarOffset.
+            positionFixedClass: 'is-position-fixed',
+            // fixedSidebarOffset can be any number but by default is set
+            // to auto which sets the fixedSidebarOffset to the sidebar
+            // element's offsetTop from the top of the document on init.
+            fixedSidebarOffset: 'auto',
+            // includeHtml can be set to true to include the HTML markup from the
+            // heading node instead of just including the textContent.
+            includeHtml: false,
+            // onclick function to apply to all links in toc. will be called with
+            // the event as the first parameter, and this can be used to stop,
+            // propagation, prevent default or perform action
+            onClick: false,
+            // orderedList can be set to false to generate unordered lists (ul)
+            // instead of ordered lists (ol)
+            orderedList: true,
+            // If there is a fixed article scroll container, set to calculate titles' offset
+            scrollContainer: null
+        });
+    </script>
+</body>

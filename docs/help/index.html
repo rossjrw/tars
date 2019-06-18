@@ -128,7 +128,9 @@
 </nav>
 
 <article class="js-toc-content">
-    <p>Just want a quick list of commands? See <a href="https://github.com/rossjrw/tars/wiki/Quick-Commands">Quick Commands</a></p>
+    <h1>TARS</h1>
+    
+    <p>This page contains a huge amount of detail. If you'd prefer a shorter version, see <a href="https://rossjrw.github.io/tars/help/concise.html">Quick Commands</a>.</p>
 
     <h3 id="whatistars">What is TARS?</h3>
     <p>TARS is an IRC bot primarily for aiding IO in social media promotion, but also has a bunch of other things it can do. The following is a list of all the commands that TARS knows.</p>
@@ -146,8 +148,7 @@
 
     <h2 id="chevronning">Chevronning</h2>
     <p><code>TARS: ^</code></p>
-    <p>Tagging TARS in a message that's just a caret (or a chevron) is like saying "TARS, take a good hard look at the last message that was posted". TARS will take a look at the message above the chevron and attempt to parse any command that's there. If
-        it doesn't find anything, it'll move up to the previous message, and will keep doing so until it finds a command.</p>
+    <p>Tagging TARS in a message that's just a caret (or a chevron) is like saying "TARS, take a good hard look at the last message that was posted". TARS will take a look at the message above the chevron and attempt to parse any command that's there. If it doesn't find anything, it'll move up to the previous message, and will keep doing so until it finds a command.</p>
     <p>Chevronning has a variety of effects:</p>
     <ul>
         <li>If TARS finds a command that it previously ignored because another bot was present, it will execute it</li>
@@ -226,10 +227,10 @@
         <li><b>--verbose, -v</b><br>
             TARS will explicity state exactly what search criteria it thinks you want. Probably not useful for anything other than debugging.
         </li>
-        <li><b>--select, -s [type] [number] [offset]</b><br>
+        <li><b>--select, -s [order] amount [offset]</b><br>
             Instead of returning a list of articles, select a specific one from the list.<br>
-            <b>type:</b> What kind of selection? <code>random</code> selects randomly from the list, <code>recommend</code> selects based on vote numbers and article age, <code>recent</code> selects the newest ones and <code>none</code> (the default) just selects from the top of the list.<br>
-            <b>number:</b> How many articles to select? Default is 1. They will all be returned in separate messages, not a <a href="#showmore"><b><code>.showmore</code></b></a> list.<br>
+            <b>order:</b> What order should the results be returned in? <code>random</code> selects randomly from the list, <code>recommend</code> selects based on vote numbers and article age, <code>recent</code> selects the newest ones and <code>none</code> just selects from the top of the list. Defaults to 'none' if no arguments are provided, or if the first argument is a number.<br>
+            <b>amount:</b> How many articles to select? They will all be returned in separate messages, not a <a href="#showmore"><b><code>.showmore</code></b></a> list. Defaults to 1 if not provided.<br>
             <b>offset:</b> How many results from the top of the list should be ignored? Default is 0.
         </li>
         <li><b>--ignorepromoted</b><br>
@@ -240,7 +241,7 @@
     <p>Example: <code>.s Insurgency --rating 20..80 --created 2018-06..2018</code> - <em>matches pages that contain the word "Insurgency" in the title, which have a rating of between 20 and 80, and were created between June 1st 2018 and the end of 2018.</em></p>
     <p>Example: <code>.s Unexplained Location -f -c 20d..40W3d --random</code> - <em>matches pages whose name is exactly "Unexplained Location" created between 20 days and [40 weeks + 3 days] ago, and returns a random one.</em></p>
     <p>Example: <code>.s -x ^SCP-\d*2$ -m</code> - <em>matches articles that start with "SCP-" followed by any amount of numbers so long as that number ends in a 2, and returns the one that most needs extra attention.</em></p>
-    <p>If TARS finds more that one article that matches your criteria (and if you didn't specify <b>--random</b>, <b>--summary</b> or <b>--recommend</b>), it will provide a list of matches and ask if you meant any of them. To pick your article from the list, see the <a href="#showmore"><b><code>showmore</code></b></a> command.</p>
+    <p>If TARS finds more than one article that matches your criteria (and if you didn't specify <b>--random</b>, <b>--summary</b> or <b>--recommend</b>), it will provide a list of matches and ask if you meant any of them. To pick your article from the list, see the <a href="#showmore"><b><code>showmore</code></b></a> command.</p>
     <p><a href="#regexsearch"><b><code>.regexsearch</code></b></a>, <a href="#tags"><b><code>.tags</code></b></a>, <a href="#random"><b><code>.random</code></b></a> and <a href="#lastcreated"><b><code>.lastcreated</code></b></a> are aliases of this command.</p>
 
     <h2 id="lastcreated">.lastcreated, .lc, .l, .recent <div class="jarvis">J</div><div class="helen">H</div></h2>
