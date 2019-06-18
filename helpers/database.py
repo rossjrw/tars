@@ -19,6 +19,8 @@ from pprint import pprint
 from helpers.parse import nickColor
 import pandas
 import pendulum as pd
+import re2 as re
+from pypika import Query, Table, Field
 
 def dbprint(text, error=False):
     bit = "[\x1b[38;5;108mDatabase\x1b[0m] "
@@ -44,6 +46,11 @@ def norm(thing):
                              .format(len(thing)))
     return thing
 
+def _regexp(expr, item):
+    """For evaluating db strings against a given regex."""
+    reg = re.compile(expr)
+    return reg.search(item) is not None
+
 # mark this file as the driver instead of pyaib.dbd.sqlite
 # also set by db.backend in the config
 @db_driver
@@ -58,8 +65,8 @@ class SqliteDriver:
         except sqlite3.OperationalError as e:
             # can't open db!
             raise
-        print("Database Driver loaded!")
         self._create_database()
+        self.conn.create_function("REGEXP", 2, _regexp)
 
     def commit(self):
         """Just commits the database.
@@ -599,8 +606,8 @@ class SqliteDriver:
             # the article does not already exist
             c.execute('''
                 INSERT OR REPLACE INTO articles
-                      (url, category, title, scp_num, parent,
-                       ups, downs, date_posted)
+                    (url, category, title, scp_num, parent,
+                     ups, downs, date_posted)
                 VALUES (:url, :category, :title, :scp_num, :parent,
                         :ups, :downs, :date_posted)
                       ''', article_data)
@@ -608,13 +615,21 @@ class SqliteDriver:
             # the article already exists and must be updated
             dbprint("This article already exists", True)
 
-    def get_article(self, searches, selection):
-        """Get an article or articles.
+    def get_articles(self, searches, selection):
+        """Get a list of articles that match the criteria.
         searches must be a LIST consisting of DICTS.
         Each dict must contain the following:
             * 'term' - the search term as a string, MinMax or inc/exc list.
             * 'type' - the type of search:
-                * None, regex, tags, author, rating, date, categoy, parent
+                * None, regex, tags, author, rating, date, category, parent
         selection must be a DICT containing the following:
+            * 'ignorepromoted' - defaults to False
             * 'type' - the order of the output list:
                 * None, random, recommend, recent
+            * 'offset' - how many articles to offset
+            * 'amount' - a limit on the list returned
+        Returns a list of articles. Use get_article_info for more detail on
+        each."""
+        # loop through searches and query the database, I guess
+        # start with the least intensive process, to most intensive:
+        # rating - parent - category - date - author - tags - None - regex

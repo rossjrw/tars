@@ -196,7 +196,7 @@
         <li><b>--rating, -r [rating|ratingrange]</b><br>
             Filter pages by a rating number. Prefix the number with any of <code>&gt;</code>, <code>&lt;</code>, <code>=</code>. Default is <code>&gt;</code>. Can also specify a range of ratings with two dots, e.g. <code>20..50</code>. Ranges are always inclusive.
         </li>
-        <li><b>--created, -c [date|daterange]</b><br>
+        <li><b>--created, --date, -c [date|daterange]</b><br>
             Filter pages by date of creation. Rewrite dates are ignored. Absolute dates must be in ISO-8601 format (YYYY-MM-DD, YYYY-MM or YYYY). Relative dates must be a number followed by a letter to specify how many units of time ago; valid units are <code>s m h d w M y</code>. These units are not case-sensitive, <b>except for m/M!</b> Use <code>m</code> for minutes and <code>M</code> for Months.<br>
             Can use the same prefixes as <b>rating</b> (<code>&gt;</code> = "older than", <code>&lt;</code> = "younger than", <code>=</code> = exact match), and also supports ranges of dates with two dots e.g. <code>2018..2019</code>. Ranges are always inclusive, and you can mix relative dates and absolute dates. Don't worry about which order to put them in.
             'Exact match' is the default match for absolute dates, as they are always approximate. 'Older than' is the default match for relative dates, as they are alwyas precise, and an exact match is unlikely to match any articles.
@@ -208,7 +208,7 @@
         <li><b>--parent, -p [url]</b><br>
             Filter pages by their parent page. The parent page's URL must be given exactly (e.g. <code>-p antimemetics-division-hub</code>). TARS will check the entire parent tree - the page will be found even if it's a great-grandchild of the <b>--parent</b>.
         </li>
-        <li><b>--fullname, --full, -f</b><br>
+        <li><b>--fullname, -f</b><br>
             Instead of searching for all words in <b>title</b> individually, TARS will search for an exact match.
         </li>
         <li><b>--regex, -x</b><br>

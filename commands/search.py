@@ -60,7 +60,11 @@ class search:
                 searches = [" ".join(cmd.args['root'])]
             elif searchmode == 'regex':
                 for search in cmd.args['root']:
-                    searches.append(re.compile(search))
+                    try:
+                        searches.append(re.compile(search))
+                    except re.RegexError:
+                        raise CommandError("'{}' isn't a valid regular "
+                                           "expression".format(search))
         # Set the tags
         tags = {'include': [], 'exclude': []}
         if cmd.hasarg('tags'):
@@ -202,9 +206,9 @@ class search:
             verbose = "Searching for articles "
             if len(searches) > 0:
                 if searchmode == 'normal':
-                    verbose += ("containing '" +
-                                "', '".join(searches) +
-                                "'; ")
+                    verbose += ("containing \"" +
+                                "\", \"".join(searches) +
+                                "\"; ")
                 elif searchmode == 'regex':
                     verbose += ("matching the regex /" +
                                 "/ & /".join([s.pattern for s in searches]) +
@@ -214,13 +218,13 @@ class search:
                             parents +
                             "; ")
             if len(tags['include']) > 0:
-                verbose += ("with the tags " +
-                            ", ".join(tags['include']) +
-                            "; ")
+                verbose += ("with the tags '" +
+                            "', '".join(tags['include']) +
+                            "'; ")
             if len(tags['exclude']) > 0:
-                verbose += ("with the tags " +
-                            ", ".join(tags['exclude']) +
-                            "; ")
+                verbose += ("without the tags '" +
+                            "', '".join(tags['exclude']) +
+                            "'; ")
             if len(authors['include']) > 0:
                 verbose += ("by " +
                             ", ".join(authors['include']) +
@@ -266,12 +270,13 @@ class search:
                 verbose = verbose[:-2]
             msg.reply(verbose)
         # \/ Test stuff to be moved elsewhere after DB stuff
-        s = ServerProxy('https://TARS:{}@www.wikidot.com/xml-rpc-api.php' \
-                        .format(wikidot_api_key))
-        pages = s.pages.get_meta({
-            'site': 'scp-wiki',
-            'pages': cmd.args['root']
-        })
+        # s = ServerProxy('https://TARS:{}@www.wikidot.com/xml-rpc-api.php' \
+        #                 .format(wikidot_api_key))
+        # pages = s.pages.get_meta({
+        #     'site': 'scp-wiki',
+        #     'pages': cmd.args['root']
+        # })
+        pages = irc_c.db._driver.get_articles(searches, selection)
         if len(pages) == 0:
             if len(cmd.args) == 1 and len(cmd.args['root']) != 0:
                 # google only takes 10 args
@@ -509,6 +514,7 @@ class DateRange:
         elif arg is 'max': return self.max
         else: raise KeyError(arg + " not in a DateRange object")
 
+# TODO move this to helpers/api.py
 def google_search(search_term, **kwargs):
     service = build("customsearch", "v1", developerKey=google_api_key)
     res = service.cse().list(q=search_term, cx=cse_key, **kwargs).execute()

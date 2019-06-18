@@ -3,7 +3,7 @@
 For propagating the database with wiki data.
 """
 
-from helpers.api import wikidot_api_key
+from helpers.api import Wikidot
 from helpers.error import CommandError
 from xmlrpc.client import ServerProxy
 from pprint import pprint
@@ -11,9 +11,6 @@ from helpers.parse import nickColor
 
 def prop_print(text):
     print("[{}] {}".format(nickColor("Propagation"), text))
-
-Server = ServerProxy('https://TARS:{}@www.wikidot.com/xml-rpc-api.php' \
-                     .format(wikidot_api_key))
 
 class propagate:
     @classmethod
