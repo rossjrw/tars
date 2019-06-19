@@ -59,8 +59,9 @@ class propagate:
             articles = SCPWiki.get_meta({'pages': urls})
             for url,article in articles.items():
                 prop_print("Updating {} in the database".format(url))
-                irc_c.db._driver.add_article(article)
+                irc_c.db._driver.add_article(article, commit=False)
         reply("Done!")
+        irc_c.db._driver.commit()
 
 def chunks(array, length):
     for i in range(0, len(array), length):

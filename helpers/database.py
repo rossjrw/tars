@@ -64,9 +64,10 @@ class SqliteDriver:
         try:
             self.conn = sqlite3.connect(path)
         except sqlite3.OperationalError as e:
-            # can't open db!
+            dbprint("The database could not be opened", True)
             raise
         self._create_database()
+        self.conn.row_factory = sqlite3.Row
         self.conn.create_function("REGEXP", 2, _regexp)
 
     def commit(self):
@@ -180,7 +181,10 @@ class SqliteDriver:
                 article_id INTEGER NOT NULL
                     REFERENCES articles(id),
                 author TEXT NOT NULL,
-                UNIQUE(article_id, author COLLATE NOCASE)
+                metadata BOOLEAN NOT NULL
+                    CHECK (metadata IN (0,1))
+                    DEFAULT 0,
+                UNIQUE(article_id, author COLLATE NOCASE, metadata)
             );
             CREATE TABLE IF NOT EXISTS showmore_list (
                 channel_id INTEGER NOT NULL
@@ -606,7 +610,7 @@ class SqliteDriver:
             SELECT id FROM articles WHERE url=?
                   ''', (article['url'], ))
         article_data['id'] = norm(c.fetchone())
-        if article_id['id'] is None:
+        if article_data['id'] is None:
             # the article does not already exist
             # replace shouldn't actually happen but hey can't hurt
             c.execute('''
@@ -618,6 +622,7 @@ class SqliteDriver:
                       ''', article_data)
         else:
             # the article already exists and must be updated
+            dbprint("This article already exists", True)
             # ignore ups/downs
             c.execute('''
                 UPDATE articles
@@ -626,15 +631,34 @@ class SqliteDriver:
                     date_posted=:date_posted
                 WHERE id=:id
                       ''', article_data)
-            dbprint("This article already exists", True)
+        # update tags and authors
+        c.execute('''
+            DELETE FROM articles_tags WHERE article_id=?
+                  ''', (article_data['id'],))
+        c.executemany('''
+            INSERT INTO articles_tags (article_id, tag)
+            VALUES ( ? , ? )
+                      ''', [(article_data['id'],t) for t in article['tags']])
+        c.execute('''
+            DELETE FROM articles_authors
+            WHERE article_id=? AND metadata=0
+                  ''', (article_data['id'],))
+        c.execute('''
+            INSERT INTO articles_authors (article_id, author)
+            VALUES ( ? , ? )
+                  ''', (article_data['id'], article['created_by']))
+        if commit:
+            self.conn.commit()
 
     def get_article_info(self, id):
         """Gets info about an article"""
+        info = {'db_id': id}
         c = self.conn.cursor()
         c.execute('''
-            SELECT title FROM articles WHERE id=?
+            SELECT category,url,title,scp_num,rating,date_posted
+            FROM articles WHERE id=?
                   ''', (id,))
-        return norm(c.fetchone())
+        print(c.fetchone().keys())
 
     def get_articles(self, searches, selection):
         """Get a list of articles that match the criteria.

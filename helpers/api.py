@@ -33,6 +33,7 @@ with open(os.path.dirname(__file__) + "/../google.secret.txt") as file:
 with open(os.path.dirname(__file__) + "/../cse.secret.txt") as file:
     cse_key = file.read().rstrip()
 SCPWiki = WikidotAPI()
+
 # TODO put all this stuff into WikidotAPI
 http = urllib3.PoolManager()
 
