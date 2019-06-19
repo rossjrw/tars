@@ -42,6 +42,8 @@ def norm(thing):
         elif len(thing) == 1:
             return thing[0]
         else:
+            if isinstance(thing[0], sqlite3.Row):
+                return thing
             # shouldn't be norming this thing
             raise IndexError("norming something of length {}"
                              .format(len(thing)))
@@ -593,6 +595,8 @@ class SqliteDriver:
             else:
                 article['category'] = '_default'
                 article['url'] = article['fullname']
+        if 'created_by' not in article or article['created_by'] is None:
+            article['created_by'] = "an anonymous user"
         # this dict will be fed into the database
         article_data = {
             'url': article['url'],
@@ -620,6 +624,7 @@ class SqliteDriver:
                 VALUES (:url, :category, :title, :scp_num, :parent,
                         :rating, :ups, :downs, :date_posted)
                       ''', article_data)
+            article_data['id'] = c.lastrowid
         else:
             # the article already exists and must be updated
             dbprint("This article already exists", True)
@@ -652,13 +657,29 @@ class SqliteDriver:
 
     def get_article_info(self, id):
         """Gets info about an article"""
-        info = {'db_id': id}
+        page = {'id': id, 'tags': [], 'authors': []}
         c = self.conn.cursor()
         c.execute('''
             SELECT category,url,title,scp_num,rating,date_posted
             FROM articles WHERE id=?
                   ''', (id,))
-        print(c.fetchone().keys())
+        result = c.fetchone()
+        for column in result.keys():
+            page[column] = result[column]
+        page['fullname'] = ":".join([page['category'], page['url']])
+        # now get authors and tags
+        c.execute('''
+            SELECT tag FROM articles_tags WHERE article_id=?
+                  ''', (id,))
+        for row in c.fetchall():
+            page['tags'].append(row['tag'])
+        # TODO this does not take metadata into account
+        c.execute('''
+            SELECT author FROM articles_authors WHERE article_id=?
+                  ''', (id,))
+        for row in c.fetchall():
+            page['authors'].append(row['author'])
+        return page
 
     def get_articles(self, searches, selection):
         """Get a list of articles that match the criteria.
@@ -719,4 +740,4 @@ class SqliteDriver:
         print(str(q))
         c = self.conn.cursor()
         c.execute(str(q))
-        return norm(c.fetchall())
+        return c.fetchall()

@@ -339,15 +339,13 @@ class search:
         #     'pages': cmd.args['root']
         # })
         pages = irc_c.db._driver.get_articles(searches, selection)
-        if len(pages) < 11:
-            if len(pages) == 1:
-                msg.reply(irc_c.db._driver.get_article_info(pages[0]))
-                return
-            else:
-                msg.reply(str(pages))
-        else:
+        if len(pages) >= 10:
             msg.reply("{} results found.".format(len(pages)))
             return
+        pages = [irc_c.db._driver.get_article_info(p['id']) for p in pages]
+        if len(pages) > 1:
+            msg.reply("{} results: {}".format(
+                len(pages), ", ".join([p['title'] for p in pages])))
         if len(pages) == 0:
             # len args is 2, not 1, because --select is always present
             if len(cmd.args) == 2 and len(cmd.args['root']) != 0:
@@ -365,14 +363,15 @@ class search:
             else:
                 msg.reply("No matches found.")
             return
-        for title,page in pages.items():
+        for page in pages:
             msg.reply(
                 "\x02{}\x0F · {} · {} · {} · {}".format(
-                    (page['title'] if not 'scp' in page['tags']
-                     else page['title'] + ": " + "(title goes here)"),
-                    "by " + page['created_by'],
+                    ("\x02{}\x0F: {}".format(page['scp-num'],page['title'])
+                     if 'scp' in page['tags'] else
+                     "\x02{}\x0F".format(page['title'])),
+                    "by " + " & ".join(page['authors']),
                     ("+" if page['rating'] >= 0 else "") + str(page['rating']),
-                    pendulum.parse(page['created_at']).diff_for_humans(),
+                    pendulum.parse(page['date_posted']).diff_for_humans(),
                     "http://www.scp-wiki.net/" + page['fullname'],
                 )
             )

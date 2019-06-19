@@ -23,7 +23,7 @@ class propagate:
             msg.reply("Adding sample data...")
             propagate.get_wiki_data_for(irc_c, samples, reply=msg.reply)
         elif cmd.hasarg('tales'):
-            msg.reply("Fetching all tales...")
+            msg.reply("Fetching all tales... this will take a few minutes.")
             tales = SCPWiki.select({'tags_all':['tale']})
             pprint(tales)
             propagate.get_wiki_data_for(irc_c, tales, reply=msg.reply)
