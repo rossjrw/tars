@@ -28,11 +28,11 @@ pendulum == 2.0.4
 # plugins/names.py: 10
 # plugins/nickserv.py: 5
 # plugins/parsemessages.py: 8
-pyaib == 2.1.0
+-e git+git://github.com/rossjrw/pyaib.git == 2.1.0
 
 # commands/search.py: 14
 # helpers/database.py: 22
-re2 == 0.2.23
+-e git+git://github.com/andreasvc/pyre2 == 0.2.23
 
 # commands/promote.py: 6,7
 tomlkit == 0.5.3
