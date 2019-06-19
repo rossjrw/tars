@@ -101,6 +101,8 @@ A few other important pieces of information:
 * `user_aliases.weight` - 0 by default, 1 if the alias is both an IRC name and
   has been set by `.alias` instead of `/nick`.
 * `messages.sender` is the IRC name of the user at the time of the message.
+* `articles_authors.metadata` - whether or not this value is derived from the
+  page itself or from Attribution Metadata.
 
 `user_aliases` and `articles_authors` are not linked, although aliases of type
 'wiki' are be searchable in `articles_authors`.
