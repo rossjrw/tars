@@ -23,6 +23,7 @@ class join:
             msg.reply("Joining {}".format(cmd.args['root'][0]))
             irc_c.PRIVMSG(cmd.args['root'][0],
                           "Joining by request of {}".format(msg.nick))
+            irc_c.PRIVMSG(cmd.args['root'][0], greet(channel))
         else:
             msg.reply("You'll need to specify a valid channel.")
 

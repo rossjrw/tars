@@ -340,7 +340,11 @@ class search:
         # })
         pages = irc_c.db._driver.get_articles(searches, selection)
         if len(pages) < 11:
-            msg.reply(str(pages))
+            if len(pages) == 1:
+                msg.reply(irc_c.db._driver.get_article_info(pages[0]))
+                return
+            else:
+                msg.reply(str(pages))
         else:
             msg.reply("{} results found.".format(len(pages)))
             return

@@ -20,7 +20,7 @@ from helpers.parse import nickColor
 import pandas
 import pendulum as pd
 import re2 as re
-from pypika import Query, Table, Field
+from pypika import MySQLQuery, Table, Field
 from pprint import pprint
 
 def dbprint(text, error=False):
@@ -196,7 +196,7 @@ class SqliteDriver:
                 sender TEXT NOT NULL,
                 timestamp INTEGER NOT NULL,
                 message TEXT NOT NULL
-            );''')
+            )''')
         # Will also need a messages table for each channel
         self.conn.commit()
 
@@ -593,7 +593,7 @@ class SqliteDriver:
         article_data = {
             'url': article['url'],
             'category': article['category'],
-            'title': ('PLACEHOLDER' if 'scp' in article['tags']
+            'title': ('[ACCESS DENIED]' if 'scp' in article['tags']
                       else article['title']),
             'scp_num': (None if 'scp' not in article['tags']
                         else article['title']),
@@ -605,18 +605,36 @@ class SqliteDriver:
         c.execute('''
             SELECT id FROM articles WHERE url=?
                   ''', (article['url'], ))
-        if norm(c.fetchone()) is None:
+        article_data['id'] = norm(c.fetchone())
+        if article_id['id'] is None:
             # the article does not already exist
+            # replace shouldn't actually happen but hey can't hurt
             c.execute('''
                 INSERT OR REPLACE INTO articles
                     (url, category, title, scp_num, parent,
                      rating, ups, downs, date_posted)
                 VALUES (:url, :category, :title, :scp_num, :parent,
-                      :rating, :ups, :downs, :date_posted)
+                        :rating, :ups, :downs, :date_posted)
                       ''', article_data)
         else:
             # the article already exists and must be updated
+            # ignore ups/downs
+            c.execute('''
+                UPDATE articles
+                SET url=:url, category=:category, title=:title,
+                    scp_num=:scp_num, parent=:parent, rating=:rating,
+                    date_posted=:date_posted
+                WHERE id=:id
+                      ''', article_data)
             dbprint("This article already exists", True)
+
+    def get_article_info(self, id):
+        """Gets info about an article"""
+        c = self.conn.cursor()
+        c.execute('''
+            SELECT title FROM articles WHERE id=?
+                  ''', (id,))
+        return norm(c.fetchone())
 
     def get_articles(self, searches, selection):
         """Get a list of articles that match the criteria.
@@ -640,18 +658,39 @@ class SqliteDriver:
         searches.sort(key=lambda x: keyorder[x['type']])
         # begin query
         articles = Table('articles')
-        q = Query.from_(articles).select(articles.id)
+        q = MySQLQuery.from_(articles).select(articles.id)
         for search in searches:
             if search['type'] == 'rating':
                 if search['term']['max'] is not None:
                     q = q.where(articles.rating <= search['term']['max'])
                 if search['term']['min'] is not None:
                     q = q.where(articles.rating >= search['term']['min'])
-            if search['type'] == 'date':
+            elif search['type'] == 'parent':
+                q = q.where(articles.parent == search['term'])
+            elif search['type'] == 'category':
+                if len(search['term']['exclude']) > 0:
+                    q = q.where(articles.category.notin(search['term']['exclude']))
+                if len(search['term']['include']) > 0:
+                    q = q.where(articles.category.isin(search['term']['include']))
+            elif search['type'] == 'date':
                 if search['term']['max'] is not None:
                     q = q.where(articles.date_posted <= search['term']['max'])
                 if search['term']['min'] is not None:
                     q = q.where(articles.date_posted >= search['term']['min'])
+            elif search['type'] == 'author':
+                # need to query articles_authors
+                pass
+            elif search['type'] == 'tags':
+                # need to query articles_tags
+                pass
+            elif search['type'] == None:
+                q = q.where(
+                    (articles.title.like('%{}%'.format(search['term'])))
+                    | (articles.scp_num == search['term'])
+                )
+            elif search['type'] == 'regex':
+                pass
+
         # query complete
         print(str(q))
         c = self.conn.cursor()

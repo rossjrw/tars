@@ -3,7 +3,7 @@
 For propagating the database with wiki data.
 """
 
-from helpers.api import Wikidot
+from helpers.api import SCPWiki
 from helpers.error import CommandError
 from xmlrpc.client import ServerProxy
 from pprint import pprint
@@ -24,15 +24,15 @@ class propagate:
             propagate.get_wiki_data_for(irc_c, samples, reply=msg.reply)
         elif cmd.hasarg('tales'):
             msg.reply("Fetching all tales...")
-            tales = Wikidot.pages.select({'site':'scp-wiki', 'tags_all':['tale']})
+            tales = SCPWiki.select({'tags_all':['tale']})
             pprint(tales)
             propagate.get_wiki_data_for(irc_c, tales, reply=msg.reply)
         elif len(cmd.args['root']) > 0:
             propagate.get_wiki_data_for(irc_c, cmd.args['root'], reply = msg.reply)
         elif len(cmd.args) == 1:
             if msg.nick != "Croquembouche":
-                raise CommandError(("Only Croquembouche can use this command"
-                                    " without an argument."))
+                raise CommandError(("Only Croquembouche can use this command "
+                                    "without an argument."))
             propagate.get_wiki_data(irc_c, reply = msg.reply)
         else:
             raise CommandError("Bad command")
@@ -44,8 +44,7 @@ class propagate:
         # 2. get data for each article
         # 2.5. put that data in the db
         prop_print("Getting list of pages...")
-        pages = Server.pages.select({'site': "scp-wiki",
-                                     'categories': ["_default"]})
+        pages = SCPWiki.select({'categories': ["_default"]})
         prop_print("Found {} pages".format(len(pages)))
         reply("Done!")
 
@@ -57,8 +56,7 @@ class propagate:
         # we're taking all of root, so url is a list
         for urls in chunks(urls, 10):
             print(urls)
-            articles = Wikidot.pages.get_meta({'site': "scp-wiki",
-                                             'pages': urls})
+            articles = SCPWiki.get_meta({'pages': urls})
             for url,article in articles.items():
                 prop_print("Updating {} in the database".format(url))
                 irc_c.db._driver.add_article(article)

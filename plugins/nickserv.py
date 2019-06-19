@@ -59,7 +59,6 @@ class NickServ(object):
             if irc_c.config.channels.autojoin:
                 for channel in irc_c.config.channels.autojoin:
                     irc_c.JOIN(channel)
-                    irc_c.PRIVMSG(channel, greet(channel))
                     nsprint("Joining " + str(channel))
             # Now we need to join the autojoin channels from the db
             # but we'll do this later
