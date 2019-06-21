@@ -181,15 +181,15 @@
     <p>Provides a link to both this page and <a href="https://github.com/rossjrw/tars/wiki/Quick-Commands">Quick Commands</a>.</p>
 
     <h2 id="search">.search, .sea, .s <div class="jarvis">J</div><div class="helen">H</div></h2>
-    <p>Searches the wiki for pages, and provides URLs and basic info about the page that matches your search criteria.</p>
+    <p>Searches the wiki for pages, and provides URLs and basic info about the page that matches your search criteria. Searching is never case-sensitive.</p>
     <p><code>.search [title] [--regex regex] [--tags tags] [--author author] [--rating rating] [--created created] [--parent parent] [--fullname] [--summary] [--select type number offset]</code></p>
     <ul>
         <li><b>[title]</b>
-            <br> Search for pages whose title contains all of these words. Words are space-separated. If neither <b>-f</b> nor <b>-x</b> are present, anything wrapped in quotemarks (<code>"</code>) will be treated as a single word. Not case sensitive. If you leave <b>title</b> empty, then it will match all pages, and you'll need to specify more criteria.
+            <br> Search for pages whose title contains all of these words. Words are space-separated. If neither <b>-f</b> nor <b>-x</b> are present, anything wrapped in quotemarks (<code>"</code>) will be treated as a single word. If you leave <b>title</b> empty, then it will match all pages, and you'll need to specify more criteria.
             If you actually need to search for quotemarks, escape them with a backslash - e.g. <code>.s \"The Administrator\"</code>.
         </li>
         <li><b>--regex, -x [regex]</b><br>
-            Filter pages by a regular expression. You may use more than one regex in a single search, still delimited by a space. If you want to include a literal space in the regex, you should either wrap the whole regex in quotes or use <code>\s</code> instead. Not case sensitive.
+            Filter pages by a regular expression. You may use more than one regex in a single search, still delimited by a space. If you want to include a literal space in the regex, you should either wrap the whole regex in quotes or use <code>\s</code> instead.
         </li>
         <li><b>--tags, --tagged, --tag, -t [tags]</b><br>
             Filter pages by tags. <code>+scp</code> means pages tagged scp. <code>-scp</code> means pages not tagged scp. If you don't put either <code>+</code> or <code>-</code>, TARS will assume you meant to add a <code>+</code>.
@@ -258,9 +258,10 @@
     <p>Example: <code>.lc -a Croquembouche</code> - <em>shows the last 3 articles posted by Croquembouche.</em></p>
 
     <h2 id="regexsearch">.regexsearch, .regexsea, .rsea, .rs</h2>
-    <p>Exactly the same as <a href="#search"><b><code>search</code></b></a>, except your search terms are parsed as regular expressions.</p>
+    <p>Exactly the same as <a href="#search"><b><code>search</code></b></a>, except your search terms are parsed as regular expressions. Not case-sensitive.</p>
     <p>Example: <code>.rs ^SCP- -t -scp</code> - <em>searches for articles starting with "SCP-" but that are not tagged 'scp'.</em></p>
-
+    <p>Example: <code>.rs ^((?!the).)*$</code> - <em>searches for articles that don't contain 'the'.</em></p>
+    
     <h2 id="showmore">.showmore, .sm <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p>When TARS presents you with a list of articles to pick from, use this command to pick which one you want to see.</p>
     <p>Example: <code>.sm 2</code> - <em>pick the 2nd article from the list.</em></p>

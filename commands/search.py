@@ -101,7 +101,9 @@ class search:
                                    "be specified")
             for regex in cmd.getarg('regex'):
                 try:
-                    regexes.append(re.compile(regex))
+                    re.compile(regex)
+                    # don't append the compiled - SQL doesn't like that
+                    regexes.append(regex)
                 except re.RegexError:
                     raise CommandError("'{}' isn't a valid regular expression"
                                        .format(search))
@@ -256,7 +258,7 @@ class search:
                             "\"; ")
             if len(regexes) > 0:
                 verbose += ("matching the regex /" +
-                            "/ & /".join([r.pattern for r in regexes]) +
+                            "/ & /".join(regexes) +
                             "/; ")
             if parents is not None:
                 verbose += ("whose parent page is '" +
@@ -344,8 +346,11 @@ class search:
             return
         pages = [irc_c.db._driver.get_article_info(p['id']) for p in pages]
         if len(pages) > 1:
-            msg.reply("{} results: {}".format(
-                len(pages), ", ".join([p['title'] for p in pages])))
+            msg.reply("{} results: {}".format(len(pages), ", ".join(
+                ["\x02[{}]\x0F {}".format(i+1,p['title']) for i,p in enumerate(pages)]
+            )))
+            if len(pages) > 3:
+                return
         if len(pages) == 0:
             # len args is 2, not 1, because --select is always present
             if len(cmd.args) == 2 and len(cmd.args['root']) != 0:
@@ -365,7 +370,7 @@ class search:
             return
         for page in pages:
             msg.reply(
-                "\x02{}\x0F · {} · {} · {} · {}".format(
+                "{} · {} · {} · {} · {}".format(
                     ("\x02{}\x0F: {}".format(page['scp-num'],page['title'])
                      if 'scp' in page['tags'] else
                      "\x02{}\x0F".format(page['title'])),

@@ -12,6 +12,7 @@ class kill:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         msg.reply(kill_bye())
+        irc_c.RAW("QUIT See you on the other side")
         irc_c.client.die()
 
 class join:
@@ -52,6 +53,7 @@ class reboot:
         # reboot the bot completely
         if msg.nick == 'Croquembouche':
             msg.reply("Rebooting...")
+            irc_c.RAW("QUIT Rebooting, will be back soon!")
             os.execl(sys.executable, sys.executable, *sys.argv)
         else:
             msg.reply("Only Croquembouche can do that.")

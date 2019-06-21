@@ -23,6 +23,8 @@ import re2 as re
 from pypika import MySQLQuery, Table, Field
 from pprint import pprint
 
+sqlite3.enable_callback_tracebacks(True)
+
 def dbprint(text, error=False):
     bit = "[\x1b[38;5;108mDatabase\x1b[0m] "
     if error:
@@ -51,8 +53,11 @@ def norm(thing):
 
 def _regexp(expr, item):
     """For evaluating db strings against a given regex."""
-    reg = re.compile(expr)
-    return reg.search(item) is not None
+    return re.search(expr, item, re.IGNORECASE) is not None
+
+def _glob(expr, item):
+    """For evaluating db strings against a given string."""
+    return expr.lower() in item.lower()
 
 # mark this file as the driver instead of pyaib.dbd.sqlite
 # also set by db.backend in the config
@@ -71,6 +76,7 @@ class SqliteDriver:
         self._create_database()
         self.conn.row_factory = sqlite3.Row
         self.conn.create_function("REGEXP", 2, _regexp)
+        self.conn.create_function("GLOB", 2, _glob)
 
     def commit(self):
         """Just commits the database.
@@ -666,7 +672,11 @@ class SqliteDriver:
         result = c.fetchone()
         for column in result.keys():
             page[column] = result[column]
-        page['fullname'] = ":".join([page['category'], page['url']])
+        # generate the fullname from category:url
+        if page['category'] == '_default':
+            page['fullname'] = page['url']
+        else:
+            page['fullname'] = ":".join([page['category'], page['url']])
         # now get authors and tags
         c.execute('''
             SELECT tag FROM articles_tags WHERE article_id=?
@@ -724,19 +734,24 @@ class SqliteDriver:
                     q = q.where(articles.date_posted >= search['term']['min'])
             elif search['type'] == 'author':
                 # need to query articles_authors
+                au_q = MySQLQuery()
+                # make a subquery!
                 pass
             elif search['type'] == 'tags':
                 # need to query articles_tags
                 pass
             elif search['type'] == None:
                 q = q.where(
-                    (articles.title.like('%{}%'.format(search['term'])))
+                    (articles.title.like(search['term']))
                     | (articles.scp_num == search['term'])
                 )
             elif search['type'] == 'regex':
-                pass
-
+                q = q.where(articles.title.regex(search['term']))
         # query complete
+        print(str(q))
+        # make the query sqlite-compatible
+        # like --> "glob" which is a custom function
+        q = str(q).replace(" LIKE "," GLOB ").replace(" REGEX "," REGEXP ")
         print(str(q))
         c = self.conn.cursor()
         c.execute(str(q))

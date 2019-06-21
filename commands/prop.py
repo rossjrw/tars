@@ -12,6 +12,10 @@ from helpers.parse import nickColor
 def prop_print(text):
     print("[{}] {}".format(nickColor("Propagation"), text))
 
+def chunks(array, length):
+    for i in range(0, len(array), length):
+        yield array[i:i + length]
+
 class propagate:
     @classmethod
     def command(cls, irc_c, msg, cmd):
@@ -62,7 +66,15 @@ class propagate:
                 irc_c.db._driver.add_article(article, commit=False)
         reply("Done!")
         irc_c.db._driver.commit()
+        if urls[0] == 'attribution-metadata':
+            metadata.external(irc_c)
 
-def chunks(array, length):
-    for i in range(0, len(array), length):
-        yield array[i:i + length]
+class metadata:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        """Gets the attribution metadata."""
+        metadata.external(irc_c)
+
+    @staticmethod
+    def external(irc_c):
+        pass
