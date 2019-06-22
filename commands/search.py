@@ -11,7 +11,11 @@ from helpers.defer import defer
 from helpers.api import wikidot_api_key, google_api_key, cse_key
 from helpers.error import CommandError, isint
 from xmlrpc.client import ServerProxy
-import re2 as re
+try:
+    import re2 as re
+except ImportError:
+    print("re2 failed to load, falling back to re")
+    import re
 import pendulum
 from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException

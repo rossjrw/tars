@@ -19,7 +19,11 @@ from pprint import pprint
 from helpers.parse import nickColor
 import pandas
 import pendulum as pd
-import re2 as re
+try:
+    import re2 as re
+except ImportError:
+    print("re2 failed to load, falling back to re")
+    import re
 from pypika import MySQLQuery, Table, Field
 from pprint import pprint
 
@@ -736,12 +740,15 @@ class SqliteDriver:
                     q = q.where(art.date_posted >= search['term']['min'])
             elif search['type'] == 'author':
                 # need to query art_authors
-                au_q = MySQLQuery()
+                au_q = MySQLQuery.from_(art_au).select(art_au.author)
                 # make a subquery!
+                subq = MySQLQuery.from_(art_au).select(art_au.author).where(
+                    art_au.article_id == art.id
+                )
+                q = q.where(MySQLQuery.select('Croquembouche').isin(subq))
                 '''
-                SELECT whateverthisisdonealready FROM art
-                WHERE 'authorname' IN (
-                    SELECT author FROM art_authors
+                WHERE 'John Doe' IN (
+                    SELECT author FROM art_au
                     WHERE article_id=art.id
                 )
                 '''
