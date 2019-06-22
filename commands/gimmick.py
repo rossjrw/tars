@@ -1,4 +1,15 @@
+""" gimmick.py
+
+Container file for gimmick commands.
+More commands can be added by request.
+"""
+
 from random import choice
+
+class hug:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        msg.reply("*hugs*")
 
 class reptile:
     @classmethod
@@ -18,7 +29,12 @@ class fish:
             output += choice(["🐠","🐟"])
         msg.reply(output)
 
-class fuckingnarcissism:
+class rounderhouse:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         msg.reply("🔴🏠")
+
+class password:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        msg.reply("look harder fuckwit")
