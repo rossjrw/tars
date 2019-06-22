@@ -25,6 +25,8 @@ except ImportError:
     print("re2 failed to load, falling back to re")
     import re
 from pypika import MySQLQuery, Table, Field
+from pypika.terms import ValueWrapper
+from pypika.functions import Max
 from pprint import pprint
 
 sqlite3.enable_callback_tracebacks(True)
@@ -739,23 +741,23 @@ class SqliteDriver:
                 if search['term']['min'] is not None:
                     q = q.where(art.date_posted >= search['term']['min'])
             elif search['type'] == 'author':
-                # need to query art_authors
-                au_q = MySQLQuery.from_(art_au).select(art_au.author)
-                # make a subquery!
-                subq = MySQLQuery.from_(art_au).select(art_au.author).where(
-                    art_au.article_id == art.id
-                )
-                q = q.where(MySQLQuery.select('Croquembouche').isin(subq))
-                '''
-                WHERE 'John Doe' IN (
-                    SELECT author FROM art_au
-                    WHERE article_id=art.id
-                )
-                '''
-                pass
+                # yay for triple-nested queries!
+                meta_q = MySQLQuery.from_(art_au).select(Max(art_au.metadata)) \
+                         .where(art_au.article_id == art.id)
+                au_q = MySQLQuery.from_(art_au).select(art_au.author) \
+                       .where(art_au.article_id == art.id) \
+                       .where(art_au.metadata == meta_q)
+                for author in search['term']['include']:
+                    q = q.where(ValueWrapper(author).isin(au_q))
+                for author in search['term']['exclude']:
+                    q = q.where(ValueWrapper(author).notin(au_q))
             elif search['type'] == 'tags':
-                # need to query art_tags
-                pass
+                tag_q = MySQLQuery.from_(art_tags).select(art_tags.tag) \
+                        .where(art_tags.article_id == art.id)
+                for tag in search['term']['include']:
+                    q = q.where(ValueWrapper(tag).isin(tag_q))
+                for tag in search['term']['exclude']:
+                    q = q.where(ValueWrapper(tag).notin(tag_q))
             elif search['type'] == None:
                 q = q.where(
                     (art.title.like(search['term']))
@@ -764,11 +766,9 @@ class SqliteDriver:
             elif search['type'] == 'regex':
                 q = q.where(art.title.regex(search['term']))
         # query complete
-        print(str(q))
         # make the query sqlite-compatible
         # like --> "glob" which is a custom function
         q = str(q).replace(" LIKE "," GLOB ").replace(" REGEX "," REGEXP ")
-        print(str(q))
         c = self.conn.cursor()
         c.execute(str(q))
         return c.fetchall()

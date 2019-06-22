@@ -5,11 +5,17 @@ This README contains instructions for command line usage and implementation
 details. End users looking for command instruction should look at the
 documentation: https://rossjrw.github.io/tars/help/
 
-All modules are from PyPI except:
-- pyaib, which is forked here: https://github.com/rossjrw/pyaib
-- re2, which is forked here: https://github.com/andreasvc/pyre2
-
-TARS is written in Python 3.5.2.
+TARS' development philosophy is to be **dynamic** and **responsive**.
+* **dynamic** - TARS should not hold any non-essential data and should get its
+  content direct from the source. Where data must be held, it should be updated
+  frequently. Data that TARS relies on but that is able to change (e.g.
+  config files) must be stored externally.
+* **responsive** - TARS should never need to be asked to do something twice -
+  it should just work. It should play nicely with other bots and do its part to
+  ensure that it does not respond to queries that it was not asked. When errors
+  occur as a result of the user, they must be reported explicitly such that the
+  user may fix them. When errors occur as a result of internal failure, they
+  should be reported and fixed without any input from the user who caused them.
 
 ## Current state
 
@@ -30,6 +36,12 @@ python3 bot.py [-p password] [-n name]
 ```
 
 where password is TARS' NickServ password and name is the bot's name.
+
+All modules are from PyPI except:
+- pyaib, which is forked here: https://github.com/rossjrw/pyaib
+- re2, which is forked here: https://github.com/andreasvc/pyre2
+
+TARS is written in Python 3.5.2.
 
 ## Adding commands
 

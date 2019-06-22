@@ -16,7 +16,9 @@ class query:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         if len(cmd.args['root']) == 0:
-            raise CommandError("Missing argument")
+            msg.reply("https://raw.githubusercontent.com/"
+                      "rossjrw/tars/master/database.png")
+            return
         if cmd.args['root'][0].startswith('table'):
             if len(cmd.args['root']) >= 2:
                 # print a specific table

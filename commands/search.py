@@ -299,11 +299,11 @@ class search:
                             "'; ")
             if len(authors['include']) > 0:
                 verbose += ("by " +
-                            ", ".join(authors['include']) +
+                            " & ".join(authors['include']) +
                             "; ")
             if len(authors['exclude']) > 0:
                 verbose += ("not by " +
-                            ", ".join(authors['exclude']) +
+                            " or ".join(authors['exclude']) +
                             "; ")
             if ratings['max'] is not None and ratings['min'] is not None:
                 if ratings['max'] == ratings['min']:
@@ -380,7 +380,7 @@ class search:
         for page in pages:
             msg.reply(
                 "{} · {} · {} · {} · {}".format(
-                    ("\x02{}\x0F: {}".format(page['scp-num'],page['title'])
+                    ("\x02{}\x0F: {}".format(page['scp_num'],page['title'])
                      if 'scp' in page['tags'] else
                      "\x02{}\x0F".format(page['title'])),
                     "by " + " & ".join(page['authors']),

@@ -11,8 +11,6 @@ COMMANDS = {
 """
 
 COMMANDS = {
-    "colour": {"colour": {"colour"},
-              },
     "search": {"search": {"search","sea","s"},
                "regexsearch": {"regexsearch","rsearch","rsea","rs"},
                "tags": {"tags"},
