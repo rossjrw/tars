@@ -31,19 +31,24 @@ class search:
                         "created date c",
                         "category cat y",
                         "parent p",
-                        "fullname f",
                         "regex x",
                         "summary summarise u",
                         "random rand ran n d",
                         "recommend rec m",
                         "recent",
                         "verbose v",
-                        "select s",
+                        "order o",
+                        "limit l",
+                        "offset f",
                         "ignorepromoted",
                        ])
         # check to see if there are any arguments
         if len(cmd.args) == 1 and len(cmd.args['root']) == 0:
             raise CommandError("Must specify at least one search term")
+        # fullname is deprecated for tars
+        if cmd.hasarg('fullname'):
+            raise CommandError("TARS does not support fullname search - "
+                               "wrap your search in quotemarks instead")
         # Set the search mode of the input
         searchmode = 'normal'
         if cmd.hasarg('fullname'): searchmode = 'fullname'
