@@ -102,11 +102,11 @@ class search:
             for regex in cmd.getarg('regex'):
                 try:
                     re.compile(regex)
-                    # don't append the compiled - SQL doesn't like that
-                    regexes.append(regex)
-                except re.RegexError:
-                    raise CommandError("'{}' isn't a valid regular expression"
-                                       .format(search))
+                except re.RegexError as e:
+                    raise CommandError("'{}' isn't a valid regular expression: {}"
+                                       .format(regex,e))
+                regexes.append(regex)
+                # don't append the compiled - SQL doesn't like that
             searches.extend([{'term': r, 'type': 'regex'} for r in regexes])
         # Set the tags
         tags = {'include': [], 'exclude': []}
@@ -309,11 +309,11 @@ class search:
                                "; ")
             elif ratings['max'] is not None:
                 verbose += ("with a rating less than " +
-                            str(ratings['max']) +
+                            str(ratings['max']+1) +
                             "; ")
             elif ratings['min'] is not None:
                 verbose += ("with a rating greater than " +
-                            str(ratings['min']) +
+                            str(ratings['min']-1) +
                             "; ")
             if createds['min'] is not None and createds['max'] is not None:
                 verbose += ("created between " +
@@ -346,7 +346,7 @@ class search:
             return
         pages = [irc_c.db._driver.get_article_info(p['id']) for p in pages]
         if len(pages) > 1:
-            msg.reply("{} results: {}".format(len(pages), ", ".join(
+            msg.reply("{} results: {}".format(len(pages), " · ".join(
                 ["\x02[{}]\x0F {}".format(i+1,p['title']) for i,p in enumerate(pages)]
             )))
             if len(pages) > 3:

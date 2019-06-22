@@ -712,41 +712,50 @@ class SqliteDriver:
                     'author': 4, 'tags': 5, None: 6, 'regex': 7}
         searches.sort(key=lambda x: keyorder[x['type']])
         # begin query
-        articles = Table('articles')
-        q = MySQLQuery.from_(articles).select(articles.id)
+        art = Table('articles')
+        art_au = Table('articles_authors')
+        art_tags = Table('articles_tags')
+        q = MySQLQuery.from_(art).select(art.id)
         for search in searches:
             if search['type'] == 'rating':
                 if search['term']['max'] is not None:
-                    q = q.where(articles.rating <= search['term']['max'])
+                    q = q.where(art.rating <= search['term']['max'])
                 if search['term']['min'] is not None:
-                    q = q.where(articles.rating >= search['term']['min'])
+                    q = q.where(art.rating >= search['term']['min'])
             elif search['type'] == 'parent':
-                q = q.where(articles.parent == search['term'])
+                q = q.where(art.parent == search['term'])
             elif search['type'] == 'category':
                 if len(search['term']['exclude']) > 0:
-                    q = q.where(articles.category.notin(search['term']['exclude']))
+                    q = q.where(art.category.notin(search['term']['exclude']))
                 if len(search['term']['include']) > 0:
-                    q = q.where(articles.category.isin(search['term']['include']))
+                    q = q.where(art.category.isin(search['term']['include']))
             elif search['type'] == 'date':
                 if search['term']['max'] is not None:
-                    q = q.where(articles.date_posted <= search['term']['max'])
+                    q = q.where(art.date_posted <= search['term']['max'])
                 if search['term']['min'] is not None:
-                    q = q.where(articles.date_posted >= search['term']['min'])
+                    q = q.where(art.date_posted >= search['term']['min'])
             elif search['type'] == 'author':
-                # need to query articles_authors
+                # need to query art_authors
                 au_q = MySQLQuery()
                 # make a subquery!
+                '''
+                SELECT whateverthisisdonealready FROM art
+                WHERE 'authorname' IN (
+                    SELECT author FROM art_authors
+                    WHERE article_id=art.id
+                )
+                '''
                 pass
             elif search['type'] == 'tags':
-                # need to query articles_tags
+                # need to query art_tags
                 pass
             elif search['type'] == None:
                 q = q.where(
-                    (articles.title.like(search['term']))
-                    | (articles.scp_num == search['term'])
+                    (art.title.like(search['term']))
+                    | (art.scp_num == search['term'])
                 )
             elif search['type'] == 'regex':
-                q = q.where(articles.title.regex(search['term']))
+                q = q.where(art.title.regex(search['term']))
         # query complete
         print(str(q))
         # make the query sqlite-compatible

@@ -87,7 +87,8 @@ class ParsedCommand():
         # What were the arguments?
         if self.command:
             # remove apostrophes because they'll fuck with shlex
-            self.message = self.message.replace("'", "<<APOSTROPHE>>")
+            self.message = self.message.replace("'", "<<APOS>>")
+            self.message = self.message.replace('\\"', "<<QUOT>>")
             try:
                 self.message = shlex.split(self.message, posix=False)
                 # posix=False does not remove quotes
@@ -98,8 +99,8 @@ class ParsedCommand():
                 # raised if shlex detects fucked up quotemarks
                 self.message = self.message.split()
                 self.quote_error = True
-            for i,word in enumerate(self.message):
-                self.message[i] = word.replace("<<APOSTROPHE>>", "'")
+            self.message = [w.replace("<<APOS>>", "'") for w in self.message]
+            self.message = [w.replace("<<QUOT>>", '"') for w in self.message]
             # arguments is now a list, quotes are preserved
             # need to split it into different lists per tag, though
             self.args = {'root': []}
