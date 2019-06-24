@@ -264,8 +264,10 @@ class SqliteDriver:
         """Pretty print a single table"""
         try:
             # the pandas package handles pretty printing
-            print(pandas.read_sql_query("SELECT * FROM {}".format(table),
-                                    self.conn))
+            df = pandas.read_sql_query("SELECT * FROM {}".format(table),self.conn)
+            if table == 'user_aliases':
+                df = df.sort_values('user_id')
+            print(df)
         except pandas.io.sql.DatabaseError:
             # fail silently so that users can't see what channels exist
             print("The table {} does not exist.".format(table))
@@ -604,7 +606,7 @@ class SqliteDriver:
             # the old nick is associated with 2 users
             # set ID to none, try to determine from identity of new nick
             old_id = None
-            raise NameError("Nick {} is ambiguous".format(old_nick))
+            dbprint("Nick {} is ambiguous".format(old_nick), True)
             # maybe perform the query here?
         # now get the id of the new nick
         c.execute('''
@@ -625,16 +627,15 @@ class SqliteDriver:
             new_id = new_id[0]['user_id']
             if new_id == old_id:
                 # they are the same user! no need to do anything
-                dbprint("{} and {} are the same user".format(old_nick, old_nick))
+                dbprint("{} and {} are the same user".format(old_nick, new_nick))
                 # TODO mark as most recent
                 pass
             else:
                 # they are not the same user!
                 # use weight to determine ambiguity
-                if old_id is not None:
-                    self.add_alias(new_id, old_nick)
-                    dbprint("Adding {} to user {}".format(old_nick, new_id))
-                else:
+                self.add_alias(new_id, old_nick)
+                dbprint("Adding {} to user {}".format(old_nick, new_id))
+                if old_id is None:
                     self.add_alias(old_id, new_nick)
                     dbprint("Adding {} to user {}".format(new_nick, old_id))
                 # that makes no sense but we're running with it
