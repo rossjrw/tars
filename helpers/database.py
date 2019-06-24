@@ -125,7 +125,8 @@ class SqliteDriver:
         c.executescript('''
             CREATE TABLE IF NOT EXISTS channels (
                 id INTEGER PRIMARY KEY,
-                channel_name TEXT NOT NULL,
+                channel_name TEXT NOT NULL
+                    COLLATE NOCASE,
                 date_checked TEXT NOT NULL
                     DEFAULT CURRENT_TIMESTAMP,
                 autojoin BOOLEAN NOT NULL
@@ -136,8 +137,12 @@ class SqliteDriver:
                     DEFAULT 0,
                 UNIQUE (channel_name COLLATE NOCASE)
             );
-            INSERT OR REPLACE INTO channels (channel_name, autojoin)
-                VALUES ('private', 0);
+            INSERT OR REPLACE INTO channels (id, channel_name, autojoin)
+                VALUES (
+                    (SELECT id FROM channels WHERE channel_name='private'),
+                    'private',
+                    0
+                );
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
                 controller BOOLEAN NOT NULL
@@ -155,7 +160,8 @@ class SqliteDriver:
             CREATE TABLE IF NOT EXISTS user_aliases (
                 user_id INTEGER NOT NULL
                     REFERENCES users(id),
-                alias TEXT NOT NULL,
+                alias TEXT NOT NULL
+                    COLLATE NOCASE,
                 type TEXT NOT NULL
                     CHECK (type IN ('irc','wiki','discord')),
                 most_recent BOOLEAN NOT NULL
@@ -164,11 +170,12 @@ class SqliteDriver:
                 weight BOOLEAN NOT NULL
                     CHECK (weight IN (0,1))
                     DEFAULT 0,
-                UNIQUE(user_id, alias COLLATE NOCASE, type, weight)
+                UNIQUE(user_id, alias, type, weight)
             );
             CREATE TABLE IF NOT EXISTS articles (
                 id INTEGER PRIMARY KEY,
-                url TEXT NOT NULL,
+                url TEXT NOT NULL
+                    COLLATE NOCASE,
                 category TEXT NOT NULL
                     DEFAULT '_default',
                 title TEXT NOT NULL,
@@ -183,22 +190,24 @@ class SqliteDriver:
                     DEFAULT 0,
                 date_checked TEXT NOT NULL
                     DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE(url COLLATE NOCASE)
+                UNIQUE(url)
             );
             CREATE TABLE IF NOT EXISTS articles_tags (
                 article_id INTEGER NOT NULL
                     REFERENCES articles(id),
-                tag TEXT NOT NULL,
+                tag TEXT NOT NULL
+                    COLLATE NOCASE,
                 UNIQUE(article_id, tag)
             );
             CREATE TABLE IF NOT EXISTS articles_authors (
                 article_id INTEGER NOT NULL
                     REFERENCES articles(id),
-                author TEXT NOT NULL,
+                author TEXT NOT NULL
+                    COLLATE NOCASE,
                 metadata BOOLEAN NOT NULL
                     CHECK (metadata IN (0,1))
                     DEFAULT 0,
-                UNIQUE(article_id, author COLLATE NOCASE, metadata)
+                UNIQUE(article_id, author, metadata)
             );
             CREATE TABLE IF NOT EXISTS showmore_list (
                 channel_id INTEGER NOT NULL
@@ -211,7 +220,8 @@ class SqliteDriver:
                 id INTEGER PRIMARY KEY,
                 channel_id INTEGER NOT NULL
                     REFERENCES channels(id),
-                sender TEXT NOT NULL,
+                sender TEXT NOT NULL
+                    COLLATE NOCASE,
                 timestamp INTEGER NOT NULL,
                 message TEXT NOT NULL
             )''')
@@ -443,20 +453,43 @@ class SqliteDriver:
             return new_user_id
 
     def add_alias(self, user, alias, weight=0, nick_type='irc'):
-        """Adds or updates an alias to a user"""
+        """Adds or updates an alias to a user
+        Returns bool if the user/alias combo already existed."""
         # if weight=0 then /nick, if =1 then .alias
         # if weight=0 we can assume that most_recent=True
         assert isinstance(user, int)
         c = self.conn.cursor()
+        # first first, let's see if the combo already exists
+        c.execute('''
+            SELECT user_id FROM user_aliases
+            WHERE user_id=? AND alias=? AND weight=?
+                  ''', (user, alias, weight))
+        combo_exists = bool(c.lastrowid)
+        print("Combo exists: {}".format(combo_exists))
+        # first let's handle weight=1
+        if weight:
+            c.execute('''
+                      ''')
+        # things to do:
+            # 1. detect if the user-alias combo already exists
+            # if it does, mark as most recento
+        c.execute('''
+            UPDATE user_aliases SET most_recent=0
+            WHERE user_id=? AND type=? AND weight=0
+                  ''', (user, nick_type))
         c.execute('''
             INSERT OR REPLACE INTO user_aliases
-                  (user_id, alias, type, weight)
-            VALUES ( ? , ? , ? , ? )
-                  ''', (user, alias, nick_type, weight))
+                  (user_id, alias, type, weight, most_recent)
+            VALUES ( ? , ? , ? , ? , ? )
+                  ''', (user, alias, nick_type, weight,
+                        (not weight if nick_type is 'irc' else 0)))
+        pprint(c.rowcount)
+        pprint(c.lastrowid)
+        pprint(c.description)
         # this was going to be a more complicated function I swear
         self.conn.commit()
 
-    def rename_user(self, old, new, force=False):
+    def __rename_user(self, old, new, force=False):
         """Adds a new alias for a user"""
         # when a user renames, add the new nick at weight 0
         # make sure to handle when a user renames to an alias that exists
@@ -543,6 +576,77 @@ class SqliteDriver:
                     # prompt the user for confirmation?
                     pass
 
+    def rename_user(self, old_nick, new_nick):
+        """Handle a user changing their name.
+        This process operates at weight 0."""
+        dbprint("Renaming {} to {}".format(old_nick, new_nick))
+        # 1. add the new nick to the current user
+        # 2. mark the new nick as active and the old as inactive
+        # first: get the current user's ID
+        # use the highest available weight for this nick (reduce ambiguity)
+        c = self.conn.cursor()
+        c.execute('''
+            SELECT user_id,weight FROM user_aliases
+            WHERE alias=? AND weight=(
+                SELECT MAX(weight) FROM user_aliases
+                WHERE alias=?
+            )
+                  ''', (old_nick, old_nick))
+        old_id = c.fetchall()
+        # old_id should be a single row (multiple if the nick is ambiguous)
+        if len(old_id) == 0:
+            # the old nick doesn't exist - shouldn't be possible, but fine
+            old_id = self.add_user(old_nick)
+        elif len(old_id) == 1:
+            # expected result
+            old_id = old_id[0]['user_id']
+        else:
+            # the old nick is associated with 2 users
+            # set ID to none, try to determine from identity of new nick
+            old_id = None
+            raise NameError("Nick {} is ambiguous".format(old_nick))
+            # maybe perform the query here?
+        # now get the id of the new nick
+        c.execute('''
+            SELECT user_id,weight FROM user_aliases
+            WHERE alias=? AND weight=(
+                SELECT MAX(weight) FROM user_aliases
+                WHERE alias=?
+            )
+                  ''', (new_nick, new_nick))
+        new_id = c.fetchall()
+        if len(new_id) == 0:
+            # this is a totally new nick - assign it to the current user
+            dbprint("Adding {} to user {}".format(new_nick, old_id))
+            self.add_alias(old_id, new_nick)
+        elif len(new_id) == 1:
+            # this nick is already in use and assigned to a user
+            # is it the same user as the current one?
+            new_id = new_id[0]['user_id']
+            if new_id == old_id:
+                # they are the same user! no need to do anything
+                dbprint("{} and {} are the same user".format(old_nick, old_nick))
+                # TODO mark as most recent
+                pass
+            else:
+                # they are not the same user!
+                # use weight to determine ambiguity
+                if old_id is not None:
+                    self.add_alias(new_id, old_nick)
+                    dbprint("Adding {} to user {}".format(old_nick, new_id))
+                else:
+                    self.add_alias(old_id, new_nick)
+                    dbprint("Adding {} to user {}".format(new_nick, old_id))
+                # that makes no sense but we're running with it
+        else:
+            # the new nick is ambiguous
+            if old_id is None:
+                dbprint("Both nick are ambiguous!", True)
+                pass
+            else:
+                pass
+
+
     def log_message(self, msg):
         """Logs a message in the db."""
         chname = "private" if msg.channel is None else msg.raw_channel
@@ -566,11 +670,12 @@ class SqliteDriver:
                   ''', (msg.nick, ))
         user = norm(c.fetchall())
         if len(user) == 0:
-            raise ValueError("User {} doesn't exist".format(msg.nick))
+            user = self.add_user(msg.nick)
         elif len(user) > 1:
             raise ValueError("User {} exists more than once".format(msg.nick))
-        user = user[0]
-        assert isinstance(user, int), user
+        else:
+            user = user[0]
+        assert isinstance(user, int)
         c.execute('''
             UPDATE user_aliases
             SET most_recent=0

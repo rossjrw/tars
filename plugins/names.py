@@ -46,10 +46,18 @@ class Names:
                 }
         # just need to log these names to the db now
         nameprint("Getting NAMES from {}".format(nickColor(channel)))
-        irc_c.db._driver.sort_names(channel, names)
+        try:
+            irc_c.db._driver.sort_names(channel, names)
+        except Exception as e:
+            irc_c.RAW("PRIVMSG #tars NAMES error: " + str(e))
+            raise
 
     @observe('IRC_MSG_NICK') # someone changes their name
     def change_name(self, irc_c, msg):
         assert msg.kind == 'NICK'
         nameprint("{} changed their name to {}".format(msg.nick, msg.args))
-        irc_c.db._driver.rename_user(msg.nick, msg.args)
+        try:
+            irc_c.db._driver.rename_user(msg.nick, msg.args)
+        except Exception as e:
+            irc_c.RAW("PRIVMSG #tars NAMES error: " + str(e))
+            raise

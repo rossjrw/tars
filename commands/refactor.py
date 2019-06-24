@@ -19,9 +19,12 @@ class refactor:
             raise CommandError("Only Croquembouche can do that.")
         if cls.has_refactored:
             raise CommandError("Already refactored once this reload.")
-        cls.has_refactored = True
         try:
-            refactor.refactor_database(irc_c)
+            if cmd.hasarg('sql'):
+                irc_c.db._driver.issue(" ".join(cmd.getarg('sql')))
+            else:
+                refactor.refactor_database(irc_c)
+                cls.has_refactored = True
         except:
             msg.reply("Refactoring failed.")
             raise
