@@ -53,53 +53,65 @@ class search:
         if cmd.hasarg('fullname'):
             raise CommandError("TARS does not support fullname search - "
                                "wrap your search in quotemarks instead")
-        # Set the search mode of the input
-        searchmode = 'normal'
-        if cmd.hasarg('fullname'): searchmode = 'fullname'
         # Set the return mode of the output
-        # collapse random,recent,recommend to --select
-        returnmode = 'normal'
-        if cmd.hasarg('select'):
-            # try to convert all args to ints
-            cmd.args['select'] = [int(_) if isint(_) else _ for _ in cmd.args['select']]
-            # the first argument, if present, should be a string
-            if not isint(cmd.getarg('select')[0]):
-                if cmd.getarg('select')[0] in ['recent','recommend','random','none']:
-                    if cmd.getarg('select')[0] == 'none':
-                        cmd.args['select'][0] = None
-                else:
-                    raise CommandError("Selection return order ('{}') must be "
-                                       "one of: recent, recommend, random, "
-                                       "none".format(cmd.getarg('select')[0]))
-            else:
-                cmd.args['select'].insert(0, None)
-            if len(cmd.args['select']) < 2: cmd.ags['select'].append(1)
-            if cmd.getarg('select')[1] < 1:
-                raise CommandError("Selection return limit must be at least 1")
-            if len(cmd.args['select']) < 3: cmd.ags['select'].append(1)
-            if cmd.getarg('select')[2] < 0:
-                raise CommandError("Selection offset must be at least 0")
-        else:
-            cmd.args['select'] = [None, 0, 0]
-        if cmd.hasarg('random'): cmd.args['select'][0] = 'random'
-        if cmd.hasarg('recent'): cmd.args['select'][0] = 'recent'
-        if cmd.hasarg('recommend'): cmd.args['select'][0] = 'recommend'
-        ignorepromoted = cmd.hasarg('ignorepromoted')
         selection = {
             'ignorepromoted': cmd.hasarg('ignorepromoted'),
-            'order': cmd.getarg('select')[0],
-            'amount': cmd.getarg('select')[1],
-            'offset': cmd.getarg('select')[2],
+            'order': None,
+            'limit': None,
+            'offset': 0
         }
-        # TODO add a mode for summarise (not a returnmode!)
+        # order, limit, offset
+        if cmd.hasarg('order'):
+            if len(cmd.getarg('order')) != 1:
+                raise CommandError("When using the order argument "
+                                   "(--order/-o), exactly one order type must "
+                                   "be specified")
+            if cmd.getarg('order')[0] in ['recent','recommend','random','none']:
+                if cmd.getarg('order') == 'none':
+                    selection['order'] = None
+                else:
+                    selection['order'] = cmd.getarg('order')[0]
+            else:
+                raise CommandError("Selection return order ('{}') must be "
+                                   "one of: recent, recommend, random, "
+                                   "none".format(cmd.getarg('select')[0]))
+        if cmd.hasarg('limit'):
+            if len(cmd.getarg('limit')) != 1:
+                raise CommandError("When using the limit argument "
+                                   "(--limit/-l), exactly one limit must "
+                                   "be specified")
+            if isint(cmd.getarg('limit')[0]):
+                if int(cmd.getarg('limit')[0]) > 0:
+                    selection['limit'] = int(cmd.getarg('limit')[0])
+                elif int(cmd.getarg('limit')[0]) == 0:
+                    selection['limit'] = None
+                else:
+                    raise CommandError("When using the limit argument "
+                                       "(--limit/-l), the limit must be at "
+                                       "least 0")
+            else:
+                raise CommandError("When using the limit argument "
+                                   "(--limit/-l), the limit must be an integer")
+        if cmd.hasarg('offset'):
+            if len(cmd.getarg('offset')) != 1:
+                raise CommandError("When using the offset argument "
+                                   "(--offset/-f), exactly one offset must "
+                                   "be specified")
+            if isint(cmd.getarg('offset')[0]):
+                if int(cmd.getarg('offset')[0]) >= 0:
+                    selection['offset'] = int(cmd.getarg('offset')[0])
+                else:
+                    raise CommandError("When using the offset argument "
+                                       "(--offset/-f), the offset must be at "
+                                       "least 0")
+            else:
+                raise CommandError("When using the offset argument "
+                                   "(--offset/-f), the offset must be an integer")
         # What are we searching for?
         searches = []
         strings = []
         if len(cmd.args['root']) > 0:
-            if searchmode == 'normal':
-                strings = cmd.args['root']
-            elif searchmode == 'fullname':
-                strings = [" ".join(cmd.args['root'])]
+            strings = cmd.args['root']
             searches.extend([{'term': s, 'type': None} for s in strings])
         # Add any regexes
         regexes = []
@@ -350,6 +362,16 @@ class search:
         #     'pages': cmd.args['root']
         # })
         pages = irc_c.db._driver.get_articles(searches, selection)
+
+
+        # pages is a list of results
+        # now need to put them in the right order
+
+
+
+
+
+
         if len(pages) >= 10:
             msg.reply("{} results found.".format(len(pages)))
             return

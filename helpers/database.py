@@ -263,14 +263,13 @@ class SqliteDriver:
     def print_one_table(self, table):
         """Pretty print a single table"""
         try:
-            # the pandas package handles pretty printing
             df = pandas.read_sql_query("SELECT * FROM {}".format(table),self.conn)
-            if table == 'user_aliases':
-                df = df.sort_values('user_id')
-            print(df)
         except pandas.io.sql.DatabaseError:
             # fail silently so that users can't see what channels exist
             print("The table {} does not exist.".format(table))
+        if table == 'user_aliases':
+            df.sort_values('user_id', inplace=True)
+        print(df)
 
     def get_all_users(self):
         """Returns a list of all users"""
@@ -812,9 +811,9 @@ class SqliteDriver:
                 * None, regex, tags, author, rating, date, category, parent
         selection must be a DICT containing the following:
             * 'ignorepromoted' - defaults to False
-            * 'type' - the order of the output list:
+            * 'order' - the order of the output list:
                 * None, random, recommend, recent
-            * 'amount' - a limit on the list returned
+            * 'limit' - a limit on the list returned
             * 'offset' - how many articles to offset
         Returns a list of articles. Use get_article_info for more detail on
         each."""
