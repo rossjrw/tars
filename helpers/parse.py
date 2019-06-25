@@ -145,7 +145,9 @@ class ParsedCommand():
 
     def expandargs(self, args):
         """Expand short args to long ones
-        Expects one array of "long s" pairs"""
+        Expects one array of "long s" pairs (or multiples)
+        All will be collapsed to the first value in the string
+        Other flags will be deleted"""
         for pair in args:
             aliases = pair.split()
             # Keep the parent alias for reference

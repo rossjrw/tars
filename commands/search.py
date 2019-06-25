@@ -23,12 +23,8 @@ from googleapiclient.discovery import build
 from pprint import pprint
 
 class search:
-    @classmethod
-    def command(cls, irc_c, msg, cmd):
-        # Check that we are actually able to do this
-        # (might have to move to end for defer check)
-        defer.check(irc_c, msg, "jarvis")
-        # Parse the command itself
+    @staticmethod
+    def expandargs(cmd):
         cmd.expandargs(["tags tag tagged t",
                         "author au a",
                         "rating r",
@@ -46,6 +42,14 @@ class search:
                         "offset f",
                         "ignorepromoted",
                        ])
+
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        # Check that we are actually able to do this
+        # (might have to move to end for defer check)
+        defer.check(irc_c, msg, "jarvis")
+        # Parse the command itself
+        search.expandargs(cmd)
         # check to see if there are any arguments
         if len(cmd.args) == 1 and len(cmd.args['root']) == 0:
             raise CommandError("Must specify at least one search term")
@@ -283,17 +287,11 @@ class search:
         if cmd.hasarg('verbose'):
             verbose = "Searching for articles "
             if len(strings) > 0:
-                verbose += ("containing \"" +
-                            "\", \"".join(strings) +
-                            "\"; ")
+                verbose += ("containing \"{}\"; ".format("\", \"".join(strings)))
             if len(regexes) > 0:
-                verbose += ("matching the regex /" +
-                            "/ & /".join(regexes) +
-                            "/; ")
+                verbose += ("matching the regex /{}/; ".format("/ & /".join(regexes)))
             if parents is not None:
-                verbose += ("whose parent page is '" +
-                            parents +
-                            "'; ")
+                verbose += ("whose parent page is '{}'; ".format(parents))
             if len(categories['include']) == 1:
                 verbose += ("in the category '" +
                             categories['include'][0] +
@@ -433,6 +431,23 @@ class tags:
     def command(cls, irc_c, msg, cmd):
         cmd.args['tags'] = cmd.args['root']
         cmd.args['root'] = []
+        search.command(irc_c, msg, cmd)
+
+class lastcreated:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        cmd.args['order'] = ['recent']
+        if len(cmd.args['root']) > 0:
+            cmd.args['limit'] = cmd.args['root']
+            cmd.args['root'] = []
+        else:
+            cmd.args['limit'] = [3]
+        # to make the query faster, if there's no other arguments, limit date
+        # the minimum args are root, order, limit and optionally verbose
+        # must expandargs to convert v to verbose
+        search.expandargs(cmd)
+        if set(cmd.args).issubset({'root','order','limit','verbose'}):
+            cmd.args['created'] = ["<3d"]
         search.command(irc_c, msg, cmd)
 
 class MinMax:

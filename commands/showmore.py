@@ -5,19 +5,16 @@ Accesses the most recent list for the current channel from the db.
 """
 
 from helpers.defer import defer
+from helpers.error import isint
 
 class showmore:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        if 'root' not in cmd.args:
+        if len(cmd.args['root']) == 0:
             # 0 means "show everything"
             cmd.args['root'] = [0]
-        else:
-            try:
-                # expect the argument to be a number
-                cmd.args['root'][0] = int(cmd.args['root'][0])
-            except ValueError:
-                cmd.args['root'] = [0]
+        if not isint(cmd.args['root'][0]):
+            cmd.args['root'] = [0]
         number = cmd.args['root'][0]
         if number == 0:
             msg.reply("Show more of what?")

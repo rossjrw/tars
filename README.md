@@ -32,6 +32,9 @@ internal database.
 Extact anywhere then
 
 ```
+python3 -m venv env
+source env/bin/activate
+pip3 install -r requirements.txt
 python3 bot.py [-p password] [-n name]
 ```
 
@@ -41,7 +44,11 @@ All modules are from PyPI except:
 - pyaib, which is forked here: https://github.com/rossjrw/pyaib
 - re2, which is forked here: https://github.com/andreasvc/pyre2
 
-TARS is written in Python 3.5.2.
+re2 will not be installed from requirements.txt as it has a specific install
+process detailed on its README. TARS will operate fine without re2 but will be
+vulnerable to catastrophic backtracking regex attacks.
+
+TARS requires at least Python 3.7.
 
 ## Adding commands
 
