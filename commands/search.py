@@ -37,9 +37,9 @@ class search:
                         "parent p",
                         "regex x",
                         "summary summarise u",
-                        "random rand ran n d",
+                        "random rand ran d",
                         "recommend rec m",
-                        "recent",
+                        "newest new n",
                         "verbose v",
                         "order o",
                         "limit l",
@@ -107,6 +107,15 @@ class search:
             else:
                 raise CommandError("When using the offset argument "
                                    "(--offset/-f), the offset must be an integer")
+        if cmd.hasarg('random'):
+            selection['order'] = 'random'
+            selection['limit'] = 1
+        if cmd.hasarg('recommend'):
+            selection['order'] = 'recommend'
+            selection['limit'] = 1
+        if cmd.hasarg('newest'):
+            selection['order'] = 'recent'
+            selection['limit'] = 1
         # What are we searching for?
         searches = []
         strings = []

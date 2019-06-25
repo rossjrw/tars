@@ -169,20 +169,26 @@
         <li><b>--summary, --summarise, -u</b><br>
             Instead of providing a link to a single article, TARS will summarise all articles that match the search criteria.
         </li>
-        <li><b>--random, --rand, --ran, -n, -d</b><br>
-            If your search matches more than one article, TARS will return a random one from the list. Equivalent to <code>--select random 1</code>.
+        <li><b>--random, --rand, --ran, -d</b><br>
+            If your search matches more than one article, TARS will return a random one from the list.
         </li>
         <li><b>--recommend, --rec, -m</b><br>
-            If your search matches more than one article, TARS will determine and return which of those articles most needs extra attention. Equivalent to <code>--select recommend 1</code>.
+            If your search matches more than one article, TARS will determine and return which of those articles most needs extra attention.
+        </li>
+        <li><b>--newest, --new, -n</b><br>
+            If your search matches more than one article, TARS will return the most recent one.
+        </li>
+        <li><b>--order, -o [order]</b><br>
+            What order should the results be returned in? <code>random</code>/<code>recommend</code>/<code>recent</code>/<code>none</code>.
+        </li>
+        <li><b>--limit, -l [number]</b><br>
+            The number of results will be limited to this number. The rest will be cut off and forgotten.
+        </li>
+        <li><b>--offset, -f [number]</b><br>
+            This number of results will be removed from the top of the list.
         </li>
         <li><b>--verbose, -v</b><br>
-            TARS will explicity state exactly what search criteria it thinks you want.
-        </li>
-        <li><b>--select, -s [order] amount [offset]</b><br>
-            Instead of returning a list of articles, select a specific one from the list.<br>
-            <b>order:</b> <code>random</code>, <code>recommend</code>, <code>recent</code>, <code>none</code>. Defaults to 'none' if no arguments are provided, or if the first argument is a number.<br>
-            <b>amount:</b> How many articles to select? They will all be returned in separate messages, not a <a href="#showmore"><b><code>.showmore</code></b></a> list. Defaults to 1 if not provided.<br>
-            <b>offset:</b> How many results from the top of the list should be ignored? Default is 0.
+            TARS will explicity state exactly what search criteria it thinks you want. Probably not useful for anything other than debugging.
         </li>
         <li><b>--ignorepromoted</b><br>
             Ignore articles that have already been promoted. TODO remove this from documentation

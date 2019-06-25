@@ -212,26 +212,29 @@
         <li><b>--parent, -p [url]</b><br>
             Filter pages by their parent page. The parent page's URL must be given exactly (e.g. <code>-p antimemetics-division-hub</code>). TARS will check the entire parent tree - the page will be found even if it's a great-grandchild of the <b>--parent</b>.
         </li>
-        <li><b>--fullname, -f</b><br>
-            Instead of searching for all words in <b>title</b> individually, TARS will search for an exact match. Equivalent to wrapping the whole search term in quotes.
-        </li>
         <li><b>--summary, --summarise, -u</b><br>
             Instead of providing a link to a single article, TARS will summarise all articles that match the search criteria.
         </li>
-        <li><b>--random, --rand, --ran, -n, -d</b><br>
-            If your search matches more than one article, TARS will return a random one from the list. Equivalent to <code>--select random 1</code>.
+        <li><b>--random, --rand, --ran, -d</b><br>
+            If your search matches more than one article, TARS will return a random one from the list. Equivalent to <code>--order random --limit 1</code>.
         </li>
         <li><b>--recommend, --rec, -m</b><br>
-            If your search matches more than one article, TARS will determine and return which of those articles most needs extra attention. Equivalent to <code>--select recommend 1</code>.
+            If your search matches more than one article, TARS will determine and return which of those articles most needs extra attention. Equivalent to <code>--order recommend --limit 1</code>.
+        </li>
+        <li><b>--newest, --new, -n</b><br>
+            If your search matches more than one article, TARS will return the most recent one. Equivalent to <code>--order recent --limit 1</code>.
+        </li>
+        <li><b>--order, -o [order]</b><br>
+            What order should the results be returned in? <code>random</code> selects randomly from the list, <code>recommend</code> selects based on vote numbers and article age, <code>recent</code> selects the newest ones. Default: <code>none</code>.
+        </li>
+        <li><b>--limit, -l [number]</b><br>
+            The number of results will be limited to this number. The rest will be cut off and forgotten.
+        </li>
+        <li><b>--offset, -f [number]</b><br>
+            This number of results will be removed from the top of the list.
         </li>
         <li><b>--verbose, -v</b><br>
             TARS will explicity state exactly what search criteria it thinks you want. Probably not useful for anything other than debugging.
-        </li>
-        <li><b>--select, -s [order] amount [offset]</b><br>
-            Instead of returning a list of articles, select a specific one from the list.<br>
-            <b>order:</b> What order should the results be returned in? <code>random</code> selects randomly from the list, <code>recommend</code> selects based on vote numbers and article age, <code>recent</code> selects the newest ones and <code>none</code> just selects from the top of the list. Defaults to 'none' if no arguments are provided, or if the first argument is a number.<br>
-            <b>amount:</b> How many articles to select? They will all be returned in separate messages, not a <a href="#showmore"><b><code>.showmore</code></b></a> list. Defaults to 1 if not provided.<br>
-            <b>offset:</b> How many results from the top of the list should be ignored? Default is 0.
         </li>
         <li><b>--ignorepromoted</b><br>
             Ignore articles that have already been promoted. TODO remove this from documentation
