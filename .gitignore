@@ -5,3 +5,4 @@ __pycache__
 *.vim
 *.sw*
 env
+.vscode
