@@ -34,7 +34,7 @@ Extact anywhere then
 ```
 python3 -m venv env
 source env/bin/activate
-pip3 install -r requirements.txt
+pip3 install -r requirements.txt --no-cache-dir
 python3 bot.py [-p password] [-n name]
 ```
 
@@ -45,10 +45,21 @@ All modules are from PyPI except:
 - re2, which is forked here: https://github.com/andreasvc/pyre2
 
 re2 will not be installed from requirements.txt as it has a specific install
-process detailed on its README. TARS will operate fine without re2 but will be
-vulnerable to catastrophic backtracking regex attacks.
+process detailed in its README. TARS will operate fine without re2 but will be
+vulnerable to catastrophic backtracking regular expression attacks.
+
+In order to install the `cryptography` dependency of pyaib, you may be
+required to run:
+`sudo apt-get install build-essential libssl-dev libffi-dev python-dev`
 
 TARS requires at least Python 3.7.
+
+In order to interface with Wikidot, TARS requires a Wikidot API key. Store your
+Wikidot API key in `wikidot.secret.txt` in the base directory.
+
+In order to perform mismatch searches, TARS requires a Google Custom Search
+Engine ID and authorisation ID. Store these in `cse.secret.txt` and
+`google.secret.txt` respectively.
 
 ## Adding commands
 

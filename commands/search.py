@@ -7,20 +7,19 @@ Commands:
     tags - search with root params lumped into -t
 """
 
+import pendulum
+from edtf import parse_edtf
+from edtf.parser.edtf_exceptions import EDTFParseException
+from googleapiclient.discovery import build
 from helpers.defer import defer
-from helpers.api import wikidot_api_key, google_api_key, cse_key
+from helpers.api import google_api_key, cse_key
 from helpers.error import CommandError, isint
-from xmlrpc.client import ServerProxy
+from pprint import pprint
 try:
     import re2 as re
 except ImportError:
     print("re2 failed to load, falling back to re")
     import re
-import pendulum
-from edtf import parse_edtf
-from edtf.parser.edtf_exceptions import EDTFParseException
-from googleapiclient.discovery import build
-from pprint import pprint
 
 class search:
     @staticmethod
@@ -289,7 +288,7 @@ class search:
             if len(strings) > 0:
                 verbose += ("containing \"{}\"; ".format("\", \"".join(strings)))
             if len(regexes) > 0:
-                verbose += ("matching the regex /{}/; ".format("/ & /".join(regexes)))
+                verbose += "matching the regex /{}/; ".format("/ & /".join(regexes))
             if parents is not None:
                 verbose += ("whose parent page is '{}'; ".format(parents))
             if len(categories['include']) == 1:
@@ -390,8 +389,8 @@ class search:
             if len(pages) > 3:
                 return
         if len(pages) == 0:
-            # len args is 2, not 1, because --select is always present
-            if len(cmd.args) == 2 and len(cmd.args['root']) != 0:
+            # check if there's no args other than --verbose
+            if set(cmd.args).issubset({'root','verbose'}):
                 # google only takes 10 args
                 url = google_search('"' + '" "'.join(cmd.args['root'][:10]) +
                                     '"', num=1)[0]
@@ -653,9 +652,9 @@ class DateRange:
 
 # TODO move this to helpers/api.py
 def google_search(search_term, **kwargs):
+    """Performs a mismatch search via google"""
     service = build("customsearch", "v1", developerKey=google_api_key)
     res = service.cse().list(q=search_term, cx=cse_key, **kwargs).execute()
     if 'items' in res:
         return res['items']
-    else:
-        return [None]
+    return [None]

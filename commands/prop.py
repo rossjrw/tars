@@ -5,7 +5,6 @@ For propagating the database with wiki data.
 
 from helpers.api import SCPWiki
 from helpers.error import CommandError
-from xmlrpc.client import ServerProxy
 from pprint import pprint
 from helpers.parse import nickColor
 

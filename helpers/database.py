@@ -19,15 +19,15 @@ from pprint import pprint
 from helpers.parse import nickColor
 import pandas
 import pendulum as pd
+from pypika import MySQLQuery, Table, Field
+from pypika.terms import ValueWrapper
+from pypika.functions import Max
+from pprint import pprint
 try:
     import re2 as re
 except ImportError:
     print("re2 failed to load, falling back to re")
     import re
-from pypika import MySQLQuery, Table, Field
-from pypika.terms import ValueWrapper
-from pypika.functions import Max
-from pprint import pprint
 
 sqlite3.enable_callback_tracebacks(True)
 
