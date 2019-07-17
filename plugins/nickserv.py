@@ -7,6 +7,7 @@ import sys
 import os.path
 from time import sleep
 from helpers.greetings import greet
+from helpers.api import password
 
 def nsprint(message):
     print("[\x1b[38;5;212mNickServ\x1b[0m] " + str(message))
@@ -17,10 +18,7 @@ def nsprint(message):
 class NickServ(object):
     def __init__(self, irc_c, config):
         self.config = config
-        passfile = open(os.path.dirname(__file__)
-                        + "/../password.secret.txt")
-        self.password = passfile.readline()
-        passfile.close()
+        self.password = password
 
     @observes("IRC_ONCONNECT")
     def AUTO_IDENTIFY(self, irc_c):
