@@ -2,14 +2,30 @@
 
 Provides methods for accessing API.
 
-wikidot.secret.txt: Contains read-only Wikidot API key.
-google.secret.txt: Contains Google CSE API key.
-cse.secret.txt: Contains Custom Search Engine ID key.
+API keys should be kept in keys.secret.txt in the base directory. Lines must
+be in pairs. The first line must contain the key name and nothing else. The
+second line must contain the key value and nothing else. (Key names should only
+be on odd lines, key values should only be on even lines.)
+
+Valid key names are:
 """
+possible_keys = ["irc_password", "wikidot_api", "google_cse_api",
+                 "google_cse_id", "scuttle_api", "scuttle_oauth_id",
+                 "scuttle_oauth_secret"]
 
 import os.path
 from xmlrpc.client import ServerProxy
 import urllib3
+from pprint import pprint
+
+with open(os.path.dirname(__file__) + "/../keys.secret.txt") as file:
+    si = iter(file.read().rstrip().splitlines())
+    keylist = dict(zip(si, si))
+    pprint(keylist)
+    password = keylist['irc_password']
+    wikidot_api_key = keylist['wikidot_api']
+    google_api_key = keylist['google_cse_api']
+    cse_key = keylist['google_cse_id']
 
 class WikidotAPI:
     """Wrapper for Wikidot API functions."""
@@ -35,12 +51,6 @@ class WikidotAPI:
         selectors['site'] = self.w
         return self.s.files.get_meta(selectors)
 
-with open(os.path.dirname(__file__) + "/../wikidot.secret.txt") as file:
-    wikidot_api_key = file.read().rstrip()
-with open(os.path.dirname(__file__) + "/../google.secret.txt") as file:
-    google_api_key = file.read().rstrip()
-with open(os.path.dirname(__file__) + "/../cse.secret.txt") as file:
-    cse_key = file.read().rstrip()
 SCPWiki = WikidotAPI("scp-wiki")
 Sandbox3 = WikidotAPI("scp-sandbox-3")
 
