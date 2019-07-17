@@ -35,10 +35,8 @@ Extact anywhere then
 python3 -m venv env
 source env/bin/activate
 pip3 install -r requirements.txt --no-cache-dir
-python3 bot.py [-p password] [-n name]
+python3 bot.py
 ```
-
-where password is TARS' NickServ password and name is the bot's name.
 
 All modules are from PyPI except:
 - pyaib, which is forked here: https://github.com/rossjrw/pyaib
@@ -52,14 +50,13 @@ In order to install the `cryptography` dependency of pyaib, you may be
 required to run:
 `sudo apt-get install build-essential libssl-dev libffi-dev python-dev`
 
-TARS requires at least Python 3.7.
+TARS requires at least Python 3.5.2.
 
-In order to interface with Wikidot, TARS requires a Wikidot API key. Store your
-Wikidot API key in `wikidot.secret.txt` in the base directory.
+TARS requires a set of API keys to function correctly. These should be stored
+in `keys.secret.txt`. More details can be found in `helpers/api.py`.
 
-In order to perform mismatch searches, TARS requires a Google Custom Search
-Engine ID and authorisation ID. Store these in `cse.secret.txt` and
-`google.secret.txt` respectively.
+TARS will use the nick provided in `bot.conf` and NickServ password as defined
+by the key `irc_password` in `keys.secret.txt`.
 
 ## Adding commands
 
