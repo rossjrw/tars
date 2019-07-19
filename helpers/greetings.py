@@ -82,6 +82,7 @@ def acronym_gen():
         "!TARS !Acronym !Repeating !Successfully",
         "!Turnt !At #!Romanticpenthouse!Suite",
         "!T!A!R!SPWTCOTTTADC",
+        "!Total !Anal !Relapse !Surgery",
     ]
     last_response = []
     while True:
