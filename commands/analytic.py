@@ -119,4 +119,11 @@ class gib:
                 state_size=1
             )
             cls.model = model
-        msg.reply(model.make_sentence(tries=100))
+        try:
+            msg.reply(model.make_sentence(tries=1000))
+        except AttributeError:
+            msg.reply("Looks like {} spoken enough in {} just yet.".format(
+                ("you haven't" if user == msg.sender else "nobody has" if user
+                 is None else "{} hasn't".format(user)),
+                channel
+            ))
