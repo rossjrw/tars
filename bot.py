@@ -3,8 +3,6 @@
 from pyaib.ircbot import IrcBot
 import sys
 import argparse
-from gevent import monkey
-monkey.patch_all()
 
 bot = IrcBot('bot.conf')
 

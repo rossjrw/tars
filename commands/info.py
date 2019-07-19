@@ -5,6 +5,7 @@ Commands that output basic information about the bot.
 
 from helpers.error import CommandError
 from helpers.greetings import acronym
+from helpers.scheduler import uptime
 
 class help:
     @classmethod
@@ -15,7 +16,9 @@ class help:
 class version:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        msg.reply(acronym() + " · made by Croquembouche")
+        msg.reply("{} · made by Croquembouche · alive for {}".format(
+            acronym(), uptime()
+        ))
 
 class github:
     """Provide links to the github"""
