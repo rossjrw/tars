@@ -54,9 +54,6 @@ class NickServ(object):
     @observes("IRC_MSG_NOTICE")
     def autojoin(self, irc_c, msg):
         if "Password accepted" in msg.message:
-            if irc_c.config.channels.autojoin:
-                for channel in irc_c.config.channels.autojoin:
-                    irc_c.JOIN(channel)
-                    nsprint("Joining " + str(channel))
-            # Now we need to join the autojoin channels from the db
-            # but we'll do this later
+            for channel in irc_c.db._driver.get_autojoins():
+                irc_c.JOIN(channel)
+                nsprint("Joining " + str(channel))

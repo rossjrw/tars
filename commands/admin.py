@@ -6,6 +6,7 @@ A bunch of commands for Controllers to use.
 from helpers.greetings import kill_bye
 from helpers.error import CommandError
 import os, sys
+from helpers.api import SCPWiki
 
 class kill:
     """Kills the bot"""
@@ -20,11 +21,11 @@ class join:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         if len(cmd.args['root']) > 0 and cmd.args['root'][0][0] == '#':
-            irc_c.JOIN(cmd.args['root'][0])
-            msg.reply("Joining {}".format(cmd.args['root'][0]))
-            irc_c.PRIVMSG(cmd.args['root'][0],
-                          "Joining by request of {}".format(msg.nick))
-            irc_c.PRIVMSG(cmd.args['root'][0], greet(channel))
+            channel = cmd.args['root'][0]
+            irc_c.JOIN(channel)
+            msg.reply("Joining {}".format(channel))
+            irc_c.PRIVMSG(channel, "Joining by request of {}".format(msg.nick))
+            irc_c.db._driver.join_channel(channel)
         else:
             msg.reply("You'll need to specify a valid channel.")
 
@@ -37,9 +38,11 @@ class leave:
         else:
             leavemsg = None
         if len(cmd.args['root']) > 0:
-            irc_c.PART(cmd.args['root'][0], message=leavemsg)
+            channel = cmd.args['root'][0]
         else:
-            irc_c.PART(msg.raw_channel, message=leavemsg)
+            channel = msg.raw_channel
+        irc_c.PART(channel, message=leavemsg)
+        irc_c.db._driver.leave_channel(channel)
 
 class reload:
     @classmethod
@@ -103,5 +106,5 @@ class debug:
     """Random debug command, replaceable"""
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        msg.reply(", ".join("%s: %s" % item for item in vars(msg).items()))
-        msg.reply(", ".join("%s: %s" % item for item in vars(cmd).items()))
+        # msg.reply(", ".join("%s: %s" % item for item in vars(msg).items()))
+        msg.reply(SCPWiki.get_page_id(['scp-3939']))

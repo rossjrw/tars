@@ -222,6 +222,9 @@ class SqliteDriver:
                     REFERENCES channels(id),
                 sender TEXT NOT NULL
                     COLLATE NOCASE,
+                command BOOLEAN NOT NULL
+                    CHECK (command IN (0,1))
+                    DEFAULT 0,
                 timestamp INTEGER NOT NULL,
                 message TEXT NOT NULL
             )''')
@@ -247,9 +250,33 @@ class SqliteDriver:
                 (channel_name)
             VALUES (?)
                   ''', (channel, ))
+        c.execute('''
+            UPDATE channels
+            SET autojoin=1
+            WHERE channel_name=?
+                  ''', (channel,))
         self.conn.commit()
-        dbprint("Created {}".format(channel))
-        # messages_x is dead - all messages are now stored in messages
+        dbprint("Joined {}".format(channel))
+
+    def leave_channel(self, channel):
+        """Leave a channel"""
+        c = self.conn.cursor()
+        c.execute('''
+            UPDATE channels
+            SET autojoin=0
+            WHERE channel_name=?
+                  ''', (channel,))
+        self.conn.commit()
+        dbprint("Left {}".format(channel))
+
+    def get_autojoins(self):
+        """Get all channels that the bot was in last time"""
+        c = self.conn.cursor()
+        c.execute('''
+            SELECT channel_name FROM channels
+            WHERE autojoin=1
+                  ''')
+        return [r['channel_name'] for r in c.fetchall()]
 
     def get_all_tables(self):
         """Returns a list of all tables"""
@@ -280,6 +307,28 @@ class SqliteDriver:
             SELECT alias FROM user_aliases
                   ''')
         return norm(c.fetchall())
+
+    def get_messages(self, channel, user=None):
+        """Returns all messages from the channel by the user"""
+        c = self.conn.cursor()
+        # TODO make this lookup all names of a user and do an IN check
+        # need to convert channel name to channel id
+        c.execute('''
+            SELECT id FROM channels
+            WHERE channel_name=?
+                  ''', (channel,))
+        channel = norm(c.fetchone())
+        if channel is None:
+            raise ValueError("That channel does not exist")
+        messages = Table('messages')
+        q = MySQLQuery.from_(messages).select(messages.message)
+        q = q.where(messages.channel_id == channel)
+        q = q.where(messages.command == 0)
+        if user is not None:
+            q = q.where(messages.sender == user)
+        c.execute(str(q))
+        messages = [m['message'] for m in norm(c.fetchall())]
+        return messages
 
     def get_aliases(self, nick):
         """Returns all of someone's aliases"""
@@ -342,7 +391,6 @@ class SqliteDriver:
             SELECT id FROM channels WHERE channel_name=?
                   ''', (channel, ))
         id = norm(c.fetchone())
-        dbprint("get_occupants: id is {}".format(id))
         assert id is not None, "Channel {} does not exist.".format(channel)
         # get the occupants
         c.execute('''
@@ -650,6 +698,7 @@ class SqliteDriver:
     def log_message(self, msg):
         """Logs a message in the db."""
         chname = "private" if msg.channel is None else msg.raw_channel
+        msgiscmd = msg.message.startswith((".","!","?","^"))
         c = self.conn.cursor()
         # log this message into the messages table
         c.execute('''
@@ -660,9 +709,10 @@ class SqliteDriver:
         assert isinstance(channel, int), "chname {} id {}".format(chname,channel)
         c.execute('''
             INSERT INTO messages
-                (channel_id, sender, timestamp, message)
-            VALUES ( ? , ? , ? , ? )
-                  ''', (channel, msg.nick, round(msg.timestamp), msg.message))
+                (channel_id, sender, timestamp, message, command)
+            VALUES ( ? , ? , ? , ? , ? )
+                  ''', (channel, msg.nick, round(msg.timestamp), msg.message,
+                        msgiscmd))
         # mark current nick as most recent
         c.execute('''
             SELECT user_id FROM user_aliases

@@ -10,6 +10,7 @@ import math
 from pprint import pprint
 import csv
 from helpers.error import CommandError
+import markovify
 
 class analyse_wiki:
     """For compiling data of the file contents of a sandbox"""
@@ -81,3 +82,41 @@ class analyse_wiki:
             w.writeheader()
             w.writerows(files_list)
         msg.reply("Done.")
+
+class MarkovFromList(markovify.Text):
+    def sentence_split(self, text):
+        return [text]
+
+class gib:
+    user = None
+    channel = None
+    model = None
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        channel = None
+        user = None
+        if len(cmd.args['root']) >= 1:
+            if cmd.args['root'][0].startswith('#'):
+                channel = cmd.args['root'][0]
+            else:
+                user = cmd.args['root'][0]
+        if len(cmd.args['root']) >= 2:
+            if cmd.args['root'][1].startswith('#'):
+                channel = cmd.args['root'][1]
+            else:
+                user = cmd.args['root'][1]
+        if channel is None:
+            channel = msg.channel
+        if cls.channel == channel and cls.user == user:
+            model = cls.model
+            print("Reusing Markov model")
+        else:
+            cls.channel = channel
+            cls.user = user
+            model = MarkovFromList(
+                irc_c.db._driver.get_messages(channel, user),
+                well_formed=False,
+                state_size=1
+            )
+            cls.model = model
+        msg.reply(model.make_sentence(tries=100))

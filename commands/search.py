@@ -591,7 +591,7 @@ class DateRange:
                 # convert list to dict via pairwise
             sel = DateRange.reverse_pairwise(sel)
             # convert all numbers to int
-            sel = dict([a, int(x)] for a, x in sel.items())
+            sel = dict([a, int(x)] for a,x in sel.items())
             self.date = pendulum.now()
             # check time units
             for key,value in sel.items():
@@ -621,11 +621,11 @@ class DateRange:
                 self.min = self.date
                 # possible broken - may match to the second
             else:
-                raise CommandError(("Unknown operator in relative date "
-                                    "comparison"))
+                raise CommandError("Unknown operator in relative date "
+                                   "comparison ({})".format(self.compare))
         else:
-            raise CommandError(("'" + self.input + "' isn't a valid absolute "
-                                "or relative date type"))
+            raise CommandError("'{}' isn't a valid absolute or relative date "
+                               "type".format(self.input))
 
     def date_is_absolute(self):
         try:
