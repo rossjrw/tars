@@ -2,9 +2,9 @@
 
 from pyaib.ircbot import IrcBot
 import sys
-import argparse
 
-bot = IrcBot('bot.conf')
+argv = sys.argv[1:]
+bot = IrcBot(argv[0] if argv else 'tars.conf')
 
 # Bot takeover
 try:

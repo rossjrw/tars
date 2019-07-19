@@ -18,6 +18,7 @@ from pypika import MySQLQuery, Table, Field
 from pypika.terms import ValueWrapper
 from pypika.functions import Max
 from pprint import pprint
+from helpers.config import CONFIG
 try:
     import re2 as re
 except ImportError:
@@ -66,9 +67,8 @@ def _glob(expr, item):
 # also set by db.backend in the config
 class SqliteDriver:
     """SQLite3 database driver"""
-    def __init__(self, config, path=None):
-        if not path:
-            path = config.path
+    def __init__(self):
+        path = CONFIG['db']['driver.database']['path']
         if not path:
             raise RuntimeError("Missing 'path' config for database driver")
         try:
@@ -925,4 +925,4 @@ class SqliteDriver:
         c.execute(str(q))
         return c.fetchall()
 
-DB = SqliteDriver({}, path="./TARS.db")
+DB = SqliteDriver()

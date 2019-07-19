@@ -35,7 +35,7 @@ Extact anywhere then
 python3 -m venv env
 source env/bin/activate
 pip3 install -r requirements.txt --no-cache-dir
-python3 bot.py
+python3 bot.py [tars.conf]
 ```
 
 All modules are from PyPI except:
@@ -55,8 +55,11 @@ TARS requires at least Python 3.5.2.
 TARS requires a set of API keys to function correctly. These should be stored
 in `keys.secret.txt`. More details can be found in `helpers/api.py`.
 
-TARS will use the nick provided in `bot.conf` and NickServ password as defined
-by the key `irc_password` in `keys.secret.txt`.
+TARS will use the config file given as the command line argument. If none is
+provided, it will default to `tars.conf`.
+
+TARS will use the nick provided in the config file and NickServ password as
+defined by the key `irc_password` in `keys.secret.txt`.
 
 ## Adding commands
 

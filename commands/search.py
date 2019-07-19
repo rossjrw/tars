@@ -385,7 +385,7 @@ class search:
         pages = [DB.get_article_info(p['id']) for p in pages]
         if len(pages) > 1:
             msg.reply("{} results: {}".format(len(pages), " · ".join(
-                ["\x02[{}]\x0F {}".format(i+1,p['title']) for i,p in enumerate(pages)]
+                ["\x02{}\x0F {}".format(i+1,p['title']) for i,p in enumerate(pages)]
             )))
             if len(pages) > 3:
                 return
