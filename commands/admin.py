@@ -7,6 +7,7 @@ from helpers.greetings import kill_bye
 from helpers.error import CommandError
 import os, sys
 from helpers.api import SCPWiki
+from helpers.defer import controllers
 
 class kill:
     """Kills the bot"""
@@ -18,6 +19,7 @@ class kill:
 
 class join:
     """Joins a channel"""
+    # Note that the INVITE event is in plugins/parsemessages.py
     @classmethod
     def command(cls, irc_c, msg, cmd):
         if len(cmd.args['root']) > 0 and cmd.args['root'][0][0] == '#':

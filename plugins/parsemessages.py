@@ -12,8 +12,6 @@ from helpers.error import CommandError, CommandNotExistError
 from importlib import reload
 from pprint import pprint
 
-test = "PARSEMESSAGES"
-
 def converse(irc_c, msg, cmd):
     # .converse is used to parse non-command strings
     # we can't always tell if a message is a command or not
