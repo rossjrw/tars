@@ -115,7 +115,7 @@ pseudoflag `root`, which will always be present.
 A few other important pieces of information:
 
 * `msg` - [pyaib's message object](https://github.com/facebook/pyaib/wiki/Plugin-Writing#message-object)
-* `irc_c.db._driver.XXX()` - where XXX represents a function in
+* `DB.XXX()` - where XXX represents a function in
   helpers/database.py
 
 ## Database Structure

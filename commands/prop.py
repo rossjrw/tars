@@ -7,6 +7,7 @@ from helpers.api import SCPWiki
 from helpers.error import CommandError
 from pprint import pprint
 from helpers.parse import nickColor
+from helpers.database import DB
 
 def prop_print(text):
     print("[{}] {}".format(nickColor("Propagation"), text))
@@ -62,9 +63,9 @@ class propagate:
             articles = SCPWiki.get_meta({'pages': urls})
             for url,article in articles.items():
                 prop_print("Updating {} in the database".format(url))
-                irc_c.db._driver.add_article(article, commit=False)
+                DB.add_article(article, commit=False)
         reply("Done!")
-        irc_c.db._driver.commit()
+        DB.commit()
         if urls[0] == 'attribution-metadata':
             metadata.external(irc_c)
 

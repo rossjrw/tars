@@ -11,6 +11,7 @@ from pprint import pprint
 import csv
 from helpers.error import CommandError
 import markovify
+from helpers.database import DB
 
 class analyse_wiki:
     """For compiling data of the file contents of a sandbox"""
@@ -114,7 +115,7 @@ class gib:
             cls.channel = channel
             cls.user = user
             model = MarkovFromList(
-                irc_c.db._driver.get_messages(channel, user),
+                DB.get_messages(channel, user),
                 well_formed=False,
                 state_size=1
             )

@@ -11,6 +11,7 @@ from pyaib.plugins import observe, plugin_class
 import re
 from pprint import pprint
 from helpers.parse import nickColor
+from helpers.database import DB
 
 def nameprint(text, error=False):
     bit = "[\x1b[38;5;218mNames\x1b[0m] "
@@ -19,7 +20,6 @@ def nameprint(text, error=False):
     print(bit + str(text))
 
 @plugin_class('names')
-@plugin_class.requires('db')
 class Names:
     def __init__(self, irc_c, config):
         print('Names Plugin Loaded!')
@@ -47,7 +47,7 @@ class Names:
         # just need to log these names to the db now
         nameprint("Getting NAMES from {}".format(nickColor(channel)))
         try:
-            irc_c.db._driver.sort_names(channel, names)
+            DB.sort_names(channel, names)
         except Exception as e:
             irc_c.RAW("PRIVMSG #tars NAMES error: " + str(e))
             raise
@@ -57,7 +57,7 @@ class Names:
         assert msg.kind == 'NICK'
         nameprint("{} changed their name to {}".format(msg.nick, msg.args))
         try:
-            irc_c.db._driver.rename_user(msg.nick, msg.args)
+            DB.rename_user(msg.nick, msg.args)
         except Exception as e:
             irc_c.RAW("PRIVMSG #tars NAMES error: " + str(e))
             raise

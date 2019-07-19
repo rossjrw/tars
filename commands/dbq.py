@@ -6,6 +6,7 @@ Database Query commands for checking the database.
 from pprint import pprint
 from helpers.error import CommandError
 from helpers.parse import nickColor
+from helpers.database import DB
 
 class alias:
     @classmethod
@@ -24,15 +25,15 @@ class query:
                 # print a specific table
                 msg.reply("Printing contents of table {} to console."
                           .format(cmd.args['root'][1]))
-                irc_c.db._driver.print_one_table(cmd.args['root'][1])
+                DB.print_one_table(cmd.args['root'][1])
             else:
                 # print a list of all tables
-                tables = irc_c.db._driver.get_all_tables()
+                tables = DB.get_all_tables()
                 msg.reply("Printed a list of tables to console. {} total."
                           .format(len(tables)))
                 print(" ".join(tables))
         elif cmd.args['root'][0] == 'users':
-            users = irc_c.db._driver.get_all_users()
+            users = DB.get_all_users()
             if len(users) == 0:
                 msg.reply("There are no users.")
             elif len(users) < 15:
@@ -47,7 +48,7 @@ class query:
                 search = msg.sender
             else:
                 search = cmd.args['root'][1]
-            id,type = irc_c.db._driver.get_generic_id(search)
+            id,type = DB.get_generic_id(search)
             if id:
                 if type == 'user' and search == msg.sender:
                     msg.reply("{}, your ID is {}.".format(msg.sender, id))
@@ -65,7 +66,7 @@ class query:
         elif cmd.args['root'][0].startswith('alias'):
             search = cmd.args['root'][1] if len(cmd.args['root']) > 1 \
                                          else msg.sender
-            aliases = irc_c.db._driver.get_aliases(search)
+            aliases = DB.get_aliases(search)
             # should be None or a list of lists
             if aliases is None:
                 msg.reply("I don't know anyone with the alias '{}'."
@@ -81,7 +82,7 @@ class query:
                 raise CommandError("Specify a channel to get the occupants of")
             msg.reply("Printing occupants of {} to console"
                       .format(cmd.args['root'][1]))
-            users = irc_c.db._driver.get_occupants(cmd.args['root'][1], True)
+            users = DB.get_occupants(cmd.args['root'][1], True)
             if isinstance(users[0], int):
                 pprint(users)
             else:

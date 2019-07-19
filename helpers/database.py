@@ -9,11 +9,6 @@ Provides functions for manipulating the database.
 # reminder: conn.commit() after making changes (i.e. not queries)
 # reminder: 'single quotes' for string literals eg for tables that don't exist
 
-# to access these methods: from a plugin with db marked as required, issue
-# irc_c.db._driver.methodname()
-# this pretty much bypasses pyaib's db simplifier
-
-from pyaib.db import db_driver
 import sqlite3
 from pprint import pprint
 from helpers.parse import nickColor
@@ -28,6 +23,8 @@ try:
 except ImportError:
     print("re2 failed to load, falling back to re")
     import re
+
+DB = {} # is instantiated as SqliteDriver at the end of this file
 
 sqlite3.enable_callback_tracebacks(True)
 
@@ -67,11 +64,11 @@ def _glob(expr, item):
 
 # mark this file as the driver instead of pyaib.dbd.sqlite
 # also set by db.backend in the config
-@db_driver
 class SqliteDriver:
     """SQLite3 database driver"""
-    def __init__(self, config):
-        path = config.path
+    def __init__(self, config, path=None):
+        if not path:
+            path = config.path
         if not path:
             raise RuntimeError("Missing 'path' config for database driver")
         try:
@@ -927,3 +924,5 @@ class SqliteDriver:
         c = self.conn.cursor()
         c.execute(str(q))
         return c.fetchall()
+
+DB = SqliteDriver({}, path="./TARS.db")

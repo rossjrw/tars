@@ -15,6 +15,7 @@ from helpers.defer import defer
 from helpers.api import google_api_key, cse_key
 from helpers.error import CommandError, isint
 from pprint import pprint
+from helpers.database import DB
 try:
     import re2 as re
 except ImportError:
@@ -367,7 +368,7 @@ class search:
         #     'site': 'scp-wiki',
         #     'pages': cmd.args['root']
         # })
-        pages = irc_c.db._driver.get_articles(searches, selection)
+        pages = DB.get_articles(searches, selection)
 
 
         # pages is a list of results
@@ -381,7 +382,7 @@ class search:
         if len(pages) >= 10:
             msg.reply("{} results found.".format(len(pages)))
             return
-        pages = [irc_c.db._driver.get_article_info(p['id']) for p in pages]
+        pages = [DB.get_article_info(p['id']) for p in pages]
         if len(pages) > 1:
             msg.reply("{} results: {}".format(len(pages), " · ".join(
                 ["\x02[{}]\x0F {}".format(i+1,p['title']) for i,p in enumerate(pages)]

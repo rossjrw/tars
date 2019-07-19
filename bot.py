@@ -3,28 +3,10 @@
 from pyaib.ircbot import IrcBot
 import sys
 import argparse
+from gevent import monkey
+monkey.patch_all()
 
-# Parse the command line argument
-parser = argparse.ArgumentParser(description="TARS bot")
-parser.add_argument("-n","--nick",
-                    help="Nickname of the bot, defaults via config")
-parser.add_argument("-p","--password",
-                    help="Password for nickserv identification")
-parser.add_argument("-c","--config",default="bot.conf",
-                    help="Configuration file, defaults to bot.conf")
-args = parser.parse_args()
-
-if args.password:
-    # save the password to a file
-    print("Caching password...")
-    file = open("password.secret.txt","w")
-    file.write(args.password)
-    file.close()
-else:
-    print("You didn't specify a password")
-
-# Load "bot.conf"
-bot = IrcBot(args.config)
+bot = IrcBot('bot.conf')
 
 # Bot takeover
 try:

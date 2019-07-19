@@ -11,6 +11,7 @@ import inspect
 from helpers.error import CommandError, CommandNotExistError
 from importlib import reload
 from pprint import pprint
+import time
 
 def converse(irc_c, msg, cmd):
     # .converse is used to parse non-command strings
@@ -18,8 +19,7 @@ def converse(irc_c, msg, cmd):
     getattr(commands.COMMANDS, 'converse').command(irc_c, msg, cmd)
 
 @plugin_class('parsemessages')
-@plugin_class.requires('db')
-class ParseMessages(object):
+class ParseMessages():
     def __init__(self, irc_c, config):
         print("Parse plugin loaded!")
 

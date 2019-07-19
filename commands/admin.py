@@ -7,7 +7,7 @@ from helpers.greetings import kill_bye
 from helpers.error import CommandError
 import os, sys
 from helpers.api import SCPWiki
-from helpers.defer import controllers
+from helpers.database import DB
 
 class kill:
     """Kills the bot"""
@@ -27,7 +27,7 @@ class join:
             irc_c.JOIN(channel)
             msg.reply("Joining {}".format(channel))
             irc_c.PRIVMSG(channel, "Joining by request of {}".format(msg.nick))
-            irc_c.db._driver.join_channel(channel)
+            DB.join_channel(channel)
         else:
             msg.reply("You'll need to specify a valid channel.")
 
@@ -44,7 +44,7 @@ class leave:
         else:
             channel = msg.raw_channel
         irc_c.PART(channel, message=leavemsg)
-        irc_c.db._driver.leave_channel(channel)
+        DB.leave_channel(channel)
 
 class reload:
     @classmethod

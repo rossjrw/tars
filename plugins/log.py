@@ -7,6 +7,7 @@ import time
 from pyaib.plugins import observe, plugin_class
 from helpers import parse
 from pprint import pprint
+from helpers.database import DB
 
 @plugin_class('log')
 class Log:
@@ -23,7 +24,7 @@ class Log:
             msg.message
         ))
         try:
-            irc_c.db._driver.log_message(msg)
+            DB.log_message(msg)
         except:
             irc_c.RAW("PRIVMSG #tars A logging error has occurred.")
             raise

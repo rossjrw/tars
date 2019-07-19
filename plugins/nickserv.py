@@ -8,6 +8,7 @@ import os.path
 from time import sleep
 from helpers.greetings import greet
 from helpers.api import password
+from helpers.database import DB
 
 def nsprint(message):
     print("[\x1b[38;5;212mNickServ\x1b[0m] " + str(message))
@@ -54,6 +55,6 @@ class NickServ(object):
     @observes("IRC_MSG_NOTICE")
     def autojoin(self, irc_c, msg):
         if "Password accepted" in msg.message:
-            for channel in irc_c.db._driver.get_autojoins():
+            for channel in DB.get_autojoins():
                 irc_c.JOIN(channel)
                 nsprint("Joining " + str(channel))

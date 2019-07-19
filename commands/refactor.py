@@ -10,6 +10,7 @@ TARS will not allow you to refactor a 2nd time unless you issue .reload again.
 """
 
 from helpers.error import CommandError
+from helpers.database import DB
 
 class refactor:
     has_refactored = False
@@ -21,7 +22,7 @@ class refactor:
             raise CommandError("Already refactored once this reload.")
         try:
             if cmd.hasarg('sql'):
-                irc_c.db._driver.issue(" ".join(cmd.getarg('sql')))
+                DB.issue(" ".join(cmd.getarg('sql')))
             else:
                 refactor.refactor_database(irc_c)
                 cls.has_refactored = True
@@ -33,14 +34,14 @@ class refactor:
     @staticmethod
     def refactor_database(irc_c):
         """Query is executed as script"""
-        # irc_c.db._driver.issue()
-        # irc_c.db._driver.issue('''
+        # DB.issue()
+        # DB.issue('''
         #     ALTER TABLE messages
         #     ADD COLUMN command BOOLEAN NOT NULL
         #                        CHECK (command IN (0,1))
         #                        DEFAULT 0
         #                        ''')
-        # irc_c.db._driver.issue('''
+        # DB.issue('''
         #     UPDATE messages
         #     SET command=1
         #     WHERE message LIKE '.%'
