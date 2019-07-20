@@ -8,6 +8,7 @@ from helpers.error import CommandError
 import os, sys
 from helpers.api import SCPWiki
 from helpers.database import DB
+import git
 
 class kill:
     """Kills the bot"""
@@ -60,6 +61,22 @@ class reboot:
             msg.reply("Rebooting...")
             irc_c.RAW("QUIT Rebooting, will be back soon!")
             os.execl(sys.executable, sys.executable, *sys.argv)
+        else:
+            msg.reply("Only Croquembouche can do that.")
+
+class update:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        """Update from github"""
+        if msg.sender == 'Croquembouche':
+            msg.reply("Updating...")
+            try:
+                g = git.cmd.Git(".")
+                g.pull()
+            except Exception as e:
+                msg.reply("Update failed.")
+                raise
+            msg.reply("Update successful - now would be a good time to reboot.")
         else:
             msg.reply("Only Croquembouche can do that.")
 

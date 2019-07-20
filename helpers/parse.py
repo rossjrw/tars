@@ -6,6 +6,7 @@ Provides functions for parsing and formatting stuff into other stuff.
 import re
 import shlex
 import pyaib.util.data as data
+from helpers.config import CONFIG
 
 def parseprint(message):
     #print("[\x1b[1;32mParser\x1b[0m] " + str(message))
@@ -49,7 +50,7 @@ class ParsedCommand():
             self.unping = self.message
 
         if isinstance(self.ping, str):
-            if self.ping.upper() == "TARS":
+            if self.ping.upper() == CONFIG['nick']:
                 self.pinged = True
 
         parseprint("After ping extraction: " +

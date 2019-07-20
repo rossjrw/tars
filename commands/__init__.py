@@ -26,6 +26,7 @@ COMMANDS = {
               "config": {"config"},
               "reboot": {"reboot"},
               "debug": {"debug"},
+              "update": {"update"},
              },
     "refactor": {"refactor": {"refactor"},
                 },

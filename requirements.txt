@@ -34,3 +34,4 @@ tomlkit == 0.5.3
 urllib3 == 1.24.2
 
 -e git+git://github.com/rossjrw/pyaib.git#egg=pyaib == 2.1.0
+gitPython == 2.1.11
