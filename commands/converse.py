@@ -7,6 +7,7 @@ and should never be done.
 
 from fuzzywuzzy import fuzz
 from helpers.greetings import acronym, greet, greets
+from helpers.database import DB
 
 class converse:
     @classmethod
@@ -47,9 +48,11 @@ class converse:
         ]):
             msg.reply("Nope. I'm a bot.")
             return
-        # everything else is returned, so this only happens if no matches
-        if cmd.command:
-            msg.reply("That's not a command.")
+        # custom section
+        if (msg.sender == "Jazstar" and
+            "slime" in msg.message and
+            "XilasCrowe" in DB.get_channel_members(msg.channel)):
+            msg.reply("Oy xilas I heard you like slime!")
 
 def strip(string):
     """Strips all non-alphanumeric characters."""
