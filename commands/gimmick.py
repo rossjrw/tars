@@ -10,8 +10,8 @@ class hug:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         if msg.sender == "Jazstar": msg.reply("Not in front of the children!")
-        if msg.sender == "ROUNDERHOUSE": msg.reply("No thank you.")
-        msg.reply("*hugs*")
+        elif msg.sender == "ROUNDERHOUSE": msg.reply("No thank you.")
+        else: msg.reply("*hugs*")
 
 class reptile:
     @classmethod
