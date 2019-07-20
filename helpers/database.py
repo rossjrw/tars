@@ -328,13 +328,17 @@ class SqliteDriver:
         return messages
 
     def get_aliases(self, nick):
-        """Returns all of someone's aliases"""
+        """Returns all of someone's aliases
+        nick can be an alias or an ID"""
         c = self.conn.cursor()
-        c.execute('''
-            SELECT user_id FROM user_aliases
-            WHERE alias=?
-                  ''', (nick, ))
-        ids = norm(c.fetchall())
+        if isinstance(nick, int):
+            ids = [nick]
+        else:
+            c.execute('''
+                SELECT user_id FROM user_aliases
+                WHERE alias=?
+                    ''', (nick, ))
+            ids = norm(c.fetchall())
         if len(ids) == 0:
             return None
         else:
@@ -347,6 +351,28 @@ class SqliteDriver:
                           ''', (id, ))
                 result.append(norm(c.fetchall()))
             return result
+
+    def get_channel_members(self, channel):
+        """Returns a list of all user possible nicks currently in a channel
+        Not limited to actual channel nick list - see get_occupants"""
+        # TODO exhaustive most_recent checking
+        c = self.conn.cursor()
+        # get all ids in channel
+        dbprint(channel)
+        c.execute('''
+            SELECT user_id FROM channels_users
+            WHERE channel_id=(
+                SELECT id FROM channels
+                WHERE channel_name=?)
+                  ''', (channel,))
+        ids = [row['user_id'] for row in norm(c.fetchall())]
+        dbprint(ids)
+        # then get the aliases of those ids
+        c.execute('''
+            SELECT alias FROM user_aliases
+            WHERE user_id IN ({})'''.format(','.join(['?']*len(ids)))
+                  , [str(id) for id in ids])
+        return [row['alias'] for row in norm(c.fetchall())]
 
     def get_generic_id(self, search):
         """Returns from users, channels, articles"""
@@ -394,7 +420,6 @@ class SqliteDriver:
             SELECT user_id FROM channels_users WHERE channel_id=?
                   ''', (id, ))
         users = norm(c.fetchall())
-        print(users)
         dbprint("get_occupants: users is {}".format(",".join(map(str,users))))
         assert len(users) > 0, "There are no users in {}.".format(channel)
         if convert_to_nicks:

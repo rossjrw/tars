@@ -12,6 +12,7 @@ import csv
 from helpers.error import CommandError
 import markovify
 from helpers.database import DB
+import re
 
 class analyse_wiki:
     """For compiling data of the file contents of a sandbox"""
@@ -108,6 +109,7 @@ class gib:
                 user = cmd.args['root'][1]
         if channel is None:
             channel = msg.channel
+        # Run a check to see if we need to reevaluate the model or not
         if cls.channel == channel and cls.user == user:
             model = cls.model
             print("Reusing Markov model")
@@ -121,10 +123,33 @@ class gib:
             )
             cls.model = model
         try:
-            msg.reply(model.make_sentence(tries=1000))
+            sentence = model.make_sentence(tries=1000)
         except AttributeError:
             msg.reply("Looks like {} spoken enough in {} just yet.".format(
                 ("you haven't" if user == msg.sender else "nobody has" if user
                  is None else "{} hasn't".format(user)),
                 channel
             ))
+            return
+        # now we need to remove pings from the sentence
+        # first: remove a ping at the beginning of the sentence
+        pattern = r"^(\S+[:,]\s+)(.*)$"
+        match = re.match(pattern, sentence)
+        if match:
+            sentence = match.group(2).strip()
+        # second: modify any words that match the names of channel members
+        members = DB.get_channel_members(msg.channel)
+        members = re.compile("|".join(members), flags=re.IGNORECASE)
+        sentence = members.sub(cls.obfuscate, sentence)
+        msg.reply(sentence)
+
+    @classmethod
+    def obfuscate(cls, match):
+        word = list(match.group(0))
+        for index,letter in enumerate(word):
+            if letter in "aeiouAEIOU":
+                word[index] = "*"
+                break
+        else:
+            word.insert(2, "*")
+        return ''.join(word)
