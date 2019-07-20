@@ -11,10 +11,11 @@ from helpers.config import CONFIG
 
 class defer:
     @classmethod
-    def check(cls, msg, *bots):
+    def check(cls, cmd, *bots):
         """Check whether the given bots are in the channel"""
         # bots should be a list of bot names?
-        members = DB.get_channel_members(msg.channel)
+        if cmd.pinged: return False
+        members = DB.get_channel_members(cmd.channel)
         return set(members) & set(bots)
 
     @classmethod

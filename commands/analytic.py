@@ -13,6 +13,7 @@ from helpers.error import CommandError
 import markovify
 from helpers.database import DB
 import re
+from helpers.config import CONFIG
 
 class analyse_wiki:
     """For compiling data of the file contents of a sandbox"""
@@ -119,11 +120,15 @@ class gib:
         else:
             cls.channel = channel
             cls.user = user
-            model = MarkovFromList(
-                DB.get_messages(channel, user),
-                well_formed=False,
-                state_size=3
-            )
+            if user == CONFIG['nick']:
+                msg.reply("blah blah beep boop bot stuff")
+                return
+            messages = DB.get_messages(channel, user)
+            if len(messages) == 0:
+                msg.reply("I don't remember {} ever saying anything in {}."
+                          .format(user, channel))
+                return
+            model = MarkovFromList(messages, well_formed=False, state_size=3)
             cls.model = model
         try:
             sentence = model.make_sentence(tries=1000)

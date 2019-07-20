@@ -10,12 +10,14 @@ from helpers.scheduler import uptime
 class help:
     @classmethod
     def command(cls, irc_c, msg, cmd):
+        if(defer.check(cmd, 'jarvis', 'Secretary_Helen')): return
         msg.reply("Command documentation: https://git.io/TARS.help. Start a "
                   "command with .. to force me to respond.")
 
 class version:
     @classmethod
     def command(cls, irc_c, msg, cmd):
+        if(defer.check(cmd, 'jarvis')): return
         msg.reply("{} · made by Croquembouche · alive for {}".format(
             acronym(), uptime()
         ))

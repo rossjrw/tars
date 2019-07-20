@@ -11,6 +11,7 @@ TARS will not allow you to refactor a 2nd time unless you issue .reload again.
 
 from helpers.error import CommandError
 from helpers.database import DB
+from helpers.defer import defer
 
 class refactor:
     has_refactored = False
@@ -21,9 +22,17 @@ class refactor:
             return
         if cls.has_refactored:
             raise CommandError("Already refactored once this reload.")
+        if cmd.hasarg('callback'):
+            print(cmd.getarg('callback'))
+            if cmd.getarg('callback')[0] == "msg.reply":
+                callback = msg.reply
+            else:
+                raise CommandError("Unknown callback")
+        else:
+            callback = None
         try:
             if cmd.hasarg('sql'):
-                DB.issue(" ".join(cmd.getarg('sql')))
+                DB.issue(" ".join(cmd.getarg('sql')), callback=callback)
             else:
                 refactor.refactor_database(irc_c)
                 cls.has_refactored = True
