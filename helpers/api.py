@@ -87,8 +87,6 @@ class WikidotAPI:
                 'Accept': "application/json",
                 'User-Agent': "TARS",
             })
-        print("test")
-        pprint(r.data)
         return(json.loads(r.data.decode('utf-8'))['message'])
 
 SCPWiki = WikidotAPI("scp-wiki")

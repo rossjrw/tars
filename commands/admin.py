@@ -9,11 +9,16 @@ import os, sys
 from helpers.api import SCPWiki
 from helpers.database import DB
 import git
+from helpers.defer import defer
 
 class kill:
     """Kills the bot"""
     @classmethod
     def command(cls, irc_c, msg, cmd):
+        if not defer.controller(cmd):
+            raise CommandError("I'm afriad I can't let you do that.")
+            return
+        if(defer.check(cmd, 'jarvis', 'Secretary_Helen')): return
         msg.reply(kill_bye())
         irc_c.RAW("QUIT See you on the other side")
         irc_c.client.die()
@@ -23,6 +28,7 @@ class join:
     # Note that the INVITE event is in plugins/parsemessages.py
     @classmethod
     def command(cls, irc_c, msg, cmd):
+        if(defer.check(cmd, 'jarvis', 'Secretary_Helen')): return
         if len(cmd.args['root']) > 0 and cmd.args['root'][0][0] == '#':
             channel = cmd.args['root'][0]
             irc_c.JOIN(channel)
@@ -36,6 +42,7 @@ class leave:
     """Leaves the channel"""
     @classmethod
     def command(cls, irc_c, msg, cmd):
+        if(defer.check(cmd, 'jarvis', 'Secretary_Helen')): return
         if cmd.hasarg('message','m'):
             leavemsg = " ".join(cmd.getarg('message','m'))
         else:
@@ -56,29 +63,31 @@ class reload:
 class reboot:
     @classmethod
     def command(cls, irc_c, msg, cmd):
+        if(defer.check(cmd, 'jarvis', 'Secretary_Helen')): return
         # reboot the bot completely
-        if msg.nick == 'Croquembouche':
-            msg.reply("Rebooting...")
-            irc_c.RAW("QUIT Rebooting, will be back soon!")
-            os.execl(sys.executable, sys.executable, *sys.argv)
-        else:
-            msg.reply("Only Croquembouche can do that.")
+        if not defer.controller(cmd):
+            raise CommandError("I'm afriad I can't let you do that.")
+            return
+        msg.reply("Rebooting...")
+        irc_c.RAW("QUIT Rebooting, will be back soon!")
+        os.execl(sys.executable, sys.executable, *sys.argv)
 
 class update:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         """Update from github"""
-        if msg.sender == 'Croquembouche':
-            msg.reply("Updating...")
-            try:
-                g = git.cmd.Git(".")
-                g.pull()
-            except Exception as e:
-                msg.reply("Update failed.")
-                raise
-            msg.reply("Update successful - now would be a good time to reboot.")
-        else:
-            msg.reply("Only Croquembouche can do that.")
+        if(defer.check(cmd, 'jarvis', 'Secretary_Helen')): return
+        if not defer.controller(cmd):
+            raise CommandError("I'm afriad I can't let you do that.")
+            return
+        msg.reply("Updating...")
+        try:
+            g = git.cmd.Git(".")
+            g.pull()
+        except Exception as e:
+            msg.reply("Update failed.")
+            raise
+        msg.reply("Update successful - now would be a good time to reboot.")
 
 class say:
     """Make TARS say something"""
@@ -106,13 +115,13 @@ class say:
 
     @staticmethod
     def issue_raw(irc_c, msg, cmd):
-        if msg.nick == "Croquembouche":
-            if cmd.args['root'][1][0] == '/':
-                cmd.args['root'].pop(0)
-            msg.reply("Issuing that...")
-            irc_c.RAW(" ".join(cmd.args['root'][1:]))
-        else:
-            raise CommandError("Only Croquembouche can do that.")
+        if not defer.controller(cmd):
+            raise CommandError("I'm afriad I can't let you do that.")
+            return
+        if cmd.args['root'][1][0] == '/':
+            cmd.args['root'].pop(0)
+        msg.reply("Issuing that...")
+        irc_c.RAW(" ".join(cmd.args['root'][1:]))
 
 class config:
     """Provide a link to the config page"""

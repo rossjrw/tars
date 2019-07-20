@@ -10,6 +10,7 @@ from helpers.error import isint
 class showmore:
     @classmethod
     def command(cls, irc_c, msg, cmd):
+        if(defer.check(cmd, 'jarvis', 'Secretary_Helen')): return
         if len(cmd.args['root']) == 0:
             # 0 means "show everything"
             cmd.args['root'] = [0]

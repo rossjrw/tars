@@ -18,6 +18,9 @@ class analyse_wiki:
     """For compiling data of the file contents of a sandbox"""
     @classmethod
     def command(cls, irc_c, msg, cmd):
+        if not defer.controller(cmd):
+            raise CommandError("I'm afriad I can't let you do that.")
+            return
         if len(cmd.args['root']) < 1:
             raise CommandError("Must specify the wiki to analyse")
         if len(cmd.args['root']) == 2:

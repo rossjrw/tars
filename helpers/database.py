@@ -358,7 +358,6 @@ class SqliteDriver:
         # TODO exhaustive most_recent checking
         c = self.conn.cursor()
         # get all ids in channel
-        dbprint(channel)
         c.execute('''
             SELECT user_id FROM channels_users
             WHERE channel_id=(
@@ -366,7 +365,6 @@ class SqliteDriver:
                 WHERE channel_name=?)
                   ''', (channel,))
         ids = [row['user_id'] for row in norm(c.fetchall())]
-        dbprint(ids)
         # then get the aliases of those ids
         c.execute('''
             SELECT alias FROM user_aliases
@@ -443,6 +441,17 @@ class SqliteDriver:
                       ''', (id, ))
             name = random.choice(norm(c.fechall()))
             return "??{}".format(name)
+
+    def get_controllers(self):
+        """Gets bot controllers"""
+        c = self.conn.cursor()
+        c.execute('''
+            SELECT alias FROM user_aliases
+            WHERE user_id IN (SELECT id FROM users
+                              WHERE controller=1)
+                  ''')
+        return [row['alias'] for row in c.fetchall()]
+
 
     def sort_names(self, channel, names):
         """Sort the results of a NAMES query"""

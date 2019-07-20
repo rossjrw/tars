@@ -27,21 +27,21 @@ class ParseMessages():
 # wipe em and remake em to .reload
     @observe("IRC_MSG_PRIVMSG")
     def handleMessage(self, irc_c, msg):
-        if msg.message == ".reload":
-            # special case for .reload - needs high priority
-            msg.reply("Reloading commands...")
-            try:
-                reload(commands)
-            except:
-                msg.reply("Reload failed.")
-                raise
-            else:
-                msg.reply("Reload successful.")
-            return
-        cmd = parse.command(msg.message)
+        cmd = parse.command(msg)
         # cmd is the parsed msg (used to be msg.parsed)
         if cmd.command:
             # this is a command!
+            if cmd.command == "reload":
+                # special case for .reload - needs high priority
+                msg.reply("Reloading commands...")
+                try:
+                    reload(commands)
+                except:
+                    msg.reply("Reload failed.")
+                    raise
+                else:
+                    msg.reply("Reload successful.")
+                return
             # notify of a shlex error, if present
             if cmd.quote_error:
                 msg.reply(("I wasn't able to correctly parse your quotemarks, "

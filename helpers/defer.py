@@ -6,20 +6,18 @@ For checking whether a command should defer to jarvis or Secretary_Helen.
 # jarvis: "Page not found."
 # helen: "NICK: I'm sorry, I couldn't find anything."
 
+from helpers.database import DB
+from helpers.config import CONFIG
+
 class defer:
     @classmethod
-    def check(cls, irc_c, msg, *bots):
-        """Checks whether or not the bot is in the channel. Takes irc_c, msg
-        then bots as strings as separate arguments. Returns boolean."""
-        # bots is a tuple of bot names to look for
+    def check(cls, msg, *bots):
+        """Check whether the given bots are in the channel"""
+        # bots should be a list of bot names?
+        members = DB.get_channel_members(msg.channel)
+        return set(members) & set(bots)
 
-        # first, get a list of everyone in this channel
-        # issue a request for channel member names
-        mex = irc_c.RAW("NAMES {}".format(msg.raw_channel))
-        # We need to request a list of NAMES from IRC.
-        # Problem: we can't just await that data, as it'll be coming from raw
-        # So we need to log the NAMES into a database and then wait for
-        #   the database to have updated.
-        # We'll need to have another function on the go somewhere that's
-        #   logging names to the db. We'll also need a db.
-        # That function will be in plugins/names.py
+    @classmethod
+    def controller(cls, cmd):
+        """Limit this command only to controllers."""
+        return cmd.sender in DB.get_controllers()

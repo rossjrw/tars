@@ -47,7 +47,7 @@ class search:
     def command(cls, irc_c, msg, cmd):
         # Check that we are actually able to do this
         # (might have to move to end for defer check)
-        defer.check(irc_c, msg, "jarvis")
+        if(defer.check(cmd, 'jarvis', 'Secretary_Helen')): return
         # Parse the command itself
         search.expandargs(cmd)
         # check to see if there are any arguments

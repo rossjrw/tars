@@ -27,6 +27,9 @@ class ParsedCommand():
     """
     def __init__(self, message):
         # Check that the message is a string
+        self.sender = message.sender
+        self.channel = message.channel
+        message = message.message
         self.raw = str(message)
         self.ping = None # identity of the ping
         self.unping = None # raw command without ping

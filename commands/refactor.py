@@ -16,8 +16,9 @@ class refactor:
     has_refactored = False
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        if msg.nick != "Croquembouche":
-            raise CommandError("Only Croquembouche can do that.")
+        if not defer.controller(cmd):
+            raise CommandError("I'm afriad I can't let you do that.")
+            return
         if cls.has_refactored:
             raise CommandError("Already refactored once this reload.")
         try:
