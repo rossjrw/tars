@@ -54,7 +54,8 @@ class ParseMessages():
                 if cmd.pinged:
                     # there are .converse strings for pinged
                     converse(irc_c, msg, cmd)
-                else:
+                elif msg.channel is None:
+                    # should be only in pm
                     msg.reply("That's not a command.")
             except CommandError as e:
                 msg.reply("Invalid command: {}".format(str(e)))

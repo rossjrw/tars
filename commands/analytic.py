@@ -119,11 +119,12 @@ class gib:
             model = MarkovFromList(
                 DB.get_messages(channel, user),
                 well_formed=False,
-                state_size=1
+                state_size=3
             )
             cls.model = model
         try:
             sentence = model.make_sentence(tries=1000)
+            if sentence is None: raise AttributeError
         except AttributeError:
             msg.reply("Looks like {} spoken enough in {} just yet.".format(
                 ("you haven't" if user == msg.sender else "nobody has" if user
@@ -133,6 +134,7 @@ class gib:
             return
         # now we need to remove pings from the sentence
         # first: remove a ping at the beginning of the sentence
+        print(sentence)
         pattern = r"^(\S+[:,]\s+)(.*)$"
         match = re.match(pattern, sentence)
         if match:
