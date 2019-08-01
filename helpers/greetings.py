@@ -3,6 +3,7 @@
 
 from random import choice
 import re
+from helpers.config import CONFIG
 
 greets = [
     "Hey",
@@ -93,4 +94,9 @@ def acronym_gen():
             last_response = last_response[:5]
 acro = acronym_gen()
 def acronym():
-    return next(acro)
+    if CONFIG.nick == "CASE":
+        return "Croquembouche's Alt Sucks Extremely"
+    elif CONFIG.nick == "TARS":
+        return next(acro)
+    else:
+        return "It doesn't really stand for anything"

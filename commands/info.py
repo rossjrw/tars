@@ -7,6 +7,7 @@ from helpers.error import CommandError
 from helpers.greetings import acronym
 from helpers.scheduler import uptime
 from helpers.defer import defer
+import platform, distro
 
 class help:
     @classmethod
@@ -15,12 +16,14 @@ class help:
         msg.reply("Command documentation: https://git.io/TARS.help. Start a "
                   "command with .. to force me to respond.")
 
-class version:
+class status:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        if(defer.check(cmd, 'jarvis')): return
-        msg.reply("{} · made by Croquembouche · alive for {}".format(
-            acronym(), uptime()
+        msg.reply("{} · made by Croquembouche · Python {} · {} · alive for {}".format(
+            acronym(),
+            platform.python_version(),
+            " ".join(distro.linux_distribution(full_distribution_name=True)[:2]),
+            uptime()
         ))
 
 class github:

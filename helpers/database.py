@@ -296,7 +296,7 @@ class SqliteDriver:
             SELECT name FROM sqlite_master WHERE type='table'
                   ''')
         # convert list of tuples to list of strings
-        return norm(c.fetchall())
+        return c.fetchall()
 
     def print_one_table(self, table):
         """Pretty print a single table"""
@@ -327,13 +327,14 @@ class SqliteDriver:
         c.execute('''
             SELECT alias FROM user_aliases
                   ''')
-        return norm(c.fetchall())
+        return c.fetchall()
 
     def get_messages(self, channel, user=None):
         """Returns all messages from the channel by the user"""
         c = self.conn.cursor()
         # TODO make this lookup all names of a user and do an IN check
         # need to convert channel name to channel id
+        assert isinstance(channel, str) and channel.startswith('#')
         c.execute('''
             SELECT id FROM channels
             WHERE channel_name=?
@@ -348,7 +349,9 @@ class SqliteDriver:
         if user is not None:
             q = q.where(messages.sender == user)
         c.execute(str(q))
-        messages = [m['message'] for m in norm(c.fetchall())]
+        result = c.fetchall()
+        pprint(result['message'])
+        messages = [m['message'] for m in result]
         return messages
 
     def get_aliases(self, nick):
@@ -362,7 +365,7 @@ class SqliteDriver:
                 SELECT user_id FROM user_aliases
                 WHERE alias=?
                     ''', (nick, ))
-            ids = norm(c.fetchall())
+            ids = c.fetchall()
         if len(ids) == 0:
             return None
         else:
@@ -373,7 +376,7 @@ class SqliteDriver:
                     SELECT alias FROM user_aliases
                     WHERE user_id=?
                           ''', (id, ))
-                result.append(norm(c.fetchall()))
+                result.append(c.fetchall())
             return result
 
     def get_channel_members(self, channel):
@@ -388,13 +391,13 @@ class SqliteDriver:
                 SELECT id FROM channels
                 WHERE channel_name=?)
                   ''', (channel,))
-        ids = [row['user_id'] for row in norm(c.fetchall())]
+        ids = [row['user_id'] for row in c.fetchall()]
         # then get the aliases of those ids
         c.execute('''
             SELECT alias FROM user_aliases
             WHERE user_id IN ({})'''.format(','.join(['?']*len(ids)))
                   , [str(id) for id in ids])
-        return [row['alias'] for row in norm(c.fetchall())]
+        return [row['alias'] for row in c.fetchall()]
 
     def get_generic_id(self, search):
         """Returns from users, channels, articles"""
@@ -441,7 +444,7 @@ class SqliteDriver:
         c.execute('''
             SELECT user_id FROM channels_users WHERE channel_id=?
                   ''', (id, ))
-        users = norm(c.fetchall())
+        users = c.fetchall()
         dbprint("get_occupants: users is {}".format(",".join(map(str,users))))
         assert len(users) > 0, "There are no users in {}.".format(channel)
         if convert_to_nicks:
@@ -749,7 +752,6 @@ class SqliteDriver:
             else:
                 pass
 
-
     def log_message(self, msg):
         """Logs a message in the db."""
         chname = "private" if msg.channel is None else msg.raw_channel
@@ -773,13 +775,13 @@ class SqliteDriver:
             SELECT user_id FROM user_aliases
             WHERE alias=?
                   ''', (msg.nick, ))
-        user = norm(c.fetchall())
+        user = c.fetchall()
         if len(user) == 0:
             user = self.add_user(msg.nick)
         elif len(user) > 1:
             raise ValueError("User {} exists more than once".format(msg.nick))
         else:
-            user = user[0]
+            user = user[0]['user_id']
         assert isinstance(user, int)
         c.execute('''
             UPDATE user_aliases
