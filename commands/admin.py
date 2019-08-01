@@ -111,7 +111,8 @@ class say:
             say.issue_raw(irc_c, msg, cmd)
         else:
             irc_c.PRIVMSG(cmd.args['root'][0], " ".join(cmd.args['root'][1:]))
-            msg.reply("Saying that to {}".format(cmd.args['root'][0]))
+            if not cmd.args['root'][0] == msg.channel:
+                msg.reply("Saying that to {}".format(cmd.args['root'][0]))
 
     @staticmethod
     def issue_raw(irc_c, msg, cmd):

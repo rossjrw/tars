@@ -43,7 +43,7 @@ class refactor:
 
     @staticmethod
     def refactor_database(irc_c):
-        """Query is executed as script"""
+        """Query is NOT executed as script"""
         # DB.issue()
         # DB.issue('''
         #     ALTER TABLE messages

@@ -8,6 +8,7 @@ and should never be done.
 from fuzzywuzzy import fuzz
 from helpers.greetings import acronym, greet, greets
 from helpers.database import DB
+from helpers.config import CONFIG
 
 class converse:
     @classmethod
@@ -24,7 +25,7 @@ class converse:
                 msg.reply("{}: no u".format(msg.nick))
                 return
         # unpinged section
-        if message.lower() == "tars!":
+        if message.lower() == "{}!".format(CONFIG.nick.lower()):
             msg.reply("{}!".format(msg.nick))
             return
         if strip(message.lower()) in [strip("{}tars".format(g)) for g in greets]:

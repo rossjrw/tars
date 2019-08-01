@@ -53,7 +53,7 @@ class ParsedCommand():
             self.unping = self.message
 
         if isinstance(self.ping, str):
-            if self.ping.upper() == CONFIG['nick']:
+            if self.ping.upper() == CONFIG.nick:
                 self.pinged = True
 
         parseprint("After ping extraction: " +

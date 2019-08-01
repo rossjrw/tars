@@ -309,6 +309,16 @@ class SqliteDriver:
             df.sort_values('user_id', inplace=True)
         print(df)
 
+    def print_selection(self, query):
+        """Pretty print a selection"""
+        try:
+            df = pandas.read_sql_query(query, self.conn)
+        except pandas.io.sql.DatabaseError as e:
+            # fail silently
+            dbprint("There was a problem with the selection statement.", True)
+            raise
+        print(df)
+
     def get_all_users(self):
         """Returns a list of all users"""
         # For now, just return aliases

@@ -118,8 +118,10 @@ pseudoflag `root`, which will always be present.
 A few other important pieces of information:
 
 * `msg` - [pyaib's message object](https://github.com/facebook/pyaib/wiki/Plugin-Writing#message-object)
-* `DB.XXX()` - where XXX represents a function in
-  helpers/database.py
+* `from helpers.database import DB` then `DB.xxx()` - where xxx represents a
+  function in helpers/database.py
+* `from helpers.config import CONFIG` then `CONFIG.xxx` to access property xxx
+  of the configuration file
 
 ## Database Structure
 

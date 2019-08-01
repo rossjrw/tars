@@ -6,6 +6,7 @@ Commands that output basic information about the bot.
 from helpers.error import CommandError
 from helpers.greetings import acronym
 from helpers.scheduler import uptime
+from helpers.defer import defer
 
 class help:
     @classmethod

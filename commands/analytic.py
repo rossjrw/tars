@@ -9,7 +9,7 @@ import numpy
 import math
 from pprint import pprint
 import csv
-from helpers.error import CommandError
+from helpers.error import CommandError, isint
 import markovify
 from helpers.database import DB
 import re
@@ -99,20 +99,14 @@ class gib:
     model = None
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        channel = None
+        channel = msg.channel
         user = None
-        if len(cmd.args['root']) >= 1:
-            if cmd.args['root'][0].startswith('#'):
-                channel = cmd.args['root'][0]
-            else:
-                user = cmd.args['root'][0]
-        if len(cmd.args['root']) >= 2:
-            if cmd.args['root'][1].startswith('#'):
-                channel = cmd.args['root'][1]
-            else:
-                user = cmd.args['root'][1]
-        if channel is None:
-            channel = msg.channel
+        size = 3
+        # root has 1 num, 1 string, 1 string startswith #
+        for arg in cmd.args['root']:
+            if isint(arg): size = arg
+            elif arg.startswith('#'): channel = arg
+            else: user = arg
         # Run a check to see if we need to reevaluate the model or not
         if cls.channel == channel and cls.user == user:
             model = cls.model
@@ -120,7 +114,7 @@ class gib:
         else:
             cls.channel = channel
             cls.user = user
-            if user == CONFIG['nick']:
+            if user == CONFIG.nick:
                 msg.reply("blah blah beep boop bot stuff")
                 return
             messages = DB.get_messages(channel, user)
@@ -128,11 +122,12 @@ class gib:
                 msg.reply("I don't remember {} ever saying anything in {}."
                           .format(user, channel))
                 return
-            model = MarkovFromList(messages, well_formed=False, state_size=3)
+            model = MarkovFromList(messages,well_formed=False,state_size=size)
             cls.model = model
+            pprint(model.to_dict())
         try:
-            sentence = model.make_sentence(tries=1000)
-            if sentence is None: raise AttributeError
+            sentence = model.make_sentence(tries=3000)
+            # if sentence is None: raise AttributeError
         except AttributeError:
             msg.reply("Looks like {} spoken enough in {} just yet.".format(
                 ("you haven't" if user == msg.sender else "nobody has" if user

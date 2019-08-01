@@ -7,6 +7,7 @@ from pprint import pprint
 from helpers.error import CommandError
 from helpers.parse import nickColor
 from helpers.database import DB
+from helpers.defer import defer
 
 class alias:
     @classmethod
@@ -87,5 +88,15 @@ class query:
                 pprint(users)
             else:
                 pprint([nickColor(user) for user in users])
+        elif cmd.args['root'][0].startswith('sql'):
+            if not defer.controller(cmd):
+                raise CommandError("I'm afriad I can't let you do that.")
+                return
+            try:
+                DB.print_selection(" ".join(cmd.args['root'][1:]))
+                msg.reply("Printing that selection to console")
+            except:
+                msg.reply("There was a problem with the selection")
+                raise
         else:
             raise CommandError("Unknown argument")
