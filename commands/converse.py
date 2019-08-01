@@ -28,25 +28,26 @@ class converse:
         if message.lower() == "{}!".format(CONFIG.nick.lower()):
             msg.reply("{}!".format(msg.nick))
             return
-        if strip(message.lower()) in [strip("{}tars".format(g)) for g in greets]:
+        if strip(message.lower()) in [strip("{}{}".format(g,CONFIG.nick.lower()))
+                                      for g in greets]:
             msg.reply(greet(msg.nick))
             return
-        if matches_any_of(message, [
+        if CONFIG.nick == "TARS" and matches_any_of(message, [
             "what does tars stand for?",
             "is tars an acronym?",
-        ]):
+        ]) and "TARS" in message.upper():
             msg.reply(acronym())
             return
-        if matches_any_of(message, [
+        if CONFIG.nick == "TARS" and matches_any_of(message, [
             "is tars a bot?",
             "tars are you a bot?",
-        ]):
+        ]) and "TARS" in message.upper():
             msg.reply("Yep.")
             return
-        if matches_any_of(message, [
+        if CONFIG.nick == "TARS" and matches_any_of(message, [
             "is tars a person?",
             "tars are you a person?",
-        ]):
+        ]) and "TARS" in message.upper():
             msg.reply("Nope. I'm a bot.")
             return
         # custom section
