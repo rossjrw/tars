@@ -97,11 +97,11 @@ class gib:
     user = None
     channel = None
     model = None
+    size = 3
     @classmethod
     def command(cls, irc_c, msg, cmd):
         channel = msg.channel
         user = None
-        size = 3
         # root has 1 num, 1 string, 1 string startswith #
         for arg in cmd.args['root']:
             if isint(arg): size = arg
@@ -122,17 +122,28 @@ class gib:
                 msg.reply("I don't remember {} ever saying anything in {}."
                           .format(user, channel))
                 return
-            model = MarkovFromList(messages,well_formed=False,state_size=size)
+            model = cls.make_model(messages)
             cls.model = model
-            pprint(model.to_dict())
         try:
-            sentence = model.make_sentence(tries=3000)
-            # if sentence is None: raise AttributeError
+            sentence = model.make_sentence(tries=1000, force_result=False)
+            print("SIZE IS 3")
+            if sentence is None:
+                # try again with a smaller state size
+                # this should only happen with small data sets so I'm not
+                #   too concerned about performance
+                messages = DB.get_messages(channel, user)
+                for decr in range(1, cls.size+1):
+                    model = cls.make_model(messages, decrement=decr)
+                    sentence = model.make_sentence(tries=1000, force_result=False)
+                    print("SIZE IS {}".format(cls.size-decr))
+                    if sentence is not None:
+                        break
         except AttributeError:
-            msg.reply("Looks like {} spoken enough in {} just yet.".format(
+            msg.reply("Looks like {} spoken enough in {} just yet.{}".format(
                 ("you haven't" if user == msg.sender else "nobody has" if user
                  is None else "{} hasn't".format(user)),
-                channel
+                channel,
+                " ({} messages)".format(len(model.to_dict()['parsed_sentences']))
             ))
             return
         # now we need to remove pings from the sentence
@@ -147,6 +158,14 @@ class gib:
         members = re.compile("|".join(members), flags=re.IGNORECASE)
         sentence = members.sub(cls.obfuscate, sentence)
         msg.reply(sentence)
+
+    @classmethod
+    def make_model(cls, messages, decrement=0):
+        size = cls.size - decrement
+        if size == 0:
+            return None
+        else:
+            return MarkovFromList(messages, well_formed=False, state_size=size)
 
     @classmethod
     def obfuscate(cls, match):

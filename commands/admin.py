@@ -93,19 +93,13 @@ class say:
     """Make TARS say something"""
     @classmethod
     def command(cls, irc_c, msg, cmd):
+        if not defer.controller(cmd):
+            raise CommandError("I'm afriad I can't let you do that.")
+            return
         if len(cmd.args['root']) == 0:
             raise CommandError("Must specify a recipient and message")
         if len(cmd.args['root']) == 1:
             raise CommandError("Must specify a message")
-        if cmd.args['root'][0].lower() not in [
-            "#tars",
-            "croquembouche",
-            "rounderhouse",
-            "cutegirl",
-            "tsatpwtcotttadc",
-            "jazstar",
-        ]:
-            raise CommandError("You can only .say to #tars occupants atm")
         if cmd.args['root'][0][0] == '/' or cmd.args['root'][1][0] == '/':
             # This is an IRC command
             say.issue_raw(irc_c, msg, cmd)

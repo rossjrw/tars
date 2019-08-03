@@ -350,7 +350,6 @@ class SqliteDriver:
             q = q.where(messages.sender == user)
         c.execute(str(q))
         result = c.fetchall()
-        pprint(result['message'])
         messages = [m['message'] for m in result]
         return messages
 
