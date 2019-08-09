@@ -55,6 +55,8 @@ COMMANDS = {
     "analytic": {"analyse_wiki": {"analyse_wiki"},
                  "gib": {"gib"},
                 },
+    "nick": {"alias": {"alias"},
+                },
 }
 
 from helpers.error import CommandNotExistError

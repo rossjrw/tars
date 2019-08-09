@@ -80,6 +80,7 @@ class SqliteDriver:
         self.conn.row_factory = sqlite3.Row
         self.conn.create_function("REGEXP", 2, _regexp)
         self.conn.create_function("GLOB", 2, _glob)
+        self.set_controller(CONFIG['IRC']['owner'])
 
     def commit(self):
         """Just commits the database.
@@ -375,8 +376,8 @@ class SqliteDriver:
                     SELECT alias FROM user_aliases
                     WHERE user_id=?
                           ''', (id, ))
-                result.append(c.fetchall())
-            return result
+                result.extend(c.fetchall())
+            return [row['alias'] for row in result]
 
     def get_channel_members(self, channel):
         """Returns a list of all user possible nicks currently in a channel
@@ -478,6 +479,33 @@ class SqliteDriver:
                   ''')
         return [row['alias'] for row in c.fetchall()]
 
+    def set_controller(self, user):
+        if isinstance(user, str):
+            id = self.get_user_id(user)
+        else:
+            id = user
+        c = self.conn.cursor()
+        c.execute('''
+            UPDATE users SET controller=1 WHERE id=?
+                  ''', (id,))
+        self.conn.commit()
+        print("Added {} as controller".format(user))
+
+
+    def get_user_id(self, alias):
+        """Get the user id from the alias"""
+        c = self.conn.cursor()
+        c.execute('''
+            SELECT user_id FROM user_aliases
+            WHERE alias=?
+                  ''', (alias,))
+        ids = [row['user_id'] for row in c.fetchall()]
+        if len(ids) == 0:
+            return None
+        elif len(ids) == 1:
+            return ids[0]
+        else:
+            raise Exception("More than one ID for alias {}".format(alias))
 
     def sort_names(self, channel, names):
         """Sort the results of a NAMES query"""
@@ -572,28 +600,42 @@ class SqliteDriver:
                   ''', (user, alias, weight))
         combo_exists = bool(c.lastrowid)
         print("Combo exists: {}".format(combo_exists))
-        # first let's handle weight=1
-        if weight:
-            c.execute('''
-                      ''')
         # things to do:
             # 1. detect if the user-alias combo already exists
             # if it does, mark as most recento
-        c.execute('''
-            UPDATE user_aliases SET most_recent=0
-            WHERE user_id=? AND type=? AND weight=0
-                  ''', (user, nick_type))
+            # BUT only do this if weight=0
+        if weight == 0:
+            c.execute('''
+                UPDATE user_aliases SET most_recent=0
+                WHERE user_id=? AND type=? AND weight=0
+                      ''', (user, nick_type))
         c.execute('''
             INSERT OR REPLACE INTO user_aliases
                   (user_id, alias, type, weight, most_recent)
             VALUES ( ? , ? , ? , ? , ? )
                   ''', (user, alias, nick_type, weight,
                         (not weight if nick_type is 'irc' else 0)))
-        pprint(c.rowcount)
-        pprint(c.lastrowid)
-        pprint(c.description)
-        # this was going to be a more complicated function I swear
         self.conn.commit()
+        return combo_exists
+
+    def remove_alias(self, user, alias, weight=None, nick_type='irc'):
+        """Removes an alias from a user
+        Returns bool if the user/alias combo already existed."""
+        # this function doesn't care about weight?
+        assert isinstance(user, int)
+        c = self.conn.cursor()
+        c.execute('''
+            SELECT user_id FROM user_aliases
+            WHERE user_id=? AND alias=?
+                  ''', (user, alias))
+        combo_exists = bool(c.lastrowid)
+        # things to do:
+            # scrap the alias
+        c.execute('''
+            DELETE FROM user_aliases WHERE user_id=? AND alias=?
+                  ''', (user, alias))
+        self.conn.commit()
+        return combo_exists
 
     def __rename_user(self, old, new, force=False):
         """Adds a new alias for a user"""

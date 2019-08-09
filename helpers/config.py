@@ -15,4 +15,5 @@ configfile = argv[0] if argv else 'tars.conf'
 with open(configfile, 'r') as file:
     CONFIG = munchify(yaml.safe_load(file))
     CONFIG.nick = CONFIG.IRC.nick # might save me a few keystrokes
+    CONFIG.home = CONFIG.channels.home
     print("Loaded {} to secondary config access".format(configfile))
