@@ -94,56 +94,69 @@ class MarkovFromList(markovify.Text):
         return [text]
 
 class gib:
-    user = None
-    channel = None
+    users = []
+    channels = []
     model = None
     size = 3
+    sentences = []
+    ATTEMPT_LIMIT = 50
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        channel = msg.channel
-        user = None
+        cmd.expandargs(["no-cache n",
+                        "user u author a",
+                        "channel c",
+                        "size s",
+                        "help h"])
+        if cmd.hasarg('help'):
+            msg.reply("Usage: .gib [--channel #channel] [--user user] "
+                      "[--no-cache]")
+            return
+        channels = [msg.channel]
+        users = []
         # root has 1 num, 1 string, 1 string startswith #
         for arg in cmd.args['root']:
-            if isint(arg): size = arg
-            elif arg.startswith('#'): channel = arg
-            else: user = arg
+            if arg.startswith('#'):
+                raise CommandError("Try .gib -c {}".format(arg))
+            else:
+                raise CommandError("Try .gib -u {}".format(arg))
+        if cmd.hasarg('channel'):
+            if len(cmd.getarg('channel')) == 0:
+                raise CommandError("When using the --channel/-c filter, "
+                                   "at least one channel must be specified")
+            for channel in cmd.getarg('channel'):
+                if not channel.startswith('#'):
+                    raise CommandError("Channel names must start with #.")
+            channels = cmd.getarg('channel')
+        if cmd.hasarg('user'):
+            if len(cmd.getarg('user')) == 0:
+                raise CommandError("When using the --user/-u filter, "
+                                   "at least one user must be specified")
+            users = cmd.getarg('user')
+        if CONFIG.nick in users:
+            msg.reply("blah blah beep boop bot stuff")
+            return
         # Run a check to see if we need to reevaluate the model or not
-        if cls.channel == channel and cls.user == user:
-            model = cls.model
+        if cls.channels == channels and cls.users == users \
+        and not cmd.hasarg('no-cache'):
             print("Reusing Markov model")
         else:
-            cls.channel = channel
-            cls.user = user
-            if user == CONFIG.nick:
-                msg.reply("blah blah beep boop bot stuff")
-                return
-            messages = DB.get_messages(channel, user)
-            if len(messages) == 0:
-                msg.reply("I don't remember {} ever saying anything in {}."
-                          .format(user, channel))
-                return
-            model = cls.make_model(messages)
-            cls.model = model
+            cls.model = None
+            cls.channels = channels
+            if len(cls.channels) == 0: cls.channels = [msg.channel]
+            cls.users = users
+            if len(cls.users) == 0: cls.users = [None]
         try:
-            sentence = model.make_sentence(tries=1000, force_result=False)
-            print("SIZE IS 3")
-            if sentence is None:
-                # try again with a smaller state size
-                # this should only happen with small data sets so I'm not
-                #   too concerned about performance
-                messages = DB.get_messages(channel, user)
-                for decr in range(1, cls.size+1):
-                    model = cls.make_model(messages, decrement=decr)
-                    sentence = model.make_sentence(tries=1000, force_result=False)
-                    print("SIZE IS {}".format(cls.size-decr))
-                    if sentence is not None:
-                        break
+            sentence = cls.get_gib_sentence()
         except AttributeError:
             msg.reply("Looks like {} spoken enough in {} just yet.{}".format(
-                ("you haven't" if user == msg.sender else "nobody has" if user
-                 is None else "{} hasn't".format(user)),
-                channel,
-                " ({} messages)".format(len(model.to_dict()['parsed_sentences']))
+                ("you haven't" if msg.sender in users and len(users) == 1
+                 else "nobody has" if len(users) == 0
+                 else "{} hasn't".format(users[0]) if len(users) == 1
+                 else "they haven't"),
+                (channels[0] if len(channels) == 1 and channels[0] == msg.channel
+                 else "that channel" if len(channels) == 1
+                 else "those channels"),
+                " ({} messages)".format(len(cls.model.to_dict()['parsed_sentences']))
             ))
             return
         # now we need to remove pings from the sentence
@@ -158,6 +171,33 @@ class gib:
         members = re.compile("|".join(members), flags=re.IGNORECASE)
         sentence = members.sub(cls.obfuscate, sentence)
         msg.reply(sentence)
+
+    @classmethod
+    def get_gib_sentence(cls, attempts=0):
+        # try again with a smaller state size
+        # this should only happen with small data sets so I'm not
+        #   too concerned about performance
+        messages = []
+        for channel in cls.channels:
+            for user in cls.users:
+                messages = DB.get_messages(channel, user)
+                if len(messages) == 0 and len(users) <= 1:
+                    msg.reply("I don't remember {} ever saying anything in {}."
+                              .format(user, channel))
+                    return
+        for decr in range(0, cls.size):
+            cls.model = cls.make_model(messages, decrement=decr)
+            sentence = cls.model.make_sentence(tries=1000, force_result=False)
+            print("SIZE IS {}".format(cls.size-decr))
+            if sentence is not None:
+                break
+        if sentence in cls.sentences:
+            print("{} attempts remaining".format(attempts))
+            if attempts < cls.ATTEMPT_LIMIT:
+                sentence = cls.get_gib_sentence(attempts+1)
+            else:
+                sentence = "oh no"
+        return sentence
 
     @classmethod
     def make_model(cls, messages, decrement=0):
