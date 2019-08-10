@@ -5,6 +5,7 @@ More commands can be added by request.
 """
 
 from random import choice
+from emoji import emojize
 
 class hug:
     @classmethod
@@ -19,7 +20,7 @@ class reptile:
         repeat = 31 if msg.sender == "CuteGirl" else 2
         output = ""
         for _ in range(0,repeat):
-            output += choice(["🦕","🦖"])
+            output += emojize(choice([":sauropod:",":T-Rex:"]))
         msg.reply(output)
 
 class fish:
@@ -28,13 +29,13 @@ class fish:
         repeat = 2
         output = ""
         for _ in range(0,repeat):
-            output += choice(["🐠","🐟"])
+            output += emojize(choice([":fish:",":tropical_fish:"]))
         msg.reply(output)
 
 class rounderhouse:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        msg.reply("🔴🏠")
+        msg.reply(emojize(":red_circle::house:"))
 
 class password:
     @classmethod

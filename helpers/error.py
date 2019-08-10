@@ -11,6 +11,10 @@ class CommandNotExistError(Exception):
     """Used when a command does not exist"""
     pass
 
+class MyFaultError(Exception):
+    """Used for when a command succeeds but the output is failure"""
+    pass
+
 def isint(i):
     """Checks if something is an integer."""
     try:

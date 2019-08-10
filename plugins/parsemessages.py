@@ -8,7 +8,7 @@ import commands
 from pyaib.plugins import observe, plugin_class
 import sys
 import inspect
-from helpers.error import CommandError, CommandNotExistError
+from helpers.error import CommandError, CommandNotExistError, MyFaultError
 from importlib import reload
 from pprint import pprint
 import time
@@ -58,7 +58,9 @@ class ParseMessages():
                     # should be only in pm
                     msg.reply("That's not a command.")
             except CommandError as e:
-                msg.reply("Invalid command: {}".format(str(e)))
+                msg.reply("\x02Invalid command:\x0F {}".format(str(e)))
+            except MyFaultError as e:
+                msg.reply("\x02Sorry!\x0F {}".format(str(e)))
             except Exception as e:
                 if msg.channel != '#tars':
                     msg.reply(("An unexpected error has occurred. "

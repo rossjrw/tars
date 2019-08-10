@@ -224,7 +224,10 @@ class SqliteDriver:
                     CHECK (command IN (0,1))
                     DEFAULT 0,
                 timestamp INTEGER NOT NULL,
-                message TEXT NOT NULL
+                message TEXT NOT NULL,
+                ignore BOOLEAN NOT NULL
+                    CHECK (ignore IN (0,1))
+                    DEFAULT 0
             );
             CREATE TABLE IF NOT EXISTS gibs (
                 id INTEGER PRIMARY KEY,
@@ -308,22 +311,22 @@ class SqliteDriver:
         """Pretty print a single table"""
         try:
             df = pandas.read_sql_query("SELECT * FROM {}".format(table),self.conn)
+            if table == 'user_aliases':
+                df.sort_values('user_id', inplace=True)
+            print(df)
         except pandas.io.sql.DatabaseError:
             # fail silently so that users can't see what channels exist
             print("The table {} does not exist.".format(table))
-        if table == 'user_aliases':
-            df.sort_values('user_id', inplace=True)
-        print(df)
 
     def print_selection(self, query):
         """Pretty print a selection"""
         try:
             df = pandas.read_sql_query(query, self.conn)
+            print(df)
         except pandas.io.sql.DatabaseError as e:
             # fail silently
             dbprint("There was a problem with the selection statement.", True)
             raise
-        print(df)
 
     def get_all_users(self):
         """Returns a list of all users"""
@@ -335,7 +338,7 @@ class SqliteDriver:
                   ''')
         return c.fetchall()
 
-    def get_messages(self, channel, user=None):
+    def get_messages(self, channel, user=None, pattern=None):
         """Returns all messages from the channel by the user"""
         c = self.conn.cursor()
         # TODO make this lookup all names of a user and do an IN check
@@ -352,8 +355,12 @@ class SqliteDriver:
         q = MySQLQuery.from_(messages).select(messages.message)
         q = q.where(messages.channel_id == channel)
         q = q.where(messages.command == 0)
+        q = q.where(messages.ignore == 0)
         if user is not None:
             q = q.where(messages.sender == user)
+        if pattern is not None:
+            q = q.where(messages.message.regex(pattern))
+        q = str(q).replace(" LIKE "," GLOB ").replace(" REGEX "," REGEXP ")
         c.execute(str(q))
         result = c.fetchall()
         messages = [m['message'] for m in result]

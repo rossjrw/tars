@@ -42,7 +42,7 @@ class alias:
             aliases = cmd.getarg('remove')
             # db has add_alias, but that needs user ID
             for alias in aliases:
-                if not DB.remove_alias(user_id, alias, 1):
+                if DB.remove_alias(user_id, alias, 1):
                     msg.reply("{} didn't have the alias {}!".format(nick,alias))
             msg.reply("Removed aliases from {}: {}".format(nick, ", ".join(aliases)))
         if cmd.hasarg('list'):

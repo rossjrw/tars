@@ -322,7 +322,7 @@
     <p>Multiple arguments will be interpreted as a single username that contains spaces.</p>
 
     <h2 id="user">.gib <div class="jarvis">J</div></h2>
-    <p><code>.gib [--channel #channel] [--user user(s)] [--size size reduce] [--no-cache]</code></p>
+    <p><code>.gib [--channel #channel] [--user user(s)] [--size size reduce] [--roulette mode] [--no-cache]</code></p>
     <p>TARS will take all of the messages in the channel and try its best to contribute to the conversation.</p>
     <ul>
         <li><b>--channel, --ch, -c</b><br>
@@ -334,6 +334,10 @@
         <li><b>--size, -s:</b><br>
             <b>size:</b> Increase the internal state size of the selection. Bigger values will produce more coherent results, at the cost of giving a higher chance of producing an error. Default value is <code>3</code>.<br>
             <b>reduce:</b> TARS will usually automatically reduce the state size if the original value fails to produce a result. If you set <code>reduce</code> to <code>0</code>, TARS will not do this.
+        </li>
+        <li><b>--size, -s:</b><br>
+            Enables roulette mode! Instead of generating a nonsensical sentence, TARS will instead pick a random link.
+            <b>mode:</b> Determines what kind of link TARS looks for. Must be either <code>image</code> for image links, or one of <code>video</code>, <code>youtube</code> or <code>yt</code>, which will all select YouTube links.
         </li>
         <li><b>--no-cache, -n:</b><br>
             TARS will cache the results of .gib, and will only generate a new set of sentence if a non-identical .gib is issued (e.g. from a different channel or searching a different user). Additionally, TARS will keep a list of output sentences and will never generate the same sentence twice. Applying <code>--no-cache</code> will ignore both of these constraints.

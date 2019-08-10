@@ -9,11 +9,19 @@ import numpy
 import math
 from pprint import pprint
 import csv
-from helpers.error import CommandError, isint
+from helpers.error import CommandError, MyFaultError, isint
 import markovify
 from helpers.database import DB
 import re
 from helpers.config import CONFIG
+import random
+from emoji import emojize
+
+_URL_PATT = (r"https?:\/\/(www\.)?"
+                r"[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}"
+                r"\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)")
+_YT_PATT = re.compile(r"^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+")
+_IMG_PATT = re.compile(r"(imgur)|(((jpeg)|(jpg)|(png)|(gif)))$")
 
 class analyse_wiki:
     """For compiling data of the file contents of a sandbox"""
@@ -98,7 +106,7 @@ class gib:
     channels = []
     model = None
     size = 3
-    ATTEMPT_LIMIT = 50
+    ATTEMPT_LIMIT = 300
     nocache = False
     @classmethod
     def command(cls, irc_c, msg, cmd):
@@ -106,6 +114,7 @@ class gib:
                         "user u author a",
                         "channel c",
                         "size s",
+                        "roulette r",
                         "help h"])
         if cmd.hasarg('help'):
             msg.reply("Usage: .gib [--channel #channel] [--user user] "
@@ -132,13 +141,40 @@ class gib:
                 raise CommandError("When using the --user/-u filter, "
                                    "at least one user must be specified")
             users = cmd.getarg('user')
+        if cmd.hasarg('size'):
+            try:
+                cls.size = int(cmd.getarg('size')[0])
+            except ValueError:
+                raise CommandError("Sizes must be numbers")
+        if cmd.hasarg('roulette'):
+            if len(cmd.getarg('roulette')) == 0:
+                raise CommandError("When using roulette mode, you must "
+                                   "specify a roulette type")
+            roulette_type = cmd.getarg('roulette')[0]
+            if roulette_type not in ['video','image','youtube','yt']:
+                raise CommandError("The roulette type must be either "
+                                   "'image' or one of 'video','youtube','yt'")
+        # ignore gib cache?
         if cmd.hasarg('no-cache'):
             cls.nocache = True
         else:
             cls.nocache = False
-        if CONFIG.nick in users:
+        # can't gib the bot (yet!)
+        if CONFIG.nick.lower() in [user.lower() for user in users]:
             msg.reply("blah blah beep boop bot stuff")
             return
+        # can only gib a channel both the user and the bot are in
+        for channel in channels:
+            if channel is msg.channel:
+                continue
+            if msg.channel is not None \
+               and not all(x in DB.get_channel_members(channel)
+                           for x in [msg.sender, CONFIG.nick]):
+                raise CommandError("Both you and the bot must be in a channel "
+                                   "in order to gib it.")
+            if msg.channel is not None and channel != msg.channel:
+                raise CommandError("You can only gib the current channel (or "
+                                   "any channel from PMs)")
         # Run a check to see if we need to reevaluate the model or not
         if cls.channels == channels and cls.users == users \
            and not cls.nocache:
@@ -149,6 +185,16 @@ class gib:
             if len(cls.channels) == 0: cls.channels = [msg.channel]
             cls.users = users
             if len(cls.users) == 0: cls.users = [None]
+        # are we gibbing or rouletting?
+        if cmd.hasarg('roulette'):
+            urls = cls.roulette(roulette_type)
+            msg.reply("{} {} · ({} link{} found)"
+                      .format(emojize(":game_die:"),
+                              random.choice(urls),
+                              len(urls),
+                              ("s" if len(urls) > 1 else "")))
+            return
+        # gibbing:
         try:
             sentence = cls.get_gib_sentence()
         except AttributeError:
@@ -160,8 +206,10 @@ class gib:
                 (channels[0] if len(channels) == 1 and channels[0] == msg.channel
                  else "that channel" if len(channels) == 1
                  else "those channels"),
-                " ({} messages)".format(len(cls.model.to_dict()['parsed_sentences']))
-            ))
+                " ({} messages)".format(
+                    len(cls.model.to_dict()['parsed_sentences'])
+                    if cls.model is not None
+                    else 0)))
             return
         # now we need to remove pings from the sentence
         # first: remove a ping at the beginning of the sentence
@@ -172,8 +220,9 @@ class gib:
             sentence = match.group(2).strip()
         # second: modify any words that match the names of channel members
         members = DB.get_channel_members(msg.channel)
-        members = re.compile("|".join(members), flags=re.IGNORECASE)
-        sentence = members.sub(cls.obfuscate, sentence)
+        members = re.compile(r"\b" + r"\b|\b".join(members) + "\b", flags=re.IGNORECASE)
+        if msg.channel is not None:
+            sentence = members.sub(cls.obfuscate, sentence)
         msg.reply(sentence)
 
     @classmethod
@@ -185,22 +234,24 @@ class gib:
         for channel in cls.channels:
             for user in cls.users:
                 messages = DB.get_messages(channel, user)
-                if len(messages) == 0 and len(users) <= 1:
-                    msg.reply("I don't remember {} ever saying anything in {}."
-                              .format(user, channel))
-                    return
+                if len(messages) == 0 and len(cls.users) <= 1:
+                    raise AttributeError
         for decr in range(0, cls.size):
             cls.model = cls.make_model(messages, decrement=decr)
-            sentence = cls.model.make_sentence(tries=1000, force_result=False)
+            sentence = cls.model.make_short_sentence(400, tries=200, force_result=False)
             print("SIZE IS {}".format(cls.size-decr))
             if sentence is not None:
                 break
         if not cls.nocache and sentence in DB.get_gibs():
             print("{} attempts remaining".format(cls.ATTEMPT_LIMIT-attempts))
-            if attempts < cls.ATTEMPT_LIMIT:
-                sentence = cls.get_gib_sentence(attempts+1)
-            else:
-                sentence = "oh no"
+            try:
+                if attempts < cls.ATTEMPT_LIMIT:
+                    sentence = cls.get_gib_sentence(attempts+1)
+                else:
+                    raise RecursionError
+            except RecursionError:
+                raise MyFaultError("I didn't find any gibs for that selection "
+                                   "that haven't already been said.")
         if sentence is not None:
             DB.add_gib(sentence)
         return sentence
@@ -223,3 +274,29 @@ class gib:
         else:
             word.insert(2, "*")
         return ''.join(word)
+
+    @classmethod
+    def roulette(cls, roulette_type):
+        """Get a random image or video link"""
+        # take all the messages in the channel, filtered for links
+        messages = []
+        for channel in cls.channels:
+            for user in cls.users:
+                messages = DB.get_messages(channel, user, _URL_PATT)
+                if len(messages) == 0 and len(cls.users) <= 1:
+                    raise MyFaultError("I didn't find any URLs in the "
+                                       "selection criteria.")
+        # then reduce strings containing urls to urls
+        urls = [re.search(_URL_PATT, message).group(0) for message in messages]
+        # make urls unique
+        urls = list(set(urls))
+        # then filter by either images or videos
+        if roulette_type == 'image':
+            urls = [url for url in urls if _IMG_PATT.search(url)]
+            if len(urls) == 0:
+                raise MyFaultError("I didn't find any images.")
+        if roulette_type in ['video','youtube','yt']:
+            urls = [url for url in urls if _YT_PATT.search(url)]
+            if len(urls) == 0:
+                raise MyFaultError("I didn't find any video links.")
+        return urls

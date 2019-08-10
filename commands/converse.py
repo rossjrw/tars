@@ -30,6 +30,9 @@ class converse:
             return
         if strip(message.lower()) in [strip("{}{}".format(g,CONFIG.nick.lower()))
                                       for g in greets]:
+            if msg.sender == 'XilasCrowe':
+                msg.reply("toast")
+                return
             msg.reply(greet(msg.nick))
             return
         if CONFIG.nick == "TARS" and matches_any_of(message, [
