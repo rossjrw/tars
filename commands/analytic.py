@@ -98,7 +98,6 @@ class gib:
     channels = []
     model = None
     size = 3
-    sentences = []
     ATTEMPT_LIMIT = 50
     @classmethod
     def command(cls, irc_c, msg, cmd):
@@ -191,12 +190,14 @@ class gib:
             print("SIZE IS {}".format(cls.size-decr))
             if sentence is not None:
                 break
-        if sentence in cls.sentences:
+        if sentence in DB.get_gibs():
             print("{} attempts remaining".format(attempts))
             if attempts < cls.ATTEMPT_LIMIT:
                 sentence = cls.get_gib_sentence(attempts+1)
             else:
                 sentence = "oh no"
+        if sentence is not None:
+            DB.add_gib(sentence)
         return sentence
 
     @classmethod

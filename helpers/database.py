@@ -225,6 +225,11 @@ class SqliteDriver:
                     DEFAULT 0,
                 timestamp INTEGER NOT NULL,
                 message TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS gibs (
+                id INTEGER PRIMARY KEY,
+                message TEXT NOT NULL,
+                UNIQUE(message)
             )''')
         # Will also need a messages table for each channel
         self.conn.commit()
@@ -353,6 +358,23 @@ class SqliteDriver:
         result = c.fetchall()
         messages = [m['message'] for m in result]
         return messages
+
+    def add_gib(self, gib):
+        """Add a gib"""
+        c = self.conn.cursor()
+        c.execute('''
+            INSERT OR REPLACE INTO gibs( message )
+            VALUES( ? )
+                  ''', (gib,))
+        self.conn.commit()
+
+    def get_gibs(self):
+        """Return all previous gibs"""
+        c = self.conn.cursor()
+        c.execute('''
+            SELECT message FROM gibs
+                  ''')
+        return [row['message'] for row in c.fetchall()]
 
     def get_aliases(self, nick):
         """Returns all of someone's aliases
