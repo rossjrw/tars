@@ -99,6 +99,7 @@ class gib:
     model = None
     size = 3
     ATTEMPT_LIMIT = 50
+    nocache = False
     @classmethod
     def command(cls, irc_c, msg, cmd):
         cmd.expandargs(["no-cache n",
@@ -131,12 +132,16 @@ class gib:
                 raise CommandError("When using the --user/-u filter, "
                                    "at least one user must be specified")
             users = cmd.getarg('user')
+        if cmd.hasarg('no-cache'):
+            cls.nocache = True
+        else:
+            cls.nocache = False
         if CONFIG.nick in users:
             msg.reply("blah blah beep boop bot stuff")
             return
         # Run a check to see if we need to reevaluate the model or not
         if cls.channels == channels and cls.users == users \
-        and not cmd.hasarg('no-cache'):
+           and not cls.nocache:
             print("Reusing Markov model")
         else:
             cls.model = None
@@ -190,8 +195,8 @@ class gib:
             print("SIZE IS {}".format(cls.size-decr))
             if sentence is not None:
                 break
-        if sentence in DB.get_gibs():
-            print("{} attempts remaining".format(attempts))
+        if not cls.nocache and sentence in DB.get_gibs():
+            print("{} attempts remaining".format(cls.ATTEMPT_LIMIT-attempts))
             if attempts < cls.ATTEMPT_LIMIT:
                 sentence = cls.get_gib_sentence(attempts+1)
             else:

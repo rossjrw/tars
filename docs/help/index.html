@@ -336,7 +336,7 @@
             <b>reduce:</b> TARS will usually automatically reduce the state size if the original value fails to produce a result. If you set <code>reduce</code> to <code>0</code>, TARS will not do this.
         </li>
         <li><b>--no-cache, -n:</b><br>
-            TARS will cache the results of .gib, and will only generate a new set of sentence if a non-identical .gib is issued (e.g. from a different channel or searching a different user). Additionally, TARS will keep a list of output sentences and try not to generate identical results. Applying <code>--no-cache</code> will reset both of these constraints.
+            TARS will cache the results of .gib, and will only generate a new set of sentence if a non-identical .gib is issued (e.g. from a different channel or searching a different user). Additionally, TARS will keep a list of output sentences and will never generate the same sentence twice. Applying <code>--no-cache</code> will ignore both of these constraints.
         </li>
     </ul>
 
