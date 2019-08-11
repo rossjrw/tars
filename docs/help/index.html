@@ -280,7 +280,7 @@
 
     <h2 id="alias">.alias</h2>
     <p><code>.alias [name] [--add names] [--remove names] [--list]</code></p>
-    <p>Add an alternate name(s) for yourself into TARS' database. These names are used for <a href="#authorpage"><b><code>.authorpage</code></b></a> and <a href="#seen"><b><code>.seen</code></b></a>.</p>
+    <p>Add an alternate name(s) for yourself into TARS' database. These names are used for <a href="#authorpage"><b><code>.authorpage</code></b></a>, <a href="#seen"><b><code>.seen</code></b></a> and <a href="#gib"><b><code>.gib</code></b></a>.</p>
     <ul>
         <li><b>name</b><br>
             An IRC name. You can only <b>--add</b> or <b>--remove</b> aliases from this name if it's your current IRC nick (or if it's already one of your aliases), but you can <b>--list</b> anyone's aliases. If you don't include this argument, TARS will assume that you mean your current IRC nick.
@@ -323,7 +323,8 @@
 
     <h2 id="user">.gib <div class="jarvis">J</div></h2>
     <p><code>.gib [--channel #channel] [--user user(s)] [--size size reduce] [--roulette mode] [--no-cache]</code></p>
-    <p>TARS will take all of the messages in the channel and try its best to contribute to the conversation.</p>
+    <p>TARS will take all of the messages in the channel and employ an extremely sophisticated machine-learning algorithm backed by over $8 billion in research funding to contribute to the conversation.</p>
+    <p>Additionally, any pings (i.e. username mentions) that are produced in the output will be censored to avoid annoying anyone not present in the conversation. To add a nick to the list of pings to search, see <a href="#alias"><b><code>.alias</code></b></a>.</p>
     <ul>
         <li><b>--channel, --ch, -c</b><br>
             The channel to search. Both you and TARS must be in the channel at the time. Defaults to the current channel.
@@ -350,7 +351,7 @@
     
     <h2 id="promote">.promote</h2>
     <p>Promote an article or message on SCP social media.</p>
-        <p><code>.promote [message] [--article article] [--image image] [--facebook image] [--twitter image] [--tumblr image] [--reddit] [--instagram]</code></p>
+    <p><code>.promote [message] [--article article] [--image image] [--facebook image] [--twitter image] [--tumblr image] [--reddit] [--instagram]</code></p>
     <ul>
         <li><b>message</b><br>
             The message to be posted in the announcement. If you don't supply a message, TARS will ask you for separate messages.
@@ -404,6 +405,24 @@
         <li><b>..reboot:</b> Robots dream of electric sheep and then wake up shortly thereafter</li>
         <li><b>..reload:</b> Reload commands only</li>
         <li><b>..autojoin [--list] [--add channels] [--remove channels]:</b> View, add to or remove from the autojoin list</li>
+    </ul>
+    
+    <h2 id="record">.record</h2>
+    <p><code>.record [start | stop | status] [--output location] [--format format]</code></p>
+    <p>Record messages sent in the channel and then save them somewhere safe.</p>
+    <ul>
+        <li><b>start / stop / status</b><br>
+            "start" will start the recording and "end" will end it.<br>
+            "status" will check whether or not TARS is currently recording.
+        </li>
+        <li><b>--output, -o</b><br>
+            Where to put the output. Must be one of "topia", "here" or "both". Defaults to topia. If "here", topia will dump the output as a paste link in the current channel. If "topia", TARS will append the output to the Wikidot page specified in the <a href="http://scp-sandbox-3.wikidot.com/collab:tars">configuration document</a>. If "both", TARS will do both.<br>
+            You can specify this argument either at the start or the end of recording, but the option you pick at the end will take priority.
+        </li>
+        <li><b>--format, -f</b><br>
+            How to format the output. Must be one of "json", "txt", or "ftml" (Foundation Text Markup Language).<br>
+            If <b>output</b> is "here", defaults to "txt". If <b>output</b> is "topia", defaults to "ftml". If <b>output</b> is "both", changing this argument will change the format for both outputs.
+        </li>
     </ul>
     
     <h2 id="dbqcommands">Database Query commands</h2>
