@@ -106,7 +106,7 @@ class gib:
     channels = []
     model = None
     size = 3
-    ATTEMPT_LIMIT = 300
+    ATTEMPT_LIMIT = 30
     nocache = False
     @classmethod
     def command(cls, irc_c, msg, cmd):
@@ -227,23 +227,29 @@ class gib:
 
     @classmethod
     def get_gib_sentence(cls, attempts=0):
+        print("Getting a gib sentence")
         # try again with a smaller state size
         # this should only happen with small data sets so I'm not
         #   too concerned about performance
         messages = []
         for channel in cls.channels:
+            print("Iterating channels")
             for user in cls.users:
+                print("Iterating users")
                 messages = DB.get_messages(channel, user)
-                if len(messages) == 0 and len(cls.users) <= 1:
-                    raise AttributeError
+        print("messages found: {}".format(len(messages)))
+        if len(messages) == 0:
+            raise AttributeError
         for decr in range(0, cls.size):
+            print("Making model from messages, size {}".format(cls.size-decr))
             cls.model = cls.make_model(messages, decrement=decr)
+            print("Making sentence")
             sentence = cls.model.make_short_sentence(400, tries=200, force_result=False)
-            print("SIZE IS {}".format(cls.size-decr))
             if sentence is not None:
                 break
+            print("Sentence is None")
         if not cls.nocache and sentence in DB.get_gibs():
-            print("{} attempts remaining".format(cls.ATTEMPT_LIMIT-attempts))
+            print("Sentence already sent, {} attempts remaining".format(cls.ATTEMPT_LIMIT-attempts))
             try:
                 if attempts < cls.ATTEMPT_LIMIT:
                     sentence = cls.get_gib_sentence(attempts+1)

@@ -4,15 +4,12 @@ Database Query commands for checking the database.
 """
 
 from pprint import pprint
+from datetime import datetime
 from helpers.error import CommandError
 from helpers.parse import nickColor
 from helpers.database import DB
 from helpers.defer import defer
-
-class alias:
-    @classmethod
-    def command(cls, irc_c, msg, cmd):
-        pass
+from helpers.api import Topia
 
 class query:
     @classmethod
@@ -91,7 +88,6 @@ class query:
         elif cmd.args['root'][0].startswith('sql'):
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
-                return
             try:
                 DB.print_selection(" ".join(cmd.args['root'][1:]))
                 msg.reply("Printing that selection to console")
@@ -100,3 +96,94 @@ class query:
                 raise
         else:
             raise CommandError("Unknown argument")
+
+class record:
+    settings = []
+    # settings is a list of dicts of keys:
+        # channel: name of channel
+        # recording: are we currently recording in this channel?
+        # location: output location? default None (topia, here, both)
+        # format: output format? default None (json, txt, ftml)
+        # start_id: the ID of the 1st message in the recording
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        """Record and broadcast messages"""
+        if not defer.controller(cmd):
+            raise CommandError("You're not authorised to do that")
+        cmd.expandargs(["output o",
+                        "format f"])
+        # get the action - start, stop or status
+        if len(cmd.args['root']) == 0:
+            raise CommandError("Usage: .record [start|stop|status] "
+                               "[--output location] [--format format]")
+        if len(cmd.args['root']) > 1:
+            raise CommandError("Only one action can be taken at a time.")
+        action = cmd.args['root'][0]
+        if action == 'status':
+            if msg.channel in cls.recording_channels():
+                msg.reply("Currently recording in this channel. "
+                          "Use `.record stop` to stop the recording.")
+            else:
+                msg.reply("Not currently recording in this channel.")
+            return
+        elif action == 'start':
+            if msg.channel in cls.recording_channels():
+                raise CommandError("Already recording in {}"
+                                   .format(msg.channel))
+            else:
+                msg.reply("Starting recording messages in {}"
+                          .format(msg.channel))
+        elif action == 'stop':
+            if msg.channel not in cls.recording_channels():
+                raise CommandError("Not recording in {}"
+                                   .format(msg.channel))
+            else:
+                msg.reply("Stopping recording in {}"
+                          .format(msg.channel))
+        else:
+            raise CommandError("Action must be one of start, stop, status")
+        # get arguments and save to vars
+        output_location = None
+        if cmd.hasarg('output'):
+            if cmd.getarg('output') not in ['topia', 'here', 'both']:
+                raise CommandError("Output location must be topia, here or both")
+            output_location = cmd.getarg('output')
+        output_format = None
+        if cmd.hasarg('format'):
+            if cmd.getarg('format') not in ['json', 'txt', 'ftml']:
+                raise CommandError("Format type must be json, txt or ftml")
+            output_format = cmd.getarg('format')
+
+        # after everything else, set this channel as recording or not
+        if action == 'start':
+            # get the most recent message id in this channel
+            start_id = DB.get_most_recent_message(msg.channel)
+            # add this channel to the settings list
+            cls.settings.append({'channel': msg.channel,
+                                 'recording': True,
+                                 'location': output_location,
+                                 'format': output_format,
+                                 'start_id': start_id})
+        if action == 'stop':
+            sett = [s for s in settings if s['channel'] == msg.channel][0]
+            end_id = DB.get_most_recent_message(msg.channel)
+            messages = DB.get_messages_between(msg.channel, s['start_id'], end_id)
+            msg.reply("Uploading {} messages to {}..."
+                      .format(len(messages), s['location']))
+            if s['location'] in ['topia', None]:
+                # get page content
+                page = Topia.get_page({'page':"tars:recording-output"})
+                content = page['content']
+                content += "\n\n====\n\n"
+                content += "+ Recording on {} from {}".format(
+                    datetime.today().strftime('%Y-%m-%d'),
+                    msg.channel if not hide else "[REDACTED]")
+                content += "\n\n"
+                # then format for wikidot
+                # TODO nickColor as html codes
+                # copy log beautifier
+            # upload either to here or to wikidot
+
+    @classmethod
+    def recording_channels(cls):
+        return [s['channel'] for s in settings if s['recording']]

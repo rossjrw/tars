@@ -408,7 +408,7 @@
     </ul>
     
     <h2 id="record">.record</h2>
-    <p><code>.record [start | stop | status] [--output location] [--format format]</code></p>
+    <p><code>.record [start | stop | status] [--output location] [--format format] [--restrict-channel-name]</code></p>
     <p>Record messages sent in the channel and then save them somewhere safe.</p>
     <ul>
         <li><b>start / stop / status</b><br>
@@ -421,7 +421,11 @@
         </li>
         <li><b>--format, -f</b><br>
             How to format the output. Must be one of "json", "txt", or "ftml" (Foundation Text Markup Language).<br>
+            Use "txt" if you just need something quick and easy. Use "ftml" if you want to display the output on Wikidot.<br>
             If <b>output</b> is "here", defaults to "txt". If <b>output</b> is "topia", defaults to "ftml". If <b>output</b> is "both", changing this argument will change the format for both outputs.
+        </li>
+        <li><b>--restrict-channel-name, --restrict, -r</b><br>
+            The output will usually contain the channel name. Pass this argument to block it.
         </li>
     </ul>
     

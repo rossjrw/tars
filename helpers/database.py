@@ -366,6 +366,29 @@ class SqliteDriver:
         messages = [m['message'] for m in result]
         return messages
 
+    def get_most_recent_message(self, channel):
+        """Get the ID of the most recent message in a channel."""
+        assert channel.startswith('#')
+        c = self.conn.cursor()
+        c.execute('''
+            SELECT MAX(id) FROM messages
+            WHERE channel_id=(SELECT id FROM channels
+                              WHERE channel_name=?)
+                  ''', (start, end, channel))
+        return int(c.fetchone()['id'])
+
+    def get_messages_between(self, channel, start, end):
+        """Get all messages between 2 ids in a channel, inclusive."""
+        assert channel.startswith('#')
+        c = self.conn.cursor()
+        c.execute('''
+            SELECT message FROM messages
+            WHERE id BETWEEN ? AND ?
+                  AND channel_id=(SELECT id FROM channels
+                                  WHERE channel_name=?)
+                  ''', (start, end, channel))
+        return [row['message'] for row in c.fetchall()]
+
     def add_gib(self, gib):
         """Add a gib"""
         c = self.conn.cursor()

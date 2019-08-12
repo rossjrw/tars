@@ -61,6 +61,16 @@ class WikidotAPI:
         selectors['site'] = self.w
         return self.s.files.get_meta(selectors)
 
+    def get_page(self, selectors):
+        """Equivalent to pages.get_one. Limit 1 page"""
+        selectors['site'] = self.w
+        return self.s.pages.get_one(selectors)
+
+    def save_page(self, selectors):
+        """Equivalent to pages.save_one Limit 1 page"""
+        selectors['site'] = self.w
+        return self.s.pages.save_one(selectors)
+
     def get_page_id(self, pages):
         """Get wikidot ID for a list of pages, or all"""
         if self.w != 'scp-wiki':
@@ -91,6 +101,7 @@ class WikidotAPI:
 
 SCPWiki = WikidotAPI("scp-wiki")
 Sandbox3 = WikidotAPI("scp-sandbox-3")
+Topia = WikidotAPI("topia")
 
 def get_ups(article):
     r = http.request(
