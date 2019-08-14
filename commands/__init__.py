@@ -45,6 +45,7 @@ COMMANDS = {
                 "rounderhouse": {"rounderhouse"},
                 "password": {"password","passcode"},
                 "hug": {"hug","hugtars"},
+                "fiction": {"isthisreal"},
                },
     "converse": {"converse": {"converse"},
                 },
