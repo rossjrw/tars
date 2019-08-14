@@ -41,3 +41,8 @@ class password:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         msg.reply("look harder fuckwit")
+
+class fiction:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        msg.reply("https://www.youtube.com/watch?v=ioGoPOAxkCg")
