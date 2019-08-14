@@ -410,13 +410,14 @@
     <h2 id="record">.record</h2>
     <p><code>.record [start | stop | status] [--output location] [--format format] [--restrict-channel-name]</code></p>
     <p>Record messages sent in the channel and then save them somewhere safe.</p>
+    <p>If TARS goes offline or is reloaded while recording, the recording will end prematurely. Messages can be manually recovered, except for any missed while offline. You should contact the bot owner with the times of your planned recording to minimise the chances of this happening.</p>
     <ul>
         <li><b>start / stop / status</b><br>
             "start" will start the recording and "end" will end it.<br>
             "status" will check whether or not TARS is currently recording.
         </li>
         <li><b>--output, -o</b><br>
-            Where to put the output. Must be one of "topia", "here" or "both". Defaults to topia. If "here", topia will dump the output as a paste link in the current channel. If "topia", TARS will append the output to the Wikidot page specified in the <a href="http://scp-sandbox-3.wikidot.com/collab:tars">configuration document</a>. If "both", TARS will do both.<br>
+            Where to put the output. Must be one of "topia", "here" or "both". Defaults to topia. If "here", TARS will dump the output as a paste link in the current channel. If "topia", TARS will append the output to the Wikidot page specified in the <a href="http://scp-sandbox-3.wikidot.com/collab:tars">configuration document</a>. If "both", TARS will do both.<br>
             You can specify this argument either at the start or the end of recording, but the option you pick at the end will take priority.
         </li>
         <li><b>--format, -f</b><br>
@@ -424,7 +425,7 @@
             Use "txt" if you just need something quick and easy. Use "ftml" if you want to display the output on Wikidot.<br>
             If <b>output</b> is "here", defaults to "txt". If <b>output</b> is "topia", defaults to "ftml". If <b>output</b> is "both", changing this argument will change the format for both outputs.
         </li>
-        <li><b>--restrict-channel-name, --restrict, -r</b><br>
+        <li><b>--restrict-channel-name</b><br>
             The output will usually contain the channel name. Pass this argument to block it.
         </li>
     </ul>
@@ -436,7 +437,6 @@
         <li><b>..dbq users:</b> List all users to console.</li>
         <li><b>..dbq table[s] [table]:</b> Prints the specified table to the console (but does not confirm in IRC whether or not said table actually exists), or lists all tables if none is specified.</li>
         <li><b>..dbq id [channel|user|article]:</b> Get something's ID. If nothing is specified, gets your own ID.</li>
-        <li><b>..state [channel]:</b> Get the state of either the given channel or the current one. Useful for other bots. The user issuing the query must also be present in that channel.</li>
     </ul>
 
     <h1 id="gimmickcommands">Gimmicks and Aliases</h1>
@@ -446,6 +446,7 @@
         <li class="jarvis"><b>.random, .ran, .r:</b> Same as <a href="#search"><b><code>.search</code></b></a> except with <b>--random</b> enabled.</li>
         <li><b>.hugtars, .hug:</b> Hugs!</li>
         <li><b>.reptile, .rep:</b> rawr xD</li>
+        <li><b>.passcode:</b> Hints for newbies for finding the passcode.</li>
         <li><b>.ff:</b> Returns a meaningful and inspirational quote.</li>
         <li><b>.checkjarvis:</b> Internally marks Secretary_Helen as active or inactive depending on whether or not jarvis is present. TARS will not respond to this command. Does not defer.</li>
     </ul>

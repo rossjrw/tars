@@ -146,6 +146,8 @@ class gib:
                 cls.size = int(cmd.getarg('size')[0])
             except ValueError:
                 raise CommandError("Sizes must be numbers")
+        else:
+            cls.size = 3
         if cmd.hasarg('roulette'):
             if len(cmd.getarg('roulette')) == 0:
                 raise CommandError("When using roulette mode, you must "

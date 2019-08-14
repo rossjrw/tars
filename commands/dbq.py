@@ -11,6 +11,8 @@ from helpers.database import DB
 from helpers.defer import defer
 from helpers.api import Topia
 
+IS_RECORDING = False
+
 class query:
     @classmethod
     def command(cls, irc_c, msg, cmd):
@@ -125,8 +127,14 @@ class record:
                           "Use `.record stop` to stop the recording.")
             else:
                 msg.reply("Not currently recording in this channel.")
+            if defer.controller(cmd) and msg.channel is None:
+                # if a controller asks in pm, show all channels
+                msg.reply("Currently recording in: {}".format(", ".join(
+                    [s['channel'] for s in settings if s['recording']])))
             return
         elif action == 'start':
+            if msg.channel is None:
+                raise CommandError("You can't record PMs.")
             if msg.channel in cls.recording_channels():
                 raise CommandError("Already recording in {}"
                                    .format(msg.channel))
@@ -167,7 +175,7 @@ class record:
         if action == 'stop':
             sett = [s for s in settings if s['channel'] == msg.channel][0]
             end_id = DB.get_most_recent_message(msg.channel)
-            messages = DB.get_messages_between(msg.channel, s['start_id'], end_id)
+            messages = DB.get_messages_between(msg.channel, sett['start_id'], end_id)
             msg.reply("Uploading {} messages to {}..."
                       .format(len(messages), s['location']))
             if s['location'] in ['topia', None]:
