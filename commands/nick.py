@@ -9,13 +9,11 @@ from helpers.defer import defer
 from helpers.config import CONFIG
 
 class alias:
-    @staticmethod
-    def expandargs(cmd):
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
         cmd.expandargs(["add a",
                         "remove r",
                         "list l"])
-    @classmethod
-    def command(cls, irc_c, msg, cmd):
         if len(cmd.args['root']) > 0:
             nick = cmd.args['root'][0]
         else:
@@ -27,17 +25,19 @@ class alias:
             raise CommandError("I don't know anyone by that name.")
         # 2. Add new aliases
         if cmd.hasarg('add'):
-            if nick != msg.sender and not defer.controller(cmd):
+            if nick.lower() != msg.sender.lower() and not defer.controller(cmd):
                 raise CommandError("You can't add an alias for someone else.")
             aliases = cmd.getarg('add')
             # db has add_alias, but that needs user ID
             for alias in aliases:
+                if alias.lower() == msg.sender.lower():
+                    continue
                 if DB.add_alias(user_id, alias, 1):
                     msg.reply("{} already has the alias {}!".format(nick,alias))
             msg.reply("Added aliases to {}: {}".format(nick, ", ".join(aliases)))
             irc_c.PRIVMSG(CONFIG.home, "{} added alias {}".format(nick,alias))
         if cmd.hasarg('remove'):
-            if nick != msg.sender and not defer.controller(cmd):
+            if nick.lower() != msg.sender.lower() and not defer.controller(cmd):
                 raise CommandError("You can't remove an alias from someone else.")
             aliases = cmd.getarg('remove')
             # db has add_alias, but that needs user ID

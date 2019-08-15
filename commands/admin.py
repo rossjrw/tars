@@ -10,6 +10,8 @@ from helpers.api import SCPWiki
 from helpers.database import DB
 import git
 from helpers.defer import defer
+from commands.analytic import gib
+import re
 
 class kill:
     """Kills the bot"""
@@ -93,6 +95,7 @@ class say:
     """Make TARS say something"""
     @classmethod
     def command(cls, irc_c, msg, cmd):
+        cmd.expandargs(["obfuscate o"])
         if not defer.controller(cmd):
             raise CommandError("I'm afriad I can't let you do that.")
             return
@@ -104,7 +107,14 @@ class say:
             # This is an IRC command
             say.issue_raw(irc_c, msg, cmd)
         else:
-            irc_c.PRIVMSG(cmd.args['root'][0], " ".join(cmd.args['root'][1:]))
+            message = " ".join(cmd.args['root'][1:])
+            if cmd.hasarg('obfuscate') and msg.channel is not None:
+
+                members = DB.get_aliases(None)
+                members = re.compile(r"\b" + r"\b|\b".join(members) + "\b",
+                                     flags=re.IGNORECASE)
+                message = members.sub(gib.obfuscate, message)
+            irc_c.PRIVMSG(cmd.args['root'][0], message)
             if not cmd.args['root'][0] == msg.channel:
                 msg.reply("Saying that to {}".format(cmd.args['root'][0]))
 
@@ -117,6 +127,7 @@ class say:
             cmd.args['root'].pop(0)
         msg.reply("Issuing that...")
         irc_c.RAW(" ".join(cmd.args['root'][1:]))
+
 
 class config:
     """Provide a link to the config page"""

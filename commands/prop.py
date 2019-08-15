@@ -8,6 +8,7 @@ from helpers.error import CommandError
 from pprint import pprint
 from helpers.parse import nickColor
 from helpers.database import DB
+from helpers.defer import defer
 
 def prop_print(text):
     print("[{}] {}".format(nickColor("Propagation"), text))
@@ -29,18 +30,19 @@ class propagate:
         elif cmd.hasarg('tales'):
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
-                return
             msg.reply("Fetching all tales... this will take a few minutes.")
             tales = SCPWiki.select({'tags_all':['tale']})
             pprint(tales)
             propagate.get_wiki_data_for(irc_c, tales, reply=msg.reply)
-        elif len(cmd.args['root']) > 0:
-            propagate.get_wiki_data_for(irc_c, cmd.args['root'], reply = msg.reply)
-        elif len(cmd.args) == 1:
+            return
+        elif cmd.hasarg('all'):
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
-                return
             propagate.get_wiki_data(irc_c, reply = msg.reply)
+            return
+        elif len(cmd.args['root']) > 0:
+            propagate.get_wiki_data_for(irc_c, cmd.args['root'], reply = msg.reply)
+            return
         else:
             raise CommandError("Bad command")
 
@@ -53,6 +55,7 @@ class propagate:
         prop_print("Getting list of pages...")
         pages = SCPWiki.select({'categories': ["_default"]})
         prop_print("Found {} pages".format(len(pages)))
+        propagate.get_wiki_data_for(irc_c, pages, reply=reply)
         reply("Done!")
 
     @classmethod

@@ -222,7 +222,8 @@ class gib:
             sentence = match.group(2).strip()
         # second: modify any words that match the names of channel members
         members = DB.get_channel_members(msg.channel)
-        members = re.compile(r"\b" + r"\b|\b".join(members) + "\b", flags=re.IGNORECASE)
+        members = re.compile(r"\b" + r"\b|\b".join(members) + "\b",
+                             flags=re.IGNORECASE)
         if msg.channel is not None:
             sentence = members.sub(cls.obfuscate, sentence)
         msg.reply(sentence)

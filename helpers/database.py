@@ -417,6 +417,11 @@ class SqliteDriver:
         """Returns all of someone's aliases
         nick can be an alias or an ID"""
         c = self.conn.cursor()
+        if nick is None:
+            c.execute('''
+                SELECT alias FROM user_aliases
+                      ''')
+            return [row['alias'] for row in c.fetchall()]
         if isinstance(nick, int):
             ids = [nick]
         else:
