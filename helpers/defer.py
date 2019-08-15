@@ -21,4 +21,4 @@ class defer:
     @classmethod
     def controller(cls, cmd):
         """Limit this command only to controllers."""
-        return cmd.sender in DB.get_controllers()
+        return cmd.force or cmd.sender in DB.get_controllers()

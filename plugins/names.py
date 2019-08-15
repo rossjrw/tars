@@ -61,3 +61,4 @@ class Names:
         except Exception as e:
             irc_c.RAW("PRIVMSG #tars NAMES error: " + str(e))
             raise
+

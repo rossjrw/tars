@@ -38,6 +38,7 @@ class ParsedCommand():
         self.message = None # varies
         self.quote_error = False # was there a shlex error?
         self.args = None # command arguments as dict w/ subargs as list
+        self.force = False # . or .. ?
         parseprint("Raw input: " + self.raw)
 
         # Was someone pinged?
@@ -76,6 +77,8 @@ class ParsedCommand():
         if match:
             # Remove command from the message
             self.command = match.group('cmd').strip().lower()
+            # save the signal strength
+            self.force = len(match.group('signal')) == 2
             try:
                 self.message = match.group('rest').strip()
             except IndexError:

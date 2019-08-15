@@ -45,14 +45,3 @@ class refactor:
     def refactor_database(irc_c):
         """Query is NOT executed as script"""
         # DB.issue()
-        # DB.issue('''
-        #     ALTER TABLE messages
-        #     ADD COLUMN command BOOLEAN NOT NULL
-        #                        CHECK (command IN (0,1))
-        #                        DEFAULT 0
-        #                        ''')
-        # DB.issue('''
-        #     UPDATE messages
-        #     SET command=1
-        #     WHERE message LIKE '.%'
-        #                        ''')

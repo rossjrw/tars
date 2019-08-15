@@ -216,8 +216,11 @@ class SqliteDriver:
             );
             CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY,
-                channel_id INTEGER NOT NULL
+                channel_id INTEGER
                     REFERENCES channels(id),
+                kind TEXT NOT NULL
+                    CHECK (kind IN ('PRIVMSG','NICK','JOIN','PART'))
+                    DEFAULT 'PRIVMSG',
                 sender TEXT NOT NULL
                     COLLATE NOCASE,
                 command BOOLEAN NOT NULL
@@ -237,8 +240,9 @@ class SqliteDriver:
         # Will also need a messages table for each channel
         self.conn.commit()
 
-    def issue(self, query, callback=None):
-        """For accepting refactoring (commands/refactor.py)"""
+    def issue(self, query, callback=None, **kwargs):
+        """For accepting refactoring (commands/refactor.py)
+        Pass commit=False for no commit"""
         dbprint("Refactoring database")
         c = self.conn.cursor()
         dbprint("Executing...")
@@ -253,7 +257,7 @@ class SqliteDriver:
                 for key in keys:
                     print(result[key])
                     ret += str(result[key]) + " "
-        else:
+        elif kwargs.get('commit', True):
             self.conn.commit()
         if callback is not None:
             callback(ret)
@@ -305,7 +309,7 @@ class SqliteDriver:
             SELECT name FROM sqlite_master WHERE type='table'
                   ''')
         # convert list of tuples to list of strings
-        return c.fetchall()
+        return [row['name'] for row in c.fetchall()]
 
     def print_one_table(self, table):
         """Pretty print a single table"""
@@ -355,6 +359,7 @@ class SqliteDriver:
         q = MySQLQuery.from_(messages).select(messages.message)
         q = q.where(messages.channel_id == channel)
         q = q.where(messages.command == 0)
+        q = q.where(messages.kind == 'PRIVMSG')
         q = q.where(messages.ignore == 0)
         if user is not None:
             q = q.where(messages.sender == user)
@@ -374,6 +379,7 @@ class SqliteDriver:
             SELECT MAX(id) FROM messages
             WHERE channel_id=(SELECT id FROM channels
                               WHERE channel_name=?)
+            AND kind='PRIVMSG'
                   ''', (start, end, channel))
         return int(c.fetchone()['id'])
 
@@ -384,8 +390,9 @@ class SqliteDriver:
         c.execute('''
             SELECT message FROM messages
             WHERE id BETWEEN ? AND ?
-                  AND channel_id=(SELECT id FROM channels
-                                  WHERE channel_name=?)
+            AND channel_id=(SELECT id FROM channels
+                            WHERE channel_name=?)
+            AND kind='PRIVMSG'
                   ''', (start, end, channel))
         return [row['message'] for row in c.fetchall()]
 
@@ -847,21 +854,34 @@ class SqliteDriver:
 
     def log_message(self, msg):
         """Logs a message in the db."""
+        # Takes PRIVMSG, JOIN, PART, NICK
         chname = "private" if msg.channel is None else msg.raw_channel
-        msgiscmd = msg.message.startswith((".","!","?","^"))
+        if msg.kind == 'NICK': chname = None
+        assert msg.kind in ['PRIVMSG','JOIN','PART','NICK'], msg.kind
+        if msg.kind == 'PRIVMSG':
+            msgiscmd = msg.message.startswith((".","!","?","^"))
+        else:
+            msgiscmd = False
         c = self.conn.cursor()
         # log this message into the messages table
-        c.execute('''
-            SELECT id FROM channels
-            WHERE channel_name=?
-                  ''', (chname, ))
-        channel = norm(c.fetchone())
-        assert isinstance(channel, int), "chname {} id {}".format(chname,channel)
+        if chname is not None:
+            c.execute('''
+                SELECT id FROM channels
+                WHERE channel_name=?
+                      ''', (chname, ))
+            channel = norm(c.fetchone())
+            assert isinstance(channel, int), "chname {} id {}".format(chname,channel)
         c.execute('''
             INSERT INTO messages
-                (channel_id, sender, timestamp, message, command)
-            VALUES ( ? , ? , ? , ? , ? )
-                  ''', (channel, msg.nick, round(msg.timestamp), msg.message,
+                (channel_id, kind, sender, timestamp, message, command)
+            VALUES ( ? , ? , ? , ? , ? , ? )
+                  ''', (channel if msg.kind != 'NICK' else None,
+                        msg.kind,
+                        msg.nick,
+                        round(msg.timestamp),
+                        (msg.message if msg.kind == 'PRIVMSG'
+                         else msg.args if msg.kind == 'NICK'
+                         else ""),
                         msgiscmd))
         # mark current nick as most recent
         c.execute('''
