@@ -8,6 +8,7 @@ from pyaib.plugins import observe, plugin_class
 from helpers import parse
 from pprint import pprint
 from helpers.database import DB
+from helpers.config import CONFIG
 
 @plugin_class('log')
 class Log:
@@ -54,3 +55,17 @@ class Log:
             parse.nickColor(msg['channel']),
             msg['message']
         ))
+        if "IDENTIFY" in msg['message']: return
+        msg = {'channel': msg['channel']
+                          if msg['channel'].startswith('#')
+                          else None,
+               'sender': CONFIG.nick,
+               'kind': "PRIVMSG",
+               'message': msg['message'],
+               'nick': CONFIG.nick,
+               'timestamp': int(time.time())}
+        try:
+            DB.log_message(msg)
+        except:
+            irc_c.RAW("PRIVMSG #tars A logging error has occurred.")
+            raise

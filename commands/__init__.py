@@ -50,6 +50,7 @@ COMMANDS = {
     "converse": {"converse": {"converse"},
                 },
     "dbq": {"query": {"query","dbq"},
+            "record": {"record"},
            },
     "prop": {"propagate": {"propagate","prop"},
             },

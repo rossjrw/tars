@@ -109,9 +109,8 @@ class say:
         else:
             message = " ".join(cmd.args['root'][1:])
             if cmd.hasarg('obfuscate') and msg.channel is not None:
-
                 members = DB.get_aliases(None)
-                members = re.compile(r"\b" + r"\b|\b".join(members) + "\b",
+                members = re.compile(r"\b" + r"\b|\b".join(members) + r"\b",
                                      flags=re.IGNORECASE)
                 message = members.sub(gib.obfuscate, message)
             irc_c.PRIVMSG(cmd.args['root'][0], message)

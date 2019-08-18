@@ -175,12 +175,20 @@ def command(message):
     return ParsedCommand(message)
 
 # Parse a nick to its IRCCloud colour
-def nickColor(string):
+def nickColor(string, html=False):
     length = 27
-    colours = [180,220,216,209,208,46,
-               11,143,113,77,108,71,79,
-               37,80,14,39,117,75,69,146,
-               205,170,213,177,13,217]
+    colours = [180,220,216,209,208,
+               46 ,11 ,143,113,77 ,
+               108,71 ,79 ,37 ,80 ,
+               14 ,39 ,117,75 ,69 ,
+               146,205,170,213,177,
+               13 ,217]
+    html_colours = ['#b22222','#d2691e','#ff9166','#fa8072','#ff8c00',
+                    '#228b22','#808000','#b7b05d','#8ebd2e','#2ebd2e',
+                    '#82b482','#37a467','#57c8a1','#1da199','#579193',
+                    '#008b8b','#00bfff','#4682b4','#1e90ff','#4169e1',
+                    '#6a5acd','#7b68ee','#9400d3','#8b008b','#ba55d3',
+                    '#ff00ff','#ff1493']
 
     def t(x):
         x &= 0xFFFFFFFF
@@ -198,7 +206,10 @@ def nickColor(string):
         char_code = bytes[i] + 256*bytes[i+1]
         hash = char_code + t(int(hash) << 6) + t(int(hash) << 16) - hash
     index = int(hash % length if hash >= 0 else abs(hash % length - length))
-    return "\x1b[38;5;{}m{}\x1b[0m".format(colours[index], string)
+    if html:
+        return html_colours[index]
+    else:
+        return "\x1b[38;5;{}m{}\x1b[0m".format(colours[index], string)
 
 def output(output):
     """Takes an output message from plugins/log.py"""

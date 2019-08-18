@@ -19,6 +19,7 @@ from pypika.terms import ValueWrapper
 from pypika.functions import Max
 from pprint import pprint
 from helpers.config import CONFIG
+from pyaib.irc import Message
 try:
     import re2 as re
 except ImportError:
@@ -80,7 +81,7 @@ class SqliteDriver:
         self.conn.row_factory = sqlite3.Row
         self.conn.create_function("REGEXP", 2, _regexp)
         self.conn.create_function("GLOB", 2, _glob)
-        self.set_controller(CONFIG['IRC']['owner'])
+        self.set_controller(CONFIG.owner)
 
     def commit(self):
         """Just commits the database.
@@ -380,21 +381,21 @@ class SqliteDriver:
             WHERE channel_id=(SELECT id FROM channels
                               WHERE channel_name=?)
             AND kind='PRIVMSG'
-                  ''', (start, end, channel))
-        return int(c.fetchone()['id'])
+                  ''', (channel,))
+        return int(c.fetchone()['MAX(id)'])
 
     def get_messages_between(self, channel, start, end):
         """Get all messages between 2 ids in a channel, inclusive."""
         assert channel.startswith('#')
         c = self.conn.cursor()
         c.execute('''
-            SELECT message FROM messages
+            SELECT * FROM messages
             WHERE id BETWEEN ? AND ?
             AND channel_id=(SELECT id FROM channels
                             WHERE channel_name=?)
-            AND kind='PRIVMSG'
                   ''', (start, end, channel))
-        return [row['message'] for row in c.fetchall()]
+        rows = c.fetchall()
+        return rows
 
     def add_gib(self, gib):
         """Add a gib"""
@@ -858,13 +859,22 @@ class SqliteDriver:
                 pass
 
     def log_message(self, msg):
-        """Logs a message in the db."""
+        """Logs a message in the db.
+        inp should be either a message object or equivalent dict"""
+        if isinstance(msg, Message):
+            msg = {'channel': msg.channel,
+                   'sender': msg.sender,
+                   'kind': msg.kind,
+                   'message': msg.message,
+                   'nick': msg.nick,
+                   'args': msg.args,
+                   'timestamp': msg.timestamp}
         # Takes PRIVMSG, JOIN, PART, NICK
-        chname = "private" if msg.channel is None else msg.raw_channel
-        if msg.kind == 'NICK': chname = None
-        assert msg.kind in ['PRIVMSG','JOIN','PART','NICK'], msg.kind
-        if msg.kind == 'PRIVMSG':
-            msgiscmd = msg.message.startswith((".","!","?","^"))
+        chname = "private" if msg['channel'] is None else msg['channel']
+        if msg['kind'] == 'NICK': chname = None
+        assert msg['kind'] in ['PRIVMSG','JOIN','PART','NICK'], msg['kind']
+        if msg['kind'] == 'PRIVMSG':
+            msgiscmd = msg['message'].startswith((".","!","?","^"))
         else:
             msgiscmd = False
         c = self.conn.cursor()
@@ -880,24 +890,24 @@ class SqliteDriver:
             INSERT INTO messages
                 (channel_id, kind, sender, timestamp, message, command)
             VALUES ( ? , ? , ? , ? , ? , ? )
-                  ''', (channel if msg.kind != 'NICK' else None,
-                        msg.kind,
-                        msg.nick,
-                        round(msg.timestamp),
-                        (msg.message if msg.kind == 'PRIVMSG'
-                         else msg.args if msg.kind == 'NICK'
+                  ''', (channel if msg['kind'] != 'NICK' else None,
+                        msg['kind'],
+                        msg['nick'],
+                        round(msg['timestamp']),
+                        (msg['message'] if msg['kind'] == 'PRIVMSG'
+                         else msg['args'] if msg['kind'] == 'NICK'
                          else ""),
                         msgiscmd))
         # mark current nick as most recent
         c.execute('''
             SELECT user_id FROM user_aliases
             WHERE alias=?
-                  ''', (msg.nick, ))
+                  ''', (msg['nick'], ))
         user = c.fetchall()
         if len(user) == 0:
-            user = self.add_user(msg.nick)
+            user = self.add_user(msg['nick'])
         elif len(user) > 1:
-            raise ValueError("User {} exists more than once".format(msg.nick))
+            raise ValueError("User {} exists more than once".format(msg['nick']))
         else:
             user = user[0]['user_id']
         assert isinstance(user, int)
@@ -910,7 +920,7 @@ class SqliteDriver:
             UPDATE user_aliases
             SET most_recent=1
             WHERE type='irc' AND user_id=? AND alias=?
-                  ''', (user, msg.nick))
+                  ''', (user, msg['nick']))
         self.conn.commit()
 
     def add_article(self, article, commit=True):

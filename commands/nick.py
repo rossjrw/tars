@@ -22,7 +22,8 @@ class alias:
         # get the user ID
         user_id = DB.get_user_id(nick)
         if user_id is None:
-            raise CommandError("I don't know anyone by that name.")
+            msg.reply("I don't know anyone called '{}'.".format(nick))
+            return
         # 2. Add new aliases
         if cmd.hasarg('add'):
             if nick.lower() != msg.sender.lower() and not defer.controller(cmd):

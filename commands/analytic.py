@@ -224,6 +224,7 @@ class gib:
         members = DB.get_channel_members(msg.channel)
         members = re.compile(r"\b" + r"\b|\b".join(members) + "\b",
                              flags=re.IGNORECASE)
+        print(members.search(sentence))
         if msg.channel is not None:
             sentence = members.sub(cls.obfuscate, sentence)
         msg.reply(sentence)

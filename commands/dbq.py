@@ -3,6 +3,7 @@
 Database Query commands for checking the database.
 """
 
+import string
 from pprint import pprint
 from datetime import datetime
 from helpers.error import CommandError
@@ -107,6 +108,7 @@ class record:
         # location: output location? default None (topia, here, both)
         # format: output format? default None (json, txt, ftml)
         # start_id: the ID of the 1st message in the recording
+        # hide: hide channel name at output?
     @classmethod
     def command(cls, irc_c, msg, cmd):
         """Record and broadcast messages"""
@@ -130,7 +132,7 @@ class record:
             if defer.controller(cmd) and msg.channel is None:
                 # if a controller asks in pm, show all channels
                 msg.reply("Currently recording in: {}".format(", ".join(
-                    [s['channel'] for s in settings if s['recording']])))
+                    [s['channel'] for s in cls.settings if s['recording']])))
             return
         elif action == 'start':
             if msg.channel is None:
@@ -171,27 +173,57 @@ class record:
                                  'recording': True,
                                  'location': output_location,
                                  'format': output_format,
-                                 'start_id': start_id})
+                                 'start_id': start_id,
+                                 'hide': cmd.hasarg('restrict-channel-name')})
         if action == 'stop':
-            sett = [s for s in settings if s['channel'] == msg.channel][0]
+            sett = [s for s in cls.settings if s['channel'] == msg.channel][0]
             end_id = DB.get_most_recent_message(msg.channel)
             messages = DB.get_messages_between(msg.channel, sett['start_id'], end_id)
             msg.reply("Uploading {} messages to {}..."
-                      .format(len(messages), s['location']))
-            if s['location'] in ['topia', None]:
+                      .format(len(messages), sett['location']))
+            if sett['location'] in ['topia', None]:
                 # get page content
                 page = Topia.get_page({'page':"tars:recording-output"})
                 content = page['content']
-                content += "\n\n====\n\n"
+                content += "\r\n\r\n====\r\n\r\n"
                 content += "+ Recording on {} from {}".format(
                     datetime.today().strftime('%Y-%m-%d'),
-                    msg.channel if not hide else "[REDACTED]")
-                content += "\n\n"
+                    sett['channel'] if not sett['hide'] else "[REDACTED]")
+                content += "\r\n\r\n"
+                for message in messages:
+                    if message['kind'] == 'PRIVMSG':
+                        content += "||~ {} ||~ ##{}|{}## || {} ||".format(
+                            (datetime.fromtimestamp(message['timestamp'])
+                                     .strftime("%H:%M:%S")),
+                            nickColor(message['sender'], True),
+                            message['sender'],
+                            message['message'])
+                    if message['kind'] == 'NICK':
+                        content += "||~ {} ||||~ {} → {} ||".format(
+                            (datetime.fromtimestamp(message['timestamp'])
+                                     .strftime("%H:%M:%S")),
+                            message['sender'],
+                            message['message'])
+                    if message['kind'] == 'NICK':
+                        content += "||~ {} ||||~ {} {} ||".format(
+                            (datetime.fromtimestamp(message['timestamp'])
+                                     .strftime("%H:%M:%S")),
+                            message['sender'],
+                            "joined" if message['kind'] is 'JOIN' else "left")
+                    content += "\r\n"
+                content += "\r\n"
+                content = "".join(filter(lambda x: x in string.printable, content))
                 # then format for wikidot
                 # TODO nickColor as html codes
                 # copy log beautifier
+                print(content)
+                Topia.save_page({'page':"tars:recording-output",
+                                 'content': content,
+                                 'revision_comment': "New recording",
+                                 'notify_watchers': "true"})
+            cls.settings.remove(sett)
             # upload either to here or to wikidot
 
     @classmethod
     def recording_channels(cls):
-        return [s['channel'] for s in settings if s['recording']]
+        return [s['channel'] for s in cls.settings if s['recording']]
