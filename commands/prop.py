@@ -21,13 +21,13 @@ class propagate:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         # arg 1 should be a url name
-        if cmd.hasarg('sample'):
+        if 'sample' in cmd:
             samples = ['scp-173','scp-1111','scp-3939','cone','scp-series',
                        'listpages-magic-and-you','scp-4205','omega-k',
                        'component:ar-theme','fragment:scp-3939-64']
             msg.reply("Adding sample data...")
             propagate.get_wiki_data_for(irc_c, samples, reply=msg.reply)
-        elif cmd.hasarg('tales'):
+        elif 'tales' in cmd:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
             msg.reply("Fetching all tales... this will take a few minutes.")
@@ -35,7 +35,7 @@ class propagate:
             pprint(tales)
             propagate.get_wiki_data_for(irc_c, tales, reply=msg.reply)
             return
-        elif cmd.hasarg('all'):
+        elif 'all' in cmd:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
             propagate.get_wiki_data(irc_c, reply = msg.reply)

@@ -22,17 +22,17 @@ class refactor:
             return
         if cls.has_refactored:
             raise CommandError("Already refactored once this reload.")
-        if cmd.hasarg('callback'):
-            print(cmd.getarg('callback'))
-            if cmd.getarg('callback')[0] == "msg.reply":
+        if 'callback' in cmd:
+            print(cmd['callback'])
+            if cmd['callback'][0] == "msg.reply":
                 callback = msg.reply
             else:
                 raise CommandError("Unknown callback")
         else:
             callback = None
         try:
-            if cmd.hasarg('sql'):
-                DB.issue(" ".join(cmd.getarg('sql')), callback=callback)
+            if 'sql' in cmd:
+                DB.issue(" ".join(cmd['sql']), callback=callback)
             else:
                 refactor.refactor_database(irc_c)
                 cls.has_refactored = True

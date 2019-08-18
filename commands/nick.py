@@ -25,10 +25,10 @@ class alias:
             msg.reply("I don't know anyone called '{}'.".format(nick))
             return
         # 2. Add new aliases
-        if cmd.hasarg('add'):
+        if 'add' in cmd:
             if nick.lower() != msg.sender.lower() and not defer.controller(cmd):
                 raise CommandError("You can't add an alias for someone else.")
-            aliases = cmd.getarg('add')
+            aliases = cmd['add']
             # db has add_alias, but that needs user ID
             for alias in aliases:
                 if alias.lower() == msg.sender.lower():
@@ -37,22 +37,22 @@ class alias:
                     msg.reply("{} already has the alias {}!".format(nick,alias))
             msg.reply("Added aliases to {}: {}".format(nick, ", ".join(aliases)))
             irc_c.PRIVMSG(CONFIG.home, "{} added alias {}".format(nick,alias))
-        if cmd.hasarg('remove'):
+        if 'remove' in cmd:
             if nick.lower() != msg.sender.lower() and not defer.controller(cmd):
                 raise CommandError("You can't remove an alias from someone else.")
-            aliases = cmd.getarg('remove')
+            aliases = cmd['remove']
             # db has add_alias, but that needs user ID
             for alias in aliases:
                 if DB.remove_alias(user_id, alias, 1):
                     msg.reply("{} didn't have the alias {}!".format(nick,alias))
             msg.reply("Removed aliases from {}: {}".format(nick, ", ".join(aliases)))
-        if cmd.hasarg('list'):
+        if 'list' in cmd:
             # get all aliases associated with the user
             aliases = DB.get_aliases(user_id)
             msg.reply("I've seen {} go by the names: {}"
                       .format(nick if nick != msg.sender else "you",
                               ", ".join(aliases)))
-        if not any([cmd.hasarg('add'),cmd.hasarg('remove'),cmd.hasarg('list')]):
+        if not any(['add' in cmd,'remove' in cmd,'list' in cmd]):
             raise CommandError("Add or remove aliases to a nick with --add "
                                "and --remove. See all nicks with --list")
 

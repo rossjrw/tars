@@ -150,6 +150,14 @@ class ParsedCommand():
         raise AttributeError("Command does not have argument(s):"
                              + ", ".join(args))
 
+    def __contains__(self, arg):
+        """Allows cmd.hasarg via the `in` operator"""
+        return self.hasarg(arg)
+
+    def __getitem__(self, arg):
+        """Allows cmd.getarg via the [] operator"""
+        return self.getarg(arg)
+
     def expandargs(self, args):
         """Expand short args to long ones
         Expects one array of "long s" pairs (or multiples)

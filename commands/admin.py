@@ -44,9 +44,10 @@ class leave:
     """Leaves the channel"""
     @classmethod
     def command(cls, irc_c, msg, cmd):
+        cmd.expandargs(["message m"])
         if(defer.check(cmd, 'jarvis', 'Secretary_Helen')): return
-        if cmd.hasarg('message','m'):
-            leavemsg = " ".join(cmd.getarg('message','m'))
+        if 'message' in cmd:
+            leavemsg = " ".join(cmd['message'])
         else:
             leavemsg = None
         if len(cmd.args['root']) > 0:
@@ -108,7 +109,7 @@ class say:
             say.issue_raw(irc_c, msg, cmd)
         else:
             message = " ".join(cmd.args['root'][1:])
-            if cmd.hasarg('obfuscate') and msg.channel is not None:
+            if 'obfuscate' in cmd and msg.channel is not None:
                 members = DB.get_aliases(None)
                 members = re.compile(r"\b" + r"\b|\b".join(members) + r"\b",
                                      flags=re.IGNORECASE)

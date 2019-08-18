@@ -54,40 +54,40 @@ class search:
         if len(cmd.args) == 1 and len(cmd.args['root']) == 0:
             raise CommandError("Must specify at least one search term")
         # fullname is deprecated for tars
-        if cmd.hasarg('fullname'):
+        if 'fullname' in cmd:
             raise CommandError("TARS does not support fullname search - "
                                "wrap your search in quotemarks instead")
         # Set the return mode of the output
         selection = {
-            'ignorepromoted': cmd.hasarg('ignorepromoted'),
+            'ignorepromoted': 'ignorepromoted' in cmd,
             'order': None,
             'limit': None,
             'offset': 0
         }
         # order, limit, offset
-        if cmd.hasarg('order'):
-            if len(cmd.getarg('order')) != 1:
+        if 'order' in cmd:
+            if len(cmd['order']) != 1:
                 raise CommandError("When using the order argument "
                                    "(--order/-o), exactly one order type must "
                                    "be specified")
-            if cmd.getarg('order')[0] in ['recent','recommend','random','none']:
-                if cmd.getarg('order') == 'none':
+            if cmd['order'][0] in ['recent','recommend','random','none']:
+                if cmd['order'] == 'none':
                     selection['order'] = None
                 else:
-                    selection['order'] = cmd.getarg('order')[0]
+                    selection['order'] = cmd['order'][0]
             else:
                 raise CommandError("Selection return order ('{}') must be "
                                    "one of: recent, recommend, random, "
-                                   "none".format(cmd.getarg('select')[0]))
-        if cmd.hasarg('limit'):
-            if len(cmd.getarg('limit')) != 1:
+                                   "none".format(cmd['select'][0]))
+        if 'limit' in cmd:
+            if len(cmd['limit']) != 1:
                 raise CommandError("When using the limit argument "
                                    "(--limit/-l), exactly one limit must "
                                    "be specified")
-            if isint(cmd.getarg('limit')[0]):
-                if int(cmd.getarg('limit')[0]) > 0:
-                    selection['limit'] = int(cmd.getarg('limit')[0])
-                elif int(cmd.getarg('limit')[0]) == 0:
+            if isint(cmd['limit'][0]):
+                if int(cmd['limit'][0]) > 0:
+                    selection['limit'] = int(cmd['limit'][0])
+                elif int(cmd['limit'][0]) == 0:
                     selection['limit'] = None
                 else:
                     raise CommandError("When using the limit argument "
@@ -96,14 +96,14 @@ class search:
             else:
                 raise CommandError("When using the limit argument "
                                    "(--limit/-l), the limit must be an integer")
-        if cmd.hasarg('offset'):
-            if len(cmd.getarg('offset')) != 1:
+        if 'offset' in cmd:
+            if len(cmd['offset']) != 1:
                 raise CommandError("When using the offset argument "
                                    "(--offset/-f), exactly one offset must "
                                    "be specified")
-            if isint(cmd.getarg('offset')[0]):
-                if int(cmd.getarg('offset')[0]) >= 0:
-                    selection['offset'] = int(cmd.getarg('offset')[0])
+            if isint(cmd['offset'][0]):
+                if int(cmd['offset'][0]) >= 0:
+                    selection['offset'] = int(cmd['offset'][0])
                 else:
                     raise CommandError("When using the offset argument "
                                        "(--offset/-f), the offset must be at "
@@ -111,13 +111,13 @@ class search:
             else:
                 raise CommandError("When using the offset argument "
                                    "(--offset/-f), the offset must be an integer")
-        if cmd.hasarg('random'):
+        if 'random' in cmd:
             selection['order'] = 'random'
             selection['limit'] = 1
-        if cmd.hasarg('recommend'):
+        if 'recommend' in cmd:
             selection['order'] = 'recommend'
             selection['limit'] = 1
-        if cmd.hasarg('newest'):
+        if 'newest' in cmd:
             selection['order'] = 'recent'
             selection['limit'] = 1
         # What are we searching for?
@@ -128,12 +128,12 @@ class search:
             searches.extend([{'term': s, 'type': None} for s in strings])
         # Add any regexes
         regexes = []
-        if cmd.hasarg('regex'):
-            if len(cmd.getarg('regex')) == 0:
+        if 'regex' in cmd:
+            if len(cmd['regex']) == 0:
                 raise CommandError("When using the regular expression filter "
                                    "(--regex/-x), at least one regex must "
                                    "be specified")
-            for regex in cmd.getarg('regex'):
+            for regex in cmd['regex']:
                 try:
                     re.compile(regex)
                 except re.RegexError as e:
@@ -144,11 +144,11 @@ class search:
             searches.extend([{'term': r, 'type': 'regex'} for r in regexes])
         # Set the tags
         tags = {'include': [], 'exclude': []}
-        if cmd.hasarg('tags'):
-            if len(cmd.getarg('tags')) == 0:
+        if 'tags' in cmd:
+            if len(cmd['tags']) == 0:
                 raise CommandError(("When using the tag filter (--tag/-t), at "
                                     "least one tag must be specified"))
-            for tag in cmd.getarg('tags'):
+            for tag in cmd['tags']:
                 if tag[0] == "-":
                     tags['exclude'].append(tag[1:])
                     continue
@@ -159,12 +159,12 @@ class search:
             searches.append({'term': tags, 'type': 'tags'})
         # Set the author
         authors = {'include': [], 'exclude': []}
-        if cmd.hasarg('author'):
-            if len(cmd.getarg('author')) == 0:
+        if 'author' in cmd:
+            if len(cmd['author']) == 0:
                 raise CommandError(("When using the author filter "
                                     "(--author/-a), at least one author must "
                                     "be specified"))
-            for author in cmd.getarg('author'):
+            for author in cmd['author']:
                 if author[0] == "-":
                     authors['exclude'].append(author[1:])
                     continue
@@ -176,12 +176,12 @@ class search:
         # Set the rating
         # Cases to account for: modifiers, range, combination
         ratings = MinMax()
-        if cmd.hasarg('rating'):
-            if len(cmd.getarg('rating')) == 0:
+        if 'rating' in cmd:
+            if len(cmd['rating']) == 0:
                 raise CommandError(("When using the rating filter "
                                     "(--rating/-r), at least one rating must "
                                     "be specified"))
-            for rating in cmd.getarg('rating'):
+            for rating in cmd['rating']:
                 if ".." in rating:
                     rating = rating.split("..")
                     if len(rating) > 2:
@@ -239,12 +239,12 @@ class search:
         # Set created date
         # Cases to handle: absolute, relative, range (which can be both)
         createds = MinMax()
-        if cmd.hasarg('created'):
-            if len(cmd.getarg('created')) == 0:
+        if 'created' in cmd:
+            if len(cmd['created']) == 0:
                 raise CommandError(("When using the date of creation filter "
                                     "(--created/-c), at least one date must "
                                     "be specified"))
-            created = cmd.getarg('created')
+            created = cmd['created']
             # created is a list of date selectors - ranges, abs and rels
             # but ALL dates are ranges!
             created = [DateRange(c) for c in created]
@@ -260,12 +260,12 @@ class search:
             searches.append({'term': createds, 'type': 'date'})
         # Set category
         categories = {'include': [], 'exclude': []}
-        if cmd.hasarg('category'):
-            if len(cmd.getarg('category')) == 0:
+        if 'category' in cmd:
+            if len(cmd['category']) == 0:
                 raise CommandError(("When using the category filter "
                                     "(--category/-y), at least one category "
                                     "must be specified"))
-            for category in cmd.getarg('category'):
+            for category in cmd['category']:
                 if category[0] == "-":
                     categories['exclude'].append(category[1:])
                     continue
@@ -276,15 +276,15 @@ class search:
             searches.append({'term': categories, 'type': 'category'})
         # Set parent page
         parents = None
-        if cmd.hasarg('parent'):
-            if len(cmd.getarg('parent')) != 1:
+        if 'parent' in cmd:
+            if len(cmd['parent']) != 1:
                 raise CommandError(("When using the parent page filter "
                                     "(--parent/-p), exactly one parent URL "
                                     "must be specified"))
-            parents = cmd.getarg('parent')[0]
+            parents = cmd['parent'][0]
             searches.append({'term': parents, 'type': 'parent'})
         # FINAL BIT - summarise commands
-        if cmd.hasarg('verbose'):
+        if 'verbose' in cmd:
             verbose = "Searching for articles "
             if len(strings) > 0:
                 verbose += ("containing \"{}\"; ".format("\", \"".join(strings)))

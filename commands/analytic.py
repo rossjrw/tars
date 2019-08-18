@@ -116,7 +116,7 @@ class gib:
                         "size s",
                         "roulette r",
                         "help h"])
-        if cmd.hasarg('help'):
+        if 'help' in cmd:
             msg.reply("Usage: .gib [--channel #channel] [--user user] "
                       "[--no-cache]")
             return
@@ -128,36 +128,36 @@ class gib:
                 raise CommandError("Try .gib -c {}".format(arg))
             else:
                 raise CommandError("Try .gib -u {}".format(arg))
-        if cmd.hasarg('channel'):
-            if len(cmd.getarg('channel')) == 0:
+        if 'channel' in cmd:
+            if len(cmd['channel']) == 0:
                 raise CommandError("When using the --channel/-c filter, "
                                    "at least one channel must be specified")
-            for channel in cmd.getarg('channel'):
+            for channel in cmd['channel']:
                 if not channel.startswith('#'):
                     raise CommandError("Channel names must start with #.")
-            channels = cmd.getarg('channel')
-        if cmd.hasarg('user'):
-            if len(cmd.getarg('user')) == 0:
+            channels = cmd['channel']
+        if 'user' in cmd:
+            if len(cmd['user']) == 0:
                 raise CommandError("When using the --user/-u filter, "
                                    "at least one user must be specified")
-            users = cmd.getarg('user')
-        if cmd.hasarg('size'):
+            users = cmd['user']
+        if 'size' in cmd:
             try:
-                cls.size = int(cmd.getarg('size')[0])
+                cls.size = int(cmd['size'][0])
             except ValueError:
                 raise CommandError("Sizes must be numbers")
         else:
             cls.size = 3
-        if cmd.hasarg('roulette'):
-            if len(cmd.getarg('roulette')) == 0:
+        if 'roulette' in cmd:
+            if len(cmd['roulette']) == 0:
                 raise CommandError("When using roulette mode, you must "
                                    "specify a roulette type")
-            roulette_type = cmd.getarg('roulette')[0]
+            roulette_type = cmd['roulette'][0]
             if roulette_type not in ['video','image','youtube','yt']:
                 raise CommandError("The roulette type must be either "
                                    "'image' or one of 'video','youtube','yt'")
         # ignore gib cache?
-        if cmd.hasarg('no-cache'):
+        if 'no-cache' in cmd:
             cls.nocache = True
         else:
             cls.nocache = False
@@ -188,7 +188,7 @@ class gib:
             cls.users = users
             if len(cls.users) == 0: cls.users = [None]
         # are we gibbing or rouletting?
-        if cmd.hasarg('roulette'):
+        if 'roulette' in cmd:
             urls = cls.roulette(roulette_type)
             msg.reply("{} {} · ({} link{} found)"
                       .format(emojize(":game_die:"),
