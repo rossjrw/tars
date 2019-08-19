@@ -162,9 +162,9 @@ class gib:
         else:
             cls.nocache = False
         # can't gib the bot (yet!)
-        if CONFIG.nick.lower() in [user.lower() for user in users]:
-            msg.reply("blah blah beep boop bot stuff")
-            return
+        #if CONFIG.nick.lower() in [user.lower() for user in users]:
+        #    msg.reply("blah blah beep boop bot stuff")
+        #    return
         # can only gib a channel both the user and the bot are in
         for channel in channels:
             if channel is msg.channel:
