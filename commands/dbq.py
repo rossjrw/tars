@@ -17,7 +17,7 @@ class query:
         cmd.expandargs(["table tables t",
                         "user users u"])
         # No argument given - show the db structure
-        if len(cmd.args['root']) == 0:
+        if len(cmd.args) == 1:
             msg.reply("https://raw.githubusercontent.com/"
                       "rossjrw/tars/master/database.png")
             return
@@ -43,7 +43,7 @@ class query:
                 msg.reply("Printed a list of users to console. {} total."
                           .format(len(users)))
                 print(" ".join([nickColor(u) for u in users]))
-        elif cmd.args['root'][0] == 'id':
+        if 'id' in cmd:
             # we want to find the id of something
             if len(cmd.args['root']) != 2:
                 search = msg.sender
@@ -64,7 +64,7 @@ class query:
                 else:
                     msg.reply("I don't know anything called '{}'."
                               .format(search))
-        elif cmd.args['root'][0].startswith('alias'):
+        if 'alias' in cmd:
             search = cmd.args['root'][1] if len(cmd.args['root']) > 1 \
                                          else msg.sender
             aliases = DB.get_aliases(search)
@@ -78,7 +78,7 @@ class query:
                 for i,group in enumerate(aliases):
                     msg.reply("\x02{}.\x0F {}"
                               .format(i+1, ", ".join(group)))
-        elif cmd.args['root'][0].startswith('occ'):
+        if 'occ' in cmd:
             if len(cmd.args['root']) < 2:
                 raise CommandError("Specify a channel to get the occupants of")
             msg.reply("Printing occupants of {} to console"
@@ -88,11 +88,11 @@ class query:
                 pprint(users)
             else:
                 pprint([nickColor(user) for user in users])
-        elif cmd.args['root'][0].startswith('sql'):
+        if 'sql' in cmd:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
             try:
-                DB.print_selection(" ".join(cmd.args['root'][1:]))
+                DB.print_selection(" ".join(cmd['sql']))
                 msg.reply("Printing that selection to console")
             except:
                 msg.reply("There was a problem with the selection")

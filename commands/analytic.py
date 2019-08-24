@@ -16,6 +16,7 @@ import re
 from helpers.config import CONFIG
 import random
 from emoji import emojize
+from helpers.defer import defer
 
 _URL_PATT = (r"https?:\/\/(www\.)?"
                 r"[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}"
@@ -132,10 +133,19 @@ class gib:
             if len(cmd['channel']) == 0:
                 raise CommandError("When using the --channel/-c filter, "
                                    "at least one channel must be specified")
-            for channel in cmd['channel']:
-                if not channel.startswith('#'):
-                    raise CommandError("Channel names must start with #.")
-            channels = cmd['channel']
+            if cmd['channel'][0] == "all":
+                if defer.controller(cmd):
+                    channels = DB.get_all_channels()
+                    msg.reply("Gibbing from all channels I'm in:")
+                else:
+                    msg.reply("Gibbing from all channels you're in:")
+                    # get all channels this user is in
+                    raise MyFaultError("This isn't implemented yet.")
+            else:
+                for channel in cmd['channel']:
+                    if not channel.startswith('#'):
+                        raise CommandError("Channel names must start with #.")
+                channels = cmd['channel']
         if 'user' in cmd:
             if len(cmd['user']) == 0:
                 raise CommandError("When using the --user/-u filter, "
@@ -162,19 +172,22 @@ class gib:
         else:
             cls.nocache = False
         # can't gib the bot (yet!)
-        if CONFIG.nick.lower() in [user.lower() for user in users]:
-            msg.reply("blah blah beep boop bot stuff")
-            return
+        # if CONFIG.nick.lower() in [user.lower() for user in users]:
+        #     msg.reply("blah blah beep boop bot stuff")
+        #     return
         # can only gib a channel both the user and the bot are in
         for channel in channels:
             if channel is msg.channel:
                 continue
             if msg.channel is not None \
+               and cmd['channel'][0] != 'all' \
                and not all(x in DB.get_channel_members(channel)
                            for x in [msg.sender, CONFIG.nick]):
                 raise CommandError("Both you and the bot must be in a channel "
                                    "in order to gib it.")
-            if msg.channel is not None and channel != msg.channel:
+            if msg.channel is not None \
+               and channel != msg.channel \
+               and not defer.controller(cmd):
                 raise CommandError("You can only gib the current channel (or "
                                    "any channel from PMs)")
         # Run a check to see if we need to reevaluate the model or not

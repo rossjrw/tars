@@ -534,6 +534,14 @@ class SqliteDriver:
             name = random.choice(norm(c.fechall()))
             return "??{}".format(name)
 
+    def get_all_channels(self):
+        c = self.conn.cursor()
+        c.execute('''
+            SELECT channel_name FROM channels
+            WHERE NOT channel_name='private'
+                  ''')
+        return [row['channel_name'] for row in c.fetchall()]
+
     def get_controllers(self):
         """Gets bot controllers"""
         c = self.conn.cursor()

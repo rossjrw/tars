@@ -32,10 +32,15 @@ class fish:
             output += emojize(choice([":fish:",":tropical_fish:"]))
         msg.reply(output)
 
-class rounderhouse:
+class narcissism:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        msg.reply(emojize(":red_circle::house:"))
+        if cmd.command == 'rounderhouse':
+            msg.reply(emojize(":red_circle::house:"))
+        if cmd.command == 'jazstar':
+            msg.reply(emojize(":saxophone::star:"))
+        if cmd.command == 'themightymcb':
+            msg.reply(emojize(":muscle::flag-ie::bee:"))
 
 class password:
     @classmethod

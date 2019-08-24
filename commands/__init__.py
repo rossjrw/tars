@@ -42,7 +42,7 @@ COMMANDS = {
                },
     "gimmick": {"reptile": {"reptile","rep"},
                 "fish": {"fish","reptile+","rep+"},
-                "rounderhouse": {"rounderhouse"},
+                "narcissism": {"rounderhouse","jazstar","themightymcb"},
                 "password": {"password","passcode"},
                 "hug": {"hug","hugtars"},
                 "fiction": {"isthisreal"},
