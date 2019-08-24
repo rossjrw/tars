@@ -16,3 +16,4 @@ urllib3 == 1.24.2
 gitPython == 2.1.11
 munch == 2.3.2
 emoji == 0.5.3
+distro

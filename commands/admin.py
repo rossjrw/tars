@@ -10,7 +10,7 @@ from helpers.api import SCPWiki
 from helpers.database import DB
 import git
 from helpers.defer import defer
-from commands.analytic import gib
+from commands.gib import gib
 import re
 
 class kill:

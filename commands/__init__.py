@@ -56,8 +56,9 @@ COMMANDS = {
     "prop": {"propagate": {"propagate","prop"},
             },
     "analytic": {"analyse_wiki": {"analyse_wiki"},
-                 "gib": {"gib"},
                 },
+    "gib": {"gib": {"gib"},
+           },
     "nick": {"alias": {"alias"},
                 },
 }
