@@ -56,7 +56,6 @@ class gib:
             if cmd['channel'][0] == "all":
                 if defer.controller(cmd):
                     channels = DB.get_all_channels()
-                    print("ALL CHANNELS",channels)
                     msg.reply("Gibbing from all channels I'm in:")
                 else:
                     msg.reply("Gibbing from all channels you're in:")
@@ -169,7 +168,7 @@ class gib:
             print("Iterating channels")
             for user in cls.users:
                 print("Iterating users")
-                messages = DB.get_messages(channel, user)
+                messages.extend(DB.get_messages(channel, user))
         print("messages found: {}".format(len(messages)))
         if len(messages) == 0:
             raise AttributeError

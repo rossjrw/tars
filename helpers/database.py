@@ -391,8 +391,8 @@ class SqliteDriver:
         c.execute('''
             SELECT * FROM messages
             WHERE id BETWEEN ? AND ?
-            AND channel_id=(SELECT id FROM channels
-                            WHERE channel_name=?)
+            AND (kind='NICK' OR channel_id=(SELECT id FROM channels
+                                            WHERE channel_name=?))
                   ''', (start, end, channel))
         rows = c.fetchall()
         return rows

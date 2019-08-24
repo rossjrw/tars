@@ -21,6 +21,7 @@ class Log:
 
     @observe('IRC_MSG_PRIVMSG','IRC_MSG_JOIN','IRC_MSG_PART','IRC_MSG_NICK')
     def log(self, irc_c, msg):
+        print("OBSERVING",msg.kind)
         chname = "private" if msg.channel is None else msg.channel
         if msg.kind == 'PRIVMSG':
             print("[{}] {} <{}> {}".format(

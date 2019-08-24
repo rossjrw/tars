@@ -97,5 +97,3 @@ class query:
             except:
                 msg.reply("There was a problem with the selection")
                 raise
-        else:
-            raise CommandError("Unknown argument")

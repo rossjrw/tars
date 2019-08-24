@@ -411,10 +411,12 @@
     <p><code>.record [start | stop | status] [--output location] [--format format] [--restrict-channel-name]</code></p>
     <p>Record messages sent in the channel and then save them somewhere safe.</p>
     <p>If TARS goes offline or is reloaded while recording, the recording will end prematurely. Messages can be manually recovered, except for any missed while offline. You should contact the bot owner with the times of your planned recording to minimise the chances of this happening.</p>
+    <p><b>Please note:</b> as of 2019-08-24, --output and --format are not implemented. Recordings will be sent to topia under the ftml format. Just use .record start and .record stop!</p>
     <ul>
-        <li><b>start / stop / status</b><br>
+        <li><b>start / stop / status / page</b><br>
             "start" will start the recording and "end" will end it.<br>
-            "status" will check whether or not TARS is currently recording.
+            "status" will check whether or not TARS is currently recording.<br>
+            "page" will output the URL to which recordings will be posted if the <b>output</b> location is set to "topia".
         </li>
         <li><b>--output, -o</b><br>
             Where to put the output. Must be one of "topia", "here" or "both". Defaults to topia. If "here", TARS will dump the output as a paste link in the current channel. If "topia", TARS will append the output to the Wikidot page specified in the <a href="http://scp-sandbox-3.wikidot.com/collab:tars">configuration document</a>. If "both", TARS will do both.<br>

@@ -28,14 +28,18 @@ class record:
         if not defer.controller(cmd):
             raise CommandError("You're not authorised to do that")
         cmd.expandargs(["output o",
-                        "format f"])
+                        "format f",
+                        "restrict-channel-name"])
         # get the action - start, stop or status
         if len(cmd.args['root']) == 0:
-            raise CommandError("Usage: .record [start|stop|status] "
+            raise CommandError("Usage: .record [start|stop|status|page] "
                                "[--output location] [--format format]")
         if len(cmd.args['root']) > 1:
             raise CommandError("Only one action can be taken at a time.")
         action = cmd.args['root'][0]
+        if action == 'page':
+            msg.reply("Output page: http://topia.wikidot.com/tars:recording-output")
+            return
         if action == 'status':
             if msg.channel in cls.recording_channels():
                 msg.reply("Currently recording in this channel. "
@@ -56,6 +60,8 @@ class record:
             else:
                 msg.reply("Starting recording messages in {}"
                           .format(msg.channel))
+                if 'restrict-channel-name' in cmd:
+                    msg.reply("I will hide the channel name from the output.")
         elif action == 'stop':
             if msg.channel not in cls.recording_channels():
                 raise CommandError("Not recording in {}"
@@ -63,19 +69,21 @@ class record:
             else:
                 msg.reply("Stopping recording in {}"
                           .format(msg.channel))
+                if 'restrict-channel-name' in cmd:
+                    msg.reply("I will hide the channel name from the output.")
         else:
             raise CommandError("Action must be one of start, stop, status")
         # get arguments and save to vars
         output_location = None
         if 'output' in cmd:
-            if cmd['output'] not in ['topia', 'here', 'both']:
+            if cmd['output'][0] not in ['topia', 'here', 'both']:
                 raise CommandError("Output location must be topia, here or both")
-            output_location = cmd['output']
+            output_location = cmd['output'][0]
         output_format = None
         if 'format' in cmd:
-            if cmd['format'] not in ['json', 'txt', 'ftml']:
+            if cmd['format'][0] not in ['json', 'txt', 'ftml']:
                 raise CommandError("Format type must be json, txt or ftml")
-            output_format = cmd['format']
+            output_format = cmd['format'][0]
 
         # after everything else, set this channel as recording or not
         if action == 'start':
@@ -92,9 +100,9 @@ class record:
             sett = [s for s in cls.settings if s['channel'] == msg.channel][0]
             end_id = DB.get_most_recent_message(msg.channel)
             messages = DB.get_messages_between(msg.channel, sett['start_id'], end_id)
-            msg.reply("Uploading {} messages to {}..."
-                      .format(len(messages), sett['location']))
             if sett['location'] in ['topia', None]:
+                msg.reply("Uploading {} messages to topia..."
+                          .format(len(messages)))
                 # get page content
                 page = Topia.get_page({'page':"tars:recording-output"})
                 content = page['content']
@@ -110,30 +118,38 @@ class record:
                                      .strftime("%H:%M:%S")),
                             nickColor(message['sender'], True),
                             message['sender'],
-                            message['message'])
-                    if message['kind'] == 'NICK':
-                        content += "||~ {} ||||~ {} → {} ||".format(
+                            message['message'].replace("||","@@||@@"))
+                    elif message['kind'] == 'NICK':
+                        content += "||~ {} ||||~ ##{}|{}## → ##{}|{}## ||".format(
                             (datetime.fromtimestamp(message['timestamp'])
                                      .strftime("%H:%M:%S")),
+                            nickColor(message['sender'], True),
                             message['sender'],
+                            nickColor(message['message'], True),
                             message['message'])
-                    if message['kind'] == 'NICK':
-                        content += "||~ {} ||||~ {} {} ||".format(
+                    elif message['kind'] in ['JOIN','PART']:
+                        content += "||~ {} ||||~ {} ##{}|{}## {} ||".format(
                             (datetime.fromtimestamp(message['timestamp'])
                                      .strftime("%H:%M:%S")),
+                            "→" if message['kind'] == 'JOIN' else "←",
+                            nickColor(message['sender'], True),
                             message['sender'],
-                            "joined" if message['kind'] is 'JOIN' else "left")
+                            "joined" if message['kind'] == 'JOIN' else "left")
+                    else:
+                        content += "|||||| Error code {} ||".format(
+                            message['id'])
                     content += "\r\n"
                 content += "\r\n"
-                content = "".join(filter(lambda x: x in string.printable, content))
+                okchars = string.printable+"→←"
+                content = "".join(filter(lambda x: x in okchars, content))
                 # then format for wikidot
-                # TODO nickColor as html codes
-                # copy log beautifier
-                print(content)
                 Topia.save_page({'page':"tars:recording-output",
                                  'content': content,
                                  'revision_comment': "New recording",
                                  'notify_watchers': "true"})
+                msg.reply("Done! http://topia.wikidot.com/tars:recording-output")
+            else:
+                raise MyFaultError("Unknown location")
             cls.settings.remove(sett)
             # upload either to here or to wikidot
 
