@@ -31,6 +31,7 @@ class gib:
     nocache = False
     @classmethod
     def command(cls, irc_c, msg, cmd):
+        if(defer.check(cmd, 'jarvis')): return
         cmd.expandargs(["no-cache n",
                         "user u author a",
                         "channel c",
