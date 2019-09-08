@@ -27,7 +27,7 @@ class ParseMessages():
 # wipe em and remake em to .reload
     @observe("IRC_MSG_PRIVMSG")
     def handleMessage(self, irc_c, msg):
-        cmd = parse.command(msg)
+        cmd = parse.ParsedCommand(irc_c, msg)
         # cmd is the parsed msg (used to be msg.parsed)
         if cmd.command:
             # this is a command!

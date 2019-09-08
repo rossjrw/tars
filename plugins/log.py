@@ -15,13 +15,13 @@ class Log:
     def __init__(self, irc_c, config):
         print("Log Plugin Loaded!")
 
-    # @observe('IRC_RAW_MSG')
+    # @observe('IRC_RAW_MSG','IRC_RAW_SEND')
     # def print_everything(self, irc_c, msg):
     #     print(msg)
 
-    @observe('IRC_MSG_PRIVMSG','IRC_MSG_JOIN','IRC_MSG_PART','IRC_MSG_NICK')
+    @observe('IRC_MSG_PRIVMSG','IRC_MSG_NICK',
+             'IRC_MSG_JOIN','IRC_MSG_PART','IRC_MSG_QUIT')
     def log(self, irc_c, msg):
-        print("OBSERVING",msg.kind)
         chname = "private" if msg.channel is None else msg.channel
         if msg.kind == 'PRIVMSG':
             print("[{}] {} <{}> {}".format(

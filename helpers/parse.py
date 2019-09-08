@@ -25,7 +25,7 @@ class ParsedCommand():
                      tuples. First tuple has tag "root". Tags will be
                      either long or short depending on user input.
     """
-    def __init__(self, message):
+    def __init__(self, irc_c, message):
         # Check that the message is a string
         self.sender = message.sender
         self.channel = message.channel
@@ -39,6 +39,7 @@ class ParsedCommand():
         self.quote_error = False # was there a shlex error?
         self.args = None # command arguments as dict w/ subargs as list
         self.force = False # . or .. ?
+        self.context = irc_c
         parseprint("Raw input: " + self.raw)
 
         # Was someone pinged?
@@ -74,7 +75,10 @@ class ParsedCommand():
                        r"(?P<cmd>[^!,\.\?\s]+)"
                        r"(?P<rest>.*)$")
         match = re.search(pattern, self.message)
-        if match:
+        if self.ping is not None and not self.pinged:
+            # someone was pinged, but not us
+            parseprint("No command!")
+        elif match:
             # Remove command from the message
             self.command = match.group('cmd').strip().lower()
             # save the signal strength
@@ -176,11 +180,6 @@ class ParsedCommand():
                     if alias in self.args:
                         # Get and delete shorthand property in one swoop
                         self.args[parent] = self.args.pop(alias, None)
-
-# Parse a command
-def command(message):
-    """Converts a raw IRC message to a command."""
-    return ParsedCommand(message)
 
 # Parse a nick to its IRCCloud colour
 def nickColor(string, html=False):

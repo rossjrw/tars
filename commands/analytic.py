@@ -18,12 +18,6 @@ import random
 from emoji import emojize
 from helpers.defer import defer
 
-_URL_PATT = (r"https?:\/\/(www\.)?"
-                r"[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}"
-                r"\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)")
-_YT_PATT = re.compile(r"^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+")
-_IMG_PATT = re.compile(r"(imgur)|(((jpeg)|(jpg)|(png)|(gif)))$")
-
 class analyse_wiki:
     """For compiling data of the file contents of a sandbox"""
     @classmethod

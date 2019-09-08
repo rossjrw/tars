@@ -52,6 +52,7 @@ COMMANDS = {
     "dbq": {"query": {"query","dbq"},
            },
     "record": {"record": {"record"},
+               "pingall": {"pingall"},
               },
     "prop": {"propagate": {"propagate","prop"},
             },

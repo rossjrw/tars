@@ -220,7 +220,6 @@ class SqliteDriver:
                 channel_id INTEGER
                     REFERENCES channels(id),
                 kind TEXT NOT NULL
-                    CHECK (kind IN ('PRIVMSG','NICK','JOIN','PART'))
                     DEFAULT 'PRIVMSG',
                 sender TEXT NOT NULL
                     COLLATE NOCASE,
@@ -391,8 +390,9 @@ class SqliteDriver:
         c.execute('''
             SELECT * FROM messages
             WHERE id BETWEEN ? AND ?
-            AND (kind='NICK' OR channel_id=(SELECT id FROM channels
-                                            WHERE channel_name=?))
+            AND (kind='NICK' OR kind='QUIT'
+                 OR channel_id=(SELECT id FROM channels
+                                WHERE channel_name=?))
                   ''', (start, end, channel))
         rows = c.fetchall()
         return rows
@@ -513,7 +513,10 @@ class SqliteDriver:
         dbprint("get_occupants: users is {}".format(",".join(map(str,users))))
         assert len(users) > 0, "There are no users in {}.".format(channel)
         if convert_to_nicks:
+            users = [user['user_id'] for user in users]
             users = [self.get_current_nick(id) for id in users]
+        else:
+            users = [user['user_id'] for user in users]
         return users
 
     def get_current_nick(self, id):
@@ -613,9 +616,19 @@ class SqliteDriver:
         c.execute('''
             UPDATE channels
             SET date_checked=CURRENT_TIMESTAMP
-            WHERE channel_name=?
+            WHERE id=?
                   ''', (channel, ))
         # 4. TODO what else needs to be done?
+        self.conn.commit()
+
+    def get_last_sort(self, channel):
+        """Get the time at which the channel's names were last sorted"""
+        c = self.conn.cursor()
+        c.execute('''
+            SELECT date_checked FROM channels
+            WHERE channel=?
+                  ''', (channel,))
+        return c.fetchone()['date_checked']
 
     def add_user(self, alias, type='irc'):
         """Adds/updates a user and returns their ID"""
@@ -631,8 +644,8 @@ class SqliteDriver:
             #     WHERE alias=? AND type='irc'
             #           ''', (
             if len(result) == 1:
-                dbprint("User {} already exists as ID {}"
-                        .format(nickColor(alias), norm(result)[0]))
+                # dbprint("User {} already exists as ID {}"
+                #         .format(nickColor(alias), norm(result)[0]))
                 # unambiguous user, yay!
                 # result = [(3,)] - we only want the number
                 return norm(result)[0]
@@ -648,8 +661,8 @@ class SqliteDriver:
                 INSERT INTO users DEFAULT VALUES
                       ''')
             new_user_id = c.lastrowid
-            dbprint("Adding user {} as ID {}"
-                    .format(nickColor(alias), new_user_id))
+            # dbprint("Adding user {} as ID {}"
+            #         .format(nickColor(alias), new_user_id))
             # 2. add the alias
             # 2.1 mark the previous alias as not current
             c.execute('''
@@ -880,7 +893,7 @@ class SqliteDriver:
         # Takes PRIVMSG, JOIN, PART, NICK
         chname = "private" if msg['channel'] is None else msg['channel']
         if msg['kind'] == 'NICK': chname = None
-        assert msg['kind'] in ['PRIVMSG','JOIN','PART','NICK'], msg['kind']
+        assert msg['kind'] in ['PRIVMSG','JOIN','PART','NICK','QUIT'], msg['kind']
         if msg['kind'] == 'PRIVMSG':
             msgiscmd = msg['message'].startswith((".","!","?","^"))
         else:

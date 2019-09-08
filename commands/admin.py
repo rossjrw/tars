@@ -12,6 +12,7 @@ import git
 from helpers.defer import defer
 from commands.gib import gib
 import re
+from pprint import pprint
 
 class kill:
     """Kills the bot"""
@@ -126,7 +127,8 @@ class say:
         if cmd.args['root'][1][0] == '/':
             cmd.args['root'].pop(0)
         msg.reply("Issuing that...")
-        irc_c.RAW(" ".join(cmd.args['root'][1:]))
+        msg.reply(" ".join(cmd.args['root'])[1:])
+        irc_c.RAW(" ".join(cmd.args['root'])[1:])
 
 
 class config:

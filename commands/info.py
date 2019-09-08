@@ -42,6 +42,7 @@ class user:
     """Provide link to a user's Wikidot page"""
     @classmethod
     def command(cls, irc_c, msg, cmd):
+        if(defer.check(cmd, 'Secretary_Helen')): return
         if len(cmd.args['root']) > 0:
             msg.reply("http://www.wikidot.com/user:info/{}"
                       .format("-".join(cmd.args['root'])))

@@ -12,6 +12,7 @@ import re
 from pprint import pprint
 from helpers.parse import nickColor
 from helpers.database import DB
+from helpers.defer import defer
 
 def nameprint(text, error=False):
     bit = "[\x1b[38;5;218mNames\x1b[0m] "
@@ -45,7 +46,7 @@ class Names:
                     'mode': None
                 }
         # just need to log these names to the db now
-        nameprint("Getting NAMES from {}".format(nickColor(channel)))
+        nameprint("Updating NAMES for {}".format(nickColor(channel)))
         try:
             DB.sort_names(channel, names)
         except Exception as e:
@@ -62,3 +63,13 @@ class Names:
             irc_c.RAW("PRIVMSG #tars NAMES error: " + str(e))
             raise
 
+    @observe('IRC_MSG_JOIN')
+    def join_names(self, irc_c, msg):
+        # make sure the names are always up to date
+        defer.get_users(irc_c, msg.channel)
+
+    @observe('IRC_MSG_PART')
+    def part_names(self, irc_c, msg):
+        # make sure the names are always up to date
+        for channel in DB.get_all_channels():
+            defer.get_users(irc_c, channel)

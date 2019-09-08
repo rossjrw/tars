@@ -13,6 +13,23 @@ from helpers.api import Topia
 
 IS_RECORDING = False
 
+class pingall:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        """Ping everyone in the channel"""
+        if not defer.controller(cmd):
+            raise CommandError("You're not authorised to do that")
+        members = DB.get_occupants(msg.channel, True)
+        if len(cmd.args['root']) == 0:
+            # no message
+            msg.reply(", ".join(members))
+        else:
+            for member in members:
+                irc_c.PRIVMSG(member, "{} (from {} in {})".format(
+                    " ".join(cmd.args['root']),
+                    msg.sender,
+                    msg.channel))
+
 class record:
     settings = []
     # settings is a list of dicts of keys:
@@ -127,7 +144,7 @@ class record:
                             message['sender'],
                             nickColor(message['message'], True),
                             message['message'])
-                    elif message['kind'] in ['JOIN','PART']:
+                    elif message['kind'] in ['JOIN','PART','QUIT']:
                         content += "||~ {} ||||~ {} ##{}|{}## {} ||".format(
                             (datetime.fromtimestamp(message['timestamp'])
                                      .strftime("%H:%M:%S")),

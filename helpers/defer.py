@@ -14,11 +14,17 @@ class defer:
     def check(cls, cmd, *bots):
         """Check whether the given bots are in the channel"""
         # bots should be a list of bot names?
+        defer.get_users(cmd.context, cmd.channel)
         if cmd.pinged: return False
+        if cmd.force: return False
         members = DB.get_channel_members(cmd.channel)
         return set(members) & set(bots)
 
     @classmethod
     def controller(cls, cmd):
         """Limit this command only to controllers."""
-        return cmd.force or cmd.sender in DB.get_controllers()
+        return cmd.sender in DB.get_controllers()
+
+    @classmethod
+    def get_users(cls, irc_c, channel):
+        irc_c.RAW("NAMES {}".format(channel))
