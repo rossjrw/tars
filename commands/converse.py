@@ -53,6 +53,11 @@ class converse:
         ]) and "TARS" in message.upper():
             msg.reply("Nope. I'm a bot.")
             return
+        if CONFIG.nick == "TARS" and matches_any_of(message, [
+            "what is your iq",
+        ]) and "TARS" in message.upper():
+            msg.reply("big")
+            return
         # custom section
         if (msg.sender == "Jazstar" and
             "slime" in msg.message and
