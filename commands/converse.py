@@ -54,6 +54,12 @@ class converse:
         ]) and "TARS" in message.upper():
             msg.reply("Nope. I'm a bot.")
             return
+        if CONFIG.nick == "TARS" and matches_any_of(message, [
+            "what is your iq",
+        ]) and "TARS" in message.upper():
+            msg.reply("big")
+            return
+        # regex section
         match = re.search(r"(?:^|\s)/?r/(\S*)", message, re.IGNORECASE)
         if match:
             msg.reply("https://www.reddit.com/r/{}".format(match.group(1)))
