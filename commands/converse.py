@@ -9,6 +9,7 @@ from fuzzywuzzy import fuzz
 from helpers.greetings import acronym, greet, greets
 from helpers.database import DB
 from helpers.config import CONFIG
+import re
 
 class converse:
     @classmethod
@@ -53,6 +54,9 @@ class converse:
         ]) and "TARS" in message.upper():
             msg.reply("Nope. I'm a bot.")
             return
+        match = re.search(r"(?:^|\s)/?r/(\S*)", message, re.IGNORECASE)
+        if match:
+            msg.reply("https://www.reddit.com/r/{}".format(match.group(1)))
         # custom section
         if (msg.sender == "Jazstar" and
             "slime" in msg.message and
