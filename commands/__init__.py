@@ -100,25 +100,15 @@ COMMANDS = Commands_Directory(COMMANDS)
 
 for file in COMMANDS.get():
     if "commands.{}".format(file) in sys.modules:
-        cmdprint("Reloading commands from commands/{}.py".format(file))
         reload(sys.modules["commands.{}".format(file)])
-        for cmd in COMMANDS.get(file):
-            cmdprint("Importing {}".format(cmd))
-            for alias in COMMANDS.get(file,cmd):
-                try:
-                    setattr(COMMANDS, alias, getattr(locals()[file], cmd))
-                except AttributeError as e:
-                    cmdprint(e, True)
-                    # consider stopping the script here
     else:
-        cmdprint("Importing commands from commands/{}.py".format(file))
         import_module(".{}".format(file),"commands")
-        for cmd in COMMANDS.get(file):
-            cmdprint("Importing {}".format(cmd))
-            for alias in COMMANDS.get(file,cmd):
-                try:
-                    setattr(COMMANDS, alias, getattr(locals()[file], cmd))
-                except AttributeError as e:
-                    cmdprint(e, True)
-                    # consider stopping the script here
+    for cmd in COMMANDS.get(file):
+        cmdprint("Importing {} from {}".format(cmd,file))
+        for alias in COMMANDS.get(file,cmd):
+            try:
+                setattr(COMMANDS, alias, getattr(locals()[file], cmd))
+            except AttributeError as e:
+                cmdprint(e, True)
+                # consider stopping the script here
         # now each command is at commands.file.cmdname.command()
