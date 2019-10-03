@@ -13,10 +13,32 @@ from importlib import reload
 from pprint import pprint
 import time
 
-def converse(irc_c, msg, cmd):
-    # .converse is used to parse non-command strings
-    # we can't always tell if a message is a command or not
-    getattr(commands.COMMANDS, 'converse').command(irc_c, msg, cmd)
+def try_command(attempt, irc_c, msg, cmd):
+    try:
+        # Call the command from the right file in commands/
+        # getattr instead of commands[cmd] bc module subscriptability
+        getattr(commands.COMMANDS, attempt).command(irc_c, msg, cmd)
+    except CommandNotExistError:
+        if cmd.pinged:
+            # there are .converse strings for pinged
+            try_command('converse', irc_c, msg, cmd)
+        elif msg.channel is None:
+            # should be only in pm
+            msg.reply("That's not a command.")
+    except CommandError as e:
+        msg.reply("\x02Invalid command:\x0F {}".format(str(e)))
+    except MyFaultError as e:
+        msg.reply("\x02Sorry!\x0F {}".format(str(e)))
+    except Exception as e:
+        if msg.channel != '#tars':
+            msg.reply(("An unexpected error has occurred. "
+                       "I've already reported it — you don't need to "
+                       "do anything."))
+        # need to log the error somewhere - why not #tars?
+        irc_c.PRIVMSG("#tars",("\x02Error report:\x0F {} "
+                               "issued `{}` → `{}`"
+                              .format(msg.sender,msg.message,e)))
+        raise
 
 @plugin_class('parsemessages')
 class ParseMessages():
@@ -46,35 +68,11 @@ class ParseMessages():
             if cmd.quote_error:
                 msg.reply(("I wasn't able to correctly parse your quotemarks, "
                            "so I have interpreted them literally."))
-            try:
-                # Call the command from the right file in commands/
-                # getattr instead of commands[cmd] bc module subscriptability
-                getattr(commands.COMMANDS, cmd.command).command(irc_c, msg, cmd)
-            except CommandNotExistError:
-                if cmd.pinged:
-                    # there are .converse strings for pinged
-                    converse(irc_c, msg, cmd)
-                elif msg.channel is None:
-                    # should be only in pm
-                    msg.reply("That's not a command.")
-            except CommandError as e:
-                msg.reply("\x02Invalid command:\x0F {}".format(str(e)))
-            except MyFaultError as e:
-                msg.reply("\x02Sorry!\x0F {}".format(str(e)))
-            except Exception as e:
-                if msg.channel != '#tars':
-                    msg.reply(("An unexpected error has occurred. "
-                               "I've already reported it — you don't need to "
-                               "do anything."))
-                # need to log the error somewhere - why not #tars?
-                irc_c.PRIVMSG("#tars",("\x02Error report:\x0F {} "
-                                       "issued `{}` → `{}`"
-                                      .format(msg.sender,msg.message,e)))
-                raise
+            try_command(cmd.command, irc_c, msg, cmd)
         else:
             # not a command, and not pinged
             # Send the message over to .converse
-            converse(irc_c, msg, cmd)
+            try_command('converse', irc_c, msg, cmd)
         if msg.channel is None:
             # we're working in PMs
             pass

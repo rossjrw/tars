@@ -160,7 +160,6 @@ class gib:
             sentence = match.group(2).strip()
         # second: modify any words that match the names of channel members
         members = DB.get_channel_members(msg.channel) + ["ops"]
-        print(members)
         members = re.compile(r"\b" + r"\b|\b".join(members) + r"\b",
                              flags=re.IGNORECASE)
         if msg.channel is not None:

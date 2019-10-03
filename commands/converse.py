@@ -9,6 +9,7 @@ from fuzzywuzzy import fuzz
 from helpers.greetings import acronym, greet, greets
 from helpers.database import DB
 from helpers.config import CONFIG
+import commands
 import re
 
 class converse:
@@ -25,7 +26,10 @@ class converse:
             ]):
                 msg.reply("{}: no u".format(msg.nick))
                 return
-        # unpinged section
+        # unpinged section (well, ping-optional)
+        if message.startswith("?? "):
+            # CROM compatibility
+            getattr(commands.COMMANDS, 'search').command(irc_c, msg, cmd)
         if message.lower() == "{}!".format(CONFIG.nick.lower()):
             msg.reply("{}!".format(msg.nick))
             return

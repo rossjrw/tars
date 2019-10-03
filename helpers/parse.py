@@ -66,12 +66,12 @@ class ParsedCommand():
         # What was the command?
         # Check for regular commands (including chevron)
         if self.pinged:
-            pattern = (r"^(?P<signal>[!,\.\?]{0,2})"
+            pattern = (r"^(?P<signal>[!\.]{0,2})"
                        r"(?P<cmd>[^!,\.\?\s]+)"
                        r"(?P<rest>.*)$")
         else:
             # Force the command to be marked if we weren't pinged
-            pattern = (r"^(?P<signal>[!,\.\?]{1,2})"
+            pattern = (r"^(?P<signal>[!\.]{1,2})"
                        r"(?P<cmd>[^!,\.\?\s]+)"
                        r"(?P<rest>.*)$")
         match = re.search(pattern, self.message)
@@ -114,16 +114,17 @@ class ParsedCommand():
             self.message = [w.replace("<<QUOT>>", '"') for w in self.message]
             # arguments is now a list, quotes are preserved
             # need to split it into different lists per tag, though
-            self.args = {'root': []}
-            currArg = 'root'
-            for argument in self.message:
-                if argument[:1] == "-" and len(argument) == 2 \
-                or argument[:2] == "--" and len(argument) >= 2:
-                    currArg = argument.strip("-")
-                    self.args[currArg] = []
-                else:
-                    self.args[currArg].append(argument)
-            # empty args exist as a present but empty list
+        self.args = {'root': []}
+        currArg = 'root'
+        for argument in self.message:
+            if argument[:1] == "-" and len(argument) == 2 \
+            or argument[:2] == "--" and len(argument) >= 2:
+                currArg = argument.strip("-")
+                self.args[currArg] = []
+            else:
+                self.args[currArg].append(argument)
+        # empty args exist as a present but empty list
+        if self.command is not None:
             # detect a chevron command
             pattern = r"^(\^+)$"
             match = re.match(pattern, self.command)
@@ -134,9 +135,6 @@ class ParsedCommand():
                     self.args['root'].insert(0, chevs)
                 else:
                     self.args['root'] = [chevs]
-        else:
-            # It wasn't a command, so we probably don't need to do anything
-            pass
 
     def hasarg(self, *args):
         """Checks whether this command has a given argument."""
