@@ -135,6 +135,8 @@ class gib:
         # gibbing:
         try:
             sentence = cls.get_gib_sentence()
+            if sentence is None:
+                raise AttributeError
         except AttributeError:
             msg.reply("Looks like {} spoken enough in {} just yet.{}".format(
                 ("you haven't" if msg.sender in users and len(users) == 1
