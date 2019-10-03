@@ -24,7 +24,6 @@ http = urllib3.PoolManager()
 with open(os.path.dirname(__file__) + "/../keys.secret.txt") as file:
     si = iter(file.read().rstrip().splitlines())
     keylist = dict(zip(si, si))
-    pprint(keylist)
     password = keylist['irc_password']
     wikidot_api_key = keylist['wikidot_api']
     google_api_key = keylist['google_cse_api']
