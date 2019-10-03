@@ -111,7 +111,7 @@ class say:
         else:
             message = " ".join(cmd.args['root'][1:])
             if 'obfuscate' in cmd and msg.channel is not None:
-                members = DB.get_aliases(None)
+                members = DB.get_aliases(None) + ["ops"]
                 members = re.compile(r"\b" + r"\b|\b".join(members) + r"\b",
                                      flags=re.IGNORECASE)
                 message = members.sub(gib.obfuscate, message)
