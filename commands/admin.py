@@ -13,6 +13,7 @@ from helpers.defer import defer
 from commands.gib import gib
 import re
 from pprint import pprint
+from helpers.parse import nickColor
 
 class kill:
     """Kills the bot"""
@@ -97,7 +98,8 @@ class say:
     """Make TARS say something"""
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        cmd.expandargs(["obfuscate o"])
+        cmd.expandargs(["obfuscate o",
+                        "colour color c"])
         if not defer.controller(cmd):
             raise CommandError("I'm afriad I can't let you do that.")
             return
@@ -115,6 +117,9 @@ class say:
                 members = re.compile(r"\b" + r"\b|\b".join(members) + r"\b",
                                      flags=re.IGNORECASE)
                 message = members.sub(gib.obfuscate, message)
+            if 'colour' in cmd:
+                print(nickColor(message))
+                msg.reply("Printed that to console")
             irc_c.PRIVMSG(cmd.args['root'][0], message)
             if not cmd.args['root'][0] == msg.channel:
                 msg.reply("Saying that to {}".format(cmd.args['root'][0]))

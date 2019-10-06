@@ -211,6 +211,7 @@ def nickColor(string, html=False):
         char_code = bytes[i] + 256*bytes[i+1]
         hash = char_code + t(int(hash) << 6) + t(int(hash) << 16) - hash
     index = int(hash % length if hash >= 0 else abs(hash % length - length))
+    index = index % length
     if html:
         return html_colours[index]
     else:
