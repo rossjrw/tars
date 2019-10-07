@@ -340,7 +340,7 @@ class SqliteDriver:
         c.execute('''
             SELECT alias FROM user_aliases
                   ''')
-        return c.fetchall()
+        return [r['alias'] for r in c.fetchall()]
 
     def get_messages(self, channel, user=None, pattern=None):
         """Returns all messages from the channel by the user"""
@@ -396,6 +396,27 @@ class SqliteDriver:
                   ''', (start, end, channel))
         rows = c.fetchall()
         return rows
+
+    def get_messages_to_command_limit(self, channel, limit):
+        """Get all messages from most recent up to the specified number of
+        commands"""
+        assert channel.startswith('#')
+        c = self.conn.cursor()
+        c.execute('''
+            SELECT message FROM messages
+            WHERE id >= (SELECT min(id) FROM (
+                  SELECT id FROM messages
+                  WHERE command=1
+                  AND channel_id=(SELECT id FROM channels
+                                  WHERE channel_name=?)
+                  AND kind='PRIVMSG'
+                  ORDER BY id DESC
+                  LIMIT ?))
+            AND channel_id=(SELECT id FROM channels
+                            WHERE channel_name=?)
+            AND kind='PRIVMSG'
+                  ''', (channel, limit, channel))
+        return [m['message'] for m in c.fetchall()]
 
     def add_gib(self, gib):
         """Add a gib"""

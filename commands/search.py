@@ -7,6 +7,7 @@ Commands:
     tags - search with root params lumped into -t
 """
 
+from pprint import pprint
 import pendulum
 from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
@@ -14,7 +15,6 @@ from googleapiclient.discovery import build
 from helpers.defer import defer
 from helpers.api import google_api_key, cse_key
 from helpers.error import CommandError, isint
-from pprint import pprint
 from helpers.database import DB
 try:
     import re2 as re
@@ -22,32 +22,37 @@ except ImportError:
     print("re2 failed to load, falling back to re")
     import re
 
+
 class search:
     @staticmethod
     def expandargs(cmd):
-        cmd.expandargs(["tags tag tagged t",
-                        "author au a",
-                        "rating r",
-                        "created date c",
-                        "category cat y",
-                        "parent p",
-                        "regex x",
-                        "summary summarise u",
-                        "random rand ran d",
-                        "recommend rec m",
-                        "newest new n",
-                        "verbose v",
-                        "order o",
-                        "limit l",
-                        "offset f",
-                        "ignorepromoted",
-                       ])
+        cmd.expandargs(
+            [
+                "tags tag tagged t",
+                "author au a",
+                "rating r",
+                "created date c",
+                "category cat y",
+                "parent p",
+                "regex x",
+                "summary summarise u",
+                "random rand ran d",
+                "recommend rec m",
+                "newest new n",
+                "verbose v",
+                "order o",
+                "limit l",
+                "offset f",
+                "ignorepromoted",
+            ]
+        )
 
     @classmethod
     def command(cls, irc_c, msg, cmd):
         # Check that we are actually able to do this
         # (might have to move to end for defer check)
-        if(defer.check(cmd, 'jarvis', 'Secretary_Helen')): return
+        if (defer.check(cmd, 'jarvis', 'Secretary_Helen')):
+            return
         # Parse the command itself
         search.expandargs(cmd)
         # check to see if there are any arguments
@@ -58,8 +63,10 @@ class search:
             cmd.args['root'].remove("??")
         # fullname is deprecated for tars
         if 'fullname' in cmd:
-            raise CommandError("TARS does not support fullname search - "
-                               "wrap your search in quotemarks instead")
+            raise CommandError(
+                "TARS does not support fullname search - "
+                "wrap your search in quotemarks instead"
+            )
         # Set the return mode of the output
         selection = {
             'ignorepromoted': 'ignorepromoted' in cmd,
@@ -70,50 +77,66 @@ class search:
         # order, limit, offset
         if 'order' in cmd:
             if len(cmd['order']) != 1:
-                raise CommandError("When using the order argument "
-                                   "(--order/-o), exactly one order type must "
-                                   "be specified")
-            if cmd['order'][0] in ['recent','recommend','random','none']:
+                raise CommandError(
+                    "When using the order argument "
+                    "(--order/-o), exactly one order type must "
+                    "be specified"
+                )
+            if cmd['order'][0] in ['recent', 'recommend', 'random', 'none']:
                 if cmd['order'] == 'none':
                     selection['order'] = None
                 else:
                     selection['order'] = cmd['order'][0]
             else:
-                raise CommandError("Selection return order ('{}') must be "
-                                   "one of: recent, recommend, random, "
-                                   "none".format(cmd['select'][0]))
+                raise CommandError(
+                    "Selection return order ('{}') must be "
+                    "one of: recent, recommend, random, "
+                    "none".format(cmd['select'][0])
+                )
         if 'limit' in cmd:
             if len(cmd['limit']) != 1:
-                raise CommandError("When using the limit argument "
-                                   "(--limit/-l), exactly one limit must "
-                                   "be specified")
+                raise CommandError(
+                    "When using the limit argument "
+                    "(--limit/-l), exactly one limit must "
+                    "be specified"
+                )
             if isint(cmd['limit'][0]):
                 if int(cmd['limit'][0]) > 0:
                     selection['limit'] = int(cmd['limit'][0])
                 elif int(cmd['limit'][0]) == 0:
                     selection['limit'] = None
                 else:
-                    raise CommandError("When using the limit argument "
-                                       "(--limit/-l), the limit must be at "
-                                       "least 0")
+                    raise CommandError(
+                        "When using the limit argument "
+                        "(--limit/-l), the limit must be at "
+                        "least 0"
+                    )
             else:
-                raise CommandError("When using the limit argument "
-                                   "(--limit/-l), the limit must be an integer")
+                raise CommandError(
+                    "When using the limit argument "
+                    "(--limit/-l), the limit must be an integer"
+                )
         if 'offset' in cmd:
             if len(cmd['offset']) != 1:
-                raise CommandError("When using the offset argument "
-                                   "(--offset/-f), exactly one offset must "
-                                   "be specified")
+                raise CommandError(
+                    "When using the offset argument "
+                    "(--offset/-f), exactly one offset must "
+                    "be specified"
+                )
             if isint(cmd['offset'][0]):
                 if int(cmd['offset'][0]) >= 0:
                     selection['offset'] = int(cmd['offset'][0])
                 else:
-                    raise CommandError("When using the offset argument "
-                                       "(--offset/-f), the offset must be at "
-                                       "least 0")
+                    raise CommandError(
+                        "When using the offset argument "
+                        "(--offset/-f), the offset must be at "
+                        "least 0"
+                    )
             else:
-                raise CommandError("When using the offset argument "
-                                   "(--offset/-f), the offset must be an integer")
+                raise CommandError(
+                    "When using the offset argument "
+                    "(--offset/-f), the offset must be an integer"
+                )
         if 'random' in cmd:
             selection['order'] = 'random'
             selection['limit'] = 1
@@ -133,15 +156,20 @@ class search:
         regexes = []
         if 'regex' in cmd:
             if len(cmd['regex']) == 0:
-                raise CommandError("When using the regular expression filter "
-                                   "(--regex/-x), at least one regex must "
-                                   "be specified")
+                raise CommandError(
+                    "When using the regular expression filter "
+                    "(--regex/-x), at least one regex must "
+                    "be specified"
+                )
             for regex in cmd['regex']:
                 try:
                     re.compile(regex)
                 except re.RegexError as e:
-                    raise CommandError("'{}' isn't a valid regular expression: {}"
-                                       .format(regex,e))
+                    raise CommandError(
+                        "'{}' isn't a valid regular expression: {}".format(
+                            regex, e
+                        )
+                    )
                 regexes.append(regex)
                 # don't append the compiled - SQL doesn't like that
             searches.extend([{'term': r, 'type': 'regex'} for r in regexes])
@@ -149,8 +177,12 @@ class search:
         tags = {'include': [], 'exclude': []}
         if 'tags' in cmd:
             if len(cmd['tags']) == 0:
-                raise CommandError(("When using the tag filter (--tag/-t), at "
-                                    "least one tag must be specified"))
+                raise CommandError(
+                    (
+                        "When using the tag filter (--tag/-t), at "
+                        "least one tag must be specified"
+                    )
+                )
             for tag in cmd['tags']:
                 if tag[0] == "-":
                     tags['exclude'].append(tag[1:])
@@ -164,9 +196,13 @@ class search:
         authors = {'include': [], 'exclude': []}
         if 'author' in cmd:
             if len(cmd['author']) == 0:
-                raise CommandError(("When using the author filter "
-                                    "(--author/-a), at least one author must "
-                                    "be specified"))
+                raise CommandError(
+                    (
+                        "When using the author filter "
+                        "(--author/-a), at least one author must "
+                        "be specified"
+                    )
+                )
             for author in cmd['author']:
                 if author[0] == "-":
                     authors['exclude'].append(author[1:])
@@ -181,9 +217,13 @@ class search:
         ratings = MinMax()
         if 'rating' in cmd:
             if len(cmd['rating']) == 0:
-                raise CommandError(("When using the rating filter "
-                                    "(--rating/-r), at least one rating must "
-                                    "be specified"))
+                raise CommandError(
+                    (
+                        "When using the rating filter "
+                        "(--rating/-r), at least one rating must "
+                        "be specified"
+                    )
+                )
             for rating in cmd['rating']:
                 if ".." in rating:
                     rating = rating.split("..")
@@ -192,14 +232,16 @@ class search:
                     try:
                         rating = [int(x) for x in rating]
                     except ValueError:
-                        raise CommandError(("Ratings in a range must be plain "
-                                            "numbers"))
+                        raise CommandError(
+                            ("Ratings in a range must be plain "
+                             "numbers")
+                        )
                     try:
                         ratings >= min(rating)
                         ratings <= max(rating)
                     except MinMaxError as e:
                         raise CommandError(str(e).format("rating"))
-                elif rating[0] in [">","<","="]:
+                elif rating[0] in [">", "<", "="]:
                     pattern = r"^(?P<comp>[<>=]{1,2})(?P<value>[0-9]+)"
                     match = re.search(pattern, rating)
                     if match:
@@ -209,19 +251,31 @@ class search:
                             raise CommandError("Invalid rating comparison")
                         comp = match.group('comp')
                         try:
-                            if comp == ">=": ratings >= rating
-                            elif comp == "<=": ratings <= rating
-                            elif comp == "<": ratings < rating
-                            elif comp == ">": ratings > rating
+                            if comp == ">=":
+                                ratings >= rating
+                            elif comp == "<=":
+                                ratings <= rating
+                            elif comp == "<":
+                                ratings < rating
+                            elif comp == ">":
+                                ratings > rating
                             elif comp == "=":
                                 ratings >= rating
                                 ratings <= rating
                             elif comp == ">=" or comp == "<=":
-                                raise CommandError(("Rating comparisons do not "
-                            "support 'greater than' or 'lesser than' operators"))
+                                raise CommandError(
+                                    (
+                                        "Rating comparisons do not "
+                                        "support 'greater than' or 'lesser than' operators"
+                                    )
+                                )
                             else:
-                                raise CommandError(("Unknown operator in rating "
-                                                    "comparison"))
+                                raise CommandError(
+                                    (
+                                        "Unknown operator in rating "
+                                        "comparison"
+                                    )
+                                )
                         except MinMaxError as e:
                             raise CommandError(str(e).format("rating"))
                     else:
@@ -230,8 +284,12 @@ class search:
                     try:
                         rating = int(rating)
                     except ValueError:
-                        raise CommandError(("Rating must be a range, "
-                                            "comparison, or number"))
+                        raise CommandError(
+                            (
+                                "Rating must be a range, "
+                                "comparison, or number"
+                            )
+                        )
                     # Assume =, assign both
                     try:
                         ratings >= rating
@@ -244,16 +302,20 @@ class search:
         createds = MinMax()
         if 'created' in cmd:
             if len(cmd['created']) == 0:
-                raise CommandError(("When using the date of creation filter "
-                                    "(--created/-c), at least one date must "
-                                    "be specified"))
+                raise CommandError(
+                    (
+                        "When using the date of creation filter "
+                        "(--created/-c), at least one date must "
+                        "be specified"
+                    )
+                )
             created = cmd['created']
             # created is a list of date selectors - ranges, abs and rels
             # but ALL dates are ranges!
             created = [DateRange(c) for c in created]
             # created is now a list of DateRanges with min and max
             try:
-                for key,selector in enumerate(created):
+                for key, selector in enumerate(created):
                     if selector.max is not None:
                         createds <= selector.max
                     if selector.min is not None:
@@ -265,9 +327,13 @@ class search:
         categories = {'include': [], 'exclude': []}
         if 'category' in cmd:
             if len(cmd['category']) == 0:
-                raise CommandError(("When using the category filter "
-                                    "(--category/-y), at least one category "
-                                    "must be specified"))
+                raise CommandError(
+                    (
+                        "When using the category filter "
+                        "(--category/-y), at least one category "
+                        "must be specified"
+                    )
+                )
             for category in cmd['category']:
                 if category[0] == "-":
                     categories['exclude'].append(category[1:])
@@ -281,85 +347,90 @@ class search:
         parents = None
         if 'parent' in cmd:
             if len(cmd['parent']) != 1:
-                raise CommandError(("When using the parent page filter "
-                                    "(--parent/-p), exactly one parent URL "
-                                    "must be specified"))
+                raise CommandError(
+                    (
+                        "When using the parent page filter "
+                        "(--parent/-p), exactly one parent URL "
+                        "must be specified"
+                    )
+                )
             parents = cmd['parent'][0]
             searches.append({'term': parents, 'type': 'parent'})
         # FINAL BIT - summarise commands
         if 'verbose' in cmd:
             verbose = "Searching for articles "
             if len(strings) > 0:
-                verbose += ("containing \"{}\"; ".format("\", \"".join(strings)))
+                verbose += (
+                    "containing \"{}\"; ".format("\", \"".join(strings))
+                )
             if len(regexes) > 0:
-                verbose += "matching the regex /{}/; ".format("/ & /".join(regexes))
+                verbose += "matching the regex /{}/; ".format(
+                    "/ & /".join(regexes)
+                )
             if parents is not None:
                 verbose += ("whose parent page is '{}'; ".format(parents))
             if len(categories['include']) == 1:
-                verbose += ("in the category '" +
-                            categories['include'][0] +
-                            "'; ")
+                verbose += (
+                    "in the category '" + categories['include'][0] + "'; "
+                )
             elif len(categories['include']) > 1:
-                verbose += ("in the categories '" +
-                            "', '".join(categories) +
-                            "; ")
+                verbose += (
+                    "in the categories '" + "', '".join(categories) + "; "
+                )
             if len(categories['exclude']) == 1:
-                verbose += ("not in the category '" +
-                            categories['exclude'][0] +
-                            "'; ")
+                verbose += (
+                    "not in the category '" + categories['exclude'][0] + "'; "
+                )
             elif len(categories['exclude']) > 1:
-                verbose += ("not in the categories '" +
-                            "', '".join(categories) +
-                            "; ")
+                verbose += (
+                    "not in the categories '" + "', '".join(categories) + "; "
+                )
             if len(tags['include']) > 0:
-                verbose += ("with the tags '" +
-                            "', '".join(tags['include']) +
-                            "'; ")
+                verbose += (
+                    "with the tags '" + "', '".join(tags['include']) + "'; "
+                )
             if len(tags['exclude']) > 0:
-                verbose += ("without the tags '" +
-                            "', '".join(tags['exclude']) +
-                            "'; ")
+                verbose += (
+                    "without the tags '" + "', '".join(tags['exclude']) + "'; "
+                )
             if len(authors['include']) > 0:
-                verbose += ("by " +
-                            " & ".join(authors['include']) +
-                            "; ")
+                verbose += ("by " + " & ".join(authors['include']) + "; ")
             if len(authors['exclude']) > 0:
-                verbose += ("not by " +
-                            " or ".join(authors['exclude']) +
-                            "; ")
+                verbose += ("not by " + " or ".join(authors['exclude']) + "; ")
             if ratings['max'] is not None and ratings['min'] is not None:
                 if ratings['max'] == ratings['min']:
-                    verbose += ("with a rating of " +
-                                str(ratings['max']) +
-                               "; ")
+                    verbose += (
+                        "with a rating of " + str(ratings['max']) + "; "
+                    )
                 else:
-                    verbose += ("with a rating between " +
-                                str(ratings['min']) +
-                                " and " +
-                                str(ratings['max']) +
-                               "; ")
+                    verbose += (
+                        "with a rating between " + str(ratings['min']) +
+                        " and " + str(ratings['max']) + "; "
+                    )
             elif ratings['max'] is not None:
-                verbose += ("with a rating less than " +
-                            str(ratings['max']+1) +
-                            "; ")
+                verbose += (
+                    "with a rating less than " + str(ratings['max'] + 1) + "; "
+                )
             elif ratings['min'] is not None:
-                verbose += ("with a rating greater than " +
-                            str(ratings['min']-1) +
-                            "; ")
+                verbose += (
+                    "with a rating greater than " + str(ratings['min'] - 1) +
+                    "; "
+                )
             if createds['min'] is not None and createds['max'] is not None:
-                verbose += ("created between " +
-                            createds['min'].to_datetime_string() +
-                            " and " +
-                            createds['max'].to_datetime_string() +
-                            "; ")
+                verbose += (
+                    "created between " + createds['min'].to_datetime_string() +
+                    " and " + createds['max'].to_datetime_string() + "; "
+                )
             elif createds['max'] is not None:
-                verbose += ("created before " +
-                            createds['max'].to_datetime_string() +
-                            "; ")
+                verbose += (
+                    "created before " + createds['max'].to_datetime_string() +
+                    "; "
+                )
             elif createds['min'] is not None:
-                verbose += ("created after " +
-                            createds['min'].to_datetime_string() +
-                            "; ")
+                verbose += (
+                    "created after " + createds['min'].to_datetime_string() +
+                    "; "
+                )
             if verbose.endswith("; "):
                 verbose = verbose[:-2]
             msg.reply(verbose)
@@ -373,54 +444,62 @@ class search:
         # })
         pages = DB.get_articles(searches, selection)
 
-
         # pages is a list of results
         # now need to put them in the right order
-
-
-
-
-
 
         if len(pages) >= 10:
             msg.reply("{} results found.".format(len(pages)))
             return
         pages = [DB.get_article_info(p['id']) for p in pages]
         if len(pages) > 1:
-            msg.reply("{} results: {}".format(len(pages), " · ".join(
-                ["\x02{}\x0F {}".format(i+1,p['title']) for i,p in enumerate(pages)]
-            )))
+            msg.reply(
+                "{} results: {}".format(
+                    len(pages), " · ".join(
+                        [
+                            "\x02{}\x0F {}".format(i + 1, p['title'])
+                            for i, p in enumerate(pages)
+                        ]
+                    )
+                )
+            )
             if len(pages) > 3:
                 return
         if len(pages) == 0:
             # check if there's no args other than --verbose
-            if set(cmd.args).issubset({'root','verbose'}):
+            if set(cmd.args).issubset({'root', 'verbose'}):
                 # google only takes 10 args
-                url = google_search('"' + '" "'.join(cmd.args['root'][:10]) +
-                                    '"', num=1)[0]
+                url = google_search(
+                    '"' + '" "'.join(cmd.args['root'][:10]) + '"', num=1
+                )[0]
                 if url is None:
                     msg.reply("No matches found.")
                     return
                 #pprint.pprint(url)
                 if url['title'].endswith(" - SCP Foundation"):
                     url['title'] = url['title'][:-17]
-                msg.reply("No matches found. Did you mean \x02{}\x0F? {}"
-                           .format(url['title'], url['link']))
+                msg.reply(
+                    "No matches found. Did you mean \x02{}\x0F? {}".format(
+                        url['title'], url['link']
+                    )
+                )
             else:
                 msg.reply("No matches found.")
             return
         for page in pages:
             msg.reply(
                 "{} · {} · {} · {} · {}".format(
-                    ("\x02{}\x0F: {}".format(page['scp_num'],page['title'])
-                     if 'scp' in page['tags'] else
-                     "\x02{}\x0F".format(page['title'])),
+                    (
+                        "\x02{}\x0F: {}".format(page['scp_num'], page['title'])
+                        if 'scp' in page['tags'] else
+                        "\x02{}\x0F".format(page['title'])
+                    ),
                     "by " + " & ".join(page['authors']),
                     ("+" if page['rating'] >= 0 else "") + str(page['rating']),
                     pendulum.parse(page['date_posted']).diff_for_humans(),
                     "http://www.scp-wiki.net/" + page['fullname'],
                 )
             )
+
 
 class regexsearch:
     @classmethod
@@ -429,12 +508,14 @@ class regexsearch:
         cmd.args['root'] = []
         search.command(irc_c, msg, cmd)
 
+
 class tags:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         cmd.args['tags'] = cmd.args['root']
         cmd.args['root'] = []
         search.command(irc_c, msg, cmd)
+
 
 class lastcreated:
     @classmethod
@@ -449,9 +530,10 @@ class lastcreated:
         # the minimum args are root, order, limit and optionally verbose
         # must expandargs to convert v to verbose
         search.expandargs(cmd)
-        if set(cmd.args).issubset({'root','order','limit','verbose'}):
+        if set(cmd.args).issubset({'root', 'order', 'limit', 'verbose'}):
             cmd.args['created'] = ["<3d"]
         search.command(irc_c, msg, cmd)
+
 
 class MinMax:
     """A dictionary whose keys are only mutable if they are None"""
@@ -462,34 +544,49 @@ class MinMax:
         self.min = min
         self.max = min
 
-    def __lt__(self, other): # MinMax < 20
+    def __lt__(self, other):  # MinMax < 20
         if self.max == None:
-            if self.min != None and self.min > other: MinMax.throw('discrep')
-            else: self.max = other - 1
-        else: MinMax.throw('max')
+            if self.min != None and self.min > other:
+                MinMax.throw('discrep')
+            else:
+                self.max = other - 1
+        else:
+            MinMax.throw('max')
 
-    def __gt__(self, other): # MinMax > 20
+    def __gt__(self, other):  # MinMax > 20
         if self.min == None:
-            if self.max != None and self.max < other: MinMax.throw('discrep')
-            else: self.min = other + 1
-        else: MinMax.throw('min')
+            if self.max != None and self.max < other:
+                MinMax.throw('discrep')
+            else:
+                self.min = other + 1
+        else:
+            MinMax.throw('min')
 
-    def __le__(self, other): # MinMax <= 20
+    def __le__(self, other):  # MinMax <= 20
         if self.max == None:
-            if self.min != None and self.min > other: MinMax.throw('discrep')
-            else: self.max = other
-        else: MinMax.throw('max')
+            if self.min != None and self.min > other:
+                MinMax.throw('discrep')
+            else:
+                self.max = other
+        else:
+            MinMax.throw('max')
 
-    def __ge__(self, other): # MinMax <= 20
+    def __ge__(self, other):  # MinMax <= 20
         if self.min == None:
-            if self.max != None and self.max < other: MinMax.throw('discrep')
-            else: self.min = other
-        else: MinMax.throw('min')
+            if self.max != None and self.max < other:
+                MinMax.throw('discrep')
+            else:
+                self.min = other
+        else:
+            MinMax.throw('min')
 
-    def __getitem__(self, arg): # MinMax['min']
-        if arg is 'min': return self.min
-        elif arg is 'max': return self.max
-        else: raise KeyError(arg + " not in a MinMax object")
+    def __getitem__(self, arg):  # MinMax['min']
+        if arg is 'min':
+            return self.min
+        elif arg is 'max':
+            return self.max
+        else:
+            raise KeyError(arg + " not in a MinMax object")
 
     @staticmethod
     def throw(type):
@@ -499,8 +596,10 @@ class MinMax:
             # Do I look like I give a damn
             raise MinMaxError("Can only have one " + type + "imum {0}")
 
+
 class MinMaxError(Exception):
     pass
+
 
 class DateRange:
     """A non-precise date for creating date ranges"""
@@ -508,31 +607,32 @@ class DateRange:
         return "DateRange({}..{})".format(self.min, self.max)
 
     # Each DateRange should have 2 datetimes:
-        # 1. when it starts
-        # 2. when it ends
+    # 1. when it starts
+    # 2. when it ends
     # Then when we make a range with the date, we take the one that gives the
     # largest range
     # Takes BOTH explicit ranges and implicit dates
     datestr = "{}-{}-{} {}:{}:{}"
+
     def __init__(self, date):
         self.input = date
         self.min = None
         self.max = None
         self.compare = None
         # possible values:
-            # 1. absolute date
-            # 2. relative date
-            # 3. range (relative or absolute)
+        # 1. absolute date
+        # 2. relative date
+        # 3. range (relative or absolute)
         # for absolute:
-            # parse
-            # create max and min
+        # parse
+        # create max and min
         # for relative:
-            # create a timedelta
-            # subtract that from now
-            # no need for max and min, subtraction is precise
+        # create a timedelta
+        # subtract that from now
+        # no need for max and min, subtraction is precise
         # for range:
-            # create a DateRange for each
-            # select max and min from both to create largest possible range
+        # create a DateRange for each
+        # select max and min from both to create largest possible range
         # first let's handle the range
         if ".." in self.input:
             self.input = self.input.split("..")
@@ -561,11 +661,14 @@ class DateRange:
                 self.max = max(self.max)
                 return
             diffs = []
-            for i,minimum in enumerate(self.min):
-                for j,maximum in enumerate(self.max):
+            for i, minimum in enumerate(self.min):
+                for j, maximum in enumerate(self.max):
                     diffs.append(
-                        {'i': i, 'j': j,
-                         'diff': self.min[i].diff(self.max[j]).in_seconds()}
+                        {
+                            'i': i,
+                            'j': j,
+                            'diff': self.min[i].diff(self.max[j]).in_seconds()
+                        }
                     )
             diffs = max(diffs, key=lambda x: x['diff'])
             self.max = self.max[diffs['j']]
@@ -588,25 +691,26 @@ class DateRange:
             pass
         elif re.match(r"([0-9]+[A-Za-z])+$", self.input):
             # the date is relative
-            sel = [i for i
-                   in re.split(r"([0-9]+)", self.input)
-                   if i]
-                # sel is now a number-letter-repeat list
-                # convert list to dict via pairwise
+            sel = [i for i in re.split(r"([0-9]+)", self.input) if i]
+            # sel is now a number-letter-repeat list
+            # convert list to dict via pairwise
             sel = DateRange.reverse_pairwise(sel)
             # convert all numbers to int
-            sel = dict([a, int(x)] for a,x in sel.items())
+            sel = dict([a, int(x)] for a, x in sel.items())
             self.date = pendulum.now()
             # check time units
-            for key,value in sel.items():
+            for key, value in sel.items():
                 # make units not case sensitive
                 if key != 'M':
                     sel[key.lower()] = sel.pop(key)
                 if key not in 'smhdwMy':
-                    raise CommandError(("{} isn't a valid unit of time in a "
-                                        "relative date. Valid units are s, m, "
-                                        "h, d, w, M, and y.")
-                                       .format(key))
+                    raise CommandError(
+                        (
+                            "{} isn't a valid unit of time in a "
+                            "relative date. Valid units are s, m, "
+                            "h, d, w, M, and y."
+                        ).format(key)
+                    )
             self.date = pendulum.now().subtract(
                 years=sel.get('y', 0),
                 months=sel.get('M', 0),
@@ -616,20 +720,24 @@ class DateRange:
                 minutes=sel.get('m', 0),
                 seconds=sel.get('s', 0),
             )
-            if self.compare in ["<","<="]:
+            if self.compare in ["<", "<="]:
                 self.min = self.date
-            elif self.compare in [">",">="] or self.compare is None:
+            elif self.compare in [">", ">="] or self.compare is None:
                 self.max = self.date
             elif self.compare == "=":
                 self.max = self.date
                 self.min = self.date
                 # possible broken - may match to the second
             else:
-                raise CommandError("Unknown operator in relative date "
-                                   "comparison ({})".format(self.compare))
+                raise CommandError(
+                    "Unknown operator in relative date "
+                    "comparison ({})".format(self.compare)
+                )
         else:
-            raise CommandError("'{}' isn't a valid absolute or relative date "
-                               "type".format(self.input))
+            raise CommandError(
+                "'{}' isn't a valid absolute or relative date "
+                "type".format(self.input)
+            )
 
     def date_is_absolute(self):
         try:
@@ -640,19 +748,27 @@ class DateRange:
             except pendulum.parsing.exceptions.ParserError:
                 return False
             else:
-                raise CommandError(("Absolute dates must be of the format "
-                                    "YYYY, YYYY-MM or YYYY-MM-DD"))
+                raise CommandError(
+                    (
+                        "Absolute dates must be of the format "
+                        "YYYY, YYYY-MM or YYYY-MM-DD"
+                    )
+                )
         else:
             return True
 
     @staticmethod
     def reverse_pairwise(iterable):
-        return dict(zip(*[iter(reversed(iterable))]*2))
+        return dict(zip(*[iter(reversed(iterable))] * 2))
 
-    def __getitem__(self, arg): # MinMax['min']
-        if arg is 'min': return self.min
-        elif arg is 'max': return self.max
-        else: raise KeyError(arg + " not in a DateRange object")
+    def __getitem__(self, arg):  # MinMax['min']
+        if arg is 'min':
+            return self.min
+        elif arg is 'max':
+            return self.max
+        else:
+            raise KeyError(arg + " not in a DateRange object")
+
 
 # TODO move this to helpers/api.py
 def google_search(search_term, **kwargs):
