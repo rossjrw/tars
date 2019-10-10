@@ -41,6 +41,18 @@ class bear:
             output += emojize(choice([":bear:"]))
         msg.reply(output)
 
+class cat:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        repeat = 2
+        output = ""
+        for _ in range(0,repeat):
+            output += emojize(choice([":cat:", ":cat2:", ":smirk_cat:", ":joy_cat:",
+                                      ":scream_cat:", ":pouting_cat:", ":crying_cat_face:",
+                                      ":heart_eyes_cat:", ":smiley_cat:", ":smile_cat:",
+                                      ":kissing_cat:"]))
+        msg.reply(output)
+
 class narcissism:
     @classmethod
     def command(cls, irc_c, msg, cmd):

@@ -43,6 +43,7 @@ COMMANDS = {
     "gimmick": {"reptile": {"reptile","rep"},
                 "fish": {"fish","reptile+","rep+"},
                 "bear": {"bear"},
+                "cat": {"cat"},
                 "narcissism": {"rounderhouse","jazstar","themightymcb"},
                 "password": {"password","passcode"},
                 "hug": {"hug","hugtars"},
