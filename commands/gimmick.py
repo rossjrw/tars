@@ -32,6 +32,15 @@ class fish:
             output += emojize(choice([":fish:",":tropical_fish:"]))
         msg.reply(output)
 
+class bear:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        repeat = 2
+        output = ""
+        for _ in range(0,repeat):
+            output += emojize(choice([":bear:"]))
+        msg.reply(output)
+
 class narcissism:
     @classmethod
     def command(cls, irc_c, msg, cmd):
