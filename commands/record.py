@@ -21,7 +21,7 @@ class pingall:
             raise CommandError("You're not authorised to do that")
         cmd.expandargs(["channel c"])
         if "channel" in cmd:
-            channel = cmd['channel']
+            channel = cmd['channel'][0]
         else:
             channel = msg.channel
         members = DB.get_occupants(channel, True)
