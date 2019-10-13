@@ -19,7 +19,12 @@ class pingall:
         """Ping everyone in the channel"""
         if not defer.controller(cmd):
             raise CommandError("You're not authorised to do that")
-        members = DB.get_occupants(msg.channel, True)
+        cmd.expandargs(["channel c"])
+        if "channel" in cmd:
+            channel = cmd['channel']
+        else:
+            channel = msg.channel
+        members = DB.get_occupants(channel, True)
         if len(cmd.args['root']) == 0:
             # no message
             msg.reply(", ".join(members))
