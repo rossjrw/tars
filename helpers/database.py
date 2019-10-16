@@ -14,7 +14,7 @@ from pprint import pprint
 from helpers.parse import nickColor
 import pandas
 import pendulum as pd
-from pypika import MySQLQuery, Table, Field
+from pypika import MySQLQuery, Table, Field, Order
 from pypika.terms import ValueWrapper
 from pypika.functions import Max, Length
 from pprint import pprint
@@ -385,6 +385,7 @@ class SqliteDriver:
                 q = q.where(messages.message.like(contain))
         if minlength is not None:
             q = q.where(Length(messages.message) >= minlength)
+        q = q.orderby(messages.timestamp, order=Order.desc)
         if limit is not None:
             q = q[:limit]
         q = str(q).replace(" LIKE "," GLOB ").replace(" REGEX "," REGEXP ")
