@@ -137,7 +137,7 @@ class gib:
             sentence = cls.get_gib_sentence()
             if sentence is None:
                 raise AttributeError
-        except AttributeError:
+        except RuntimeError:
             msg.reply("Looks like {} spoken enough in {} just yet.{}".format(
                 ("you haven't" if msg.sender in users and len(users) == 1
                  else "nobody has" if len(users) == 0
@@ -169,15 +169,14 @@ class gib:
     @classmethod
     def get_gib_sentence(cls, attempts=0):
         print("Getting a gib sentence")
-        # try again with a smaller state size
-        # this should only happen with small data sets so I'm not
-        #   too concerned about performance
-        messages = []
-        for channel in cls.channels:
-            print("Iterating channels")
-            for user in cls.users:
-                print("Iterating users")
-                messages.extend(DB.get_messages(channel, user))
+        # messages = []
+        # for channel in cls.channels:
+        #     print("Iterating channels")
+        #     for user in cls.users:
+        #         print("Iterating users")
+        #         messages.extend(DB.get_messages(channel, user))
+        messages = DB.get_messages(cls.channels, minlength=40, limit=7500,
+                                   senders=None if cls.users == [None] else cls.users)
         print("messages found: {}".format(len(messages)))
         if len(messages) == 0:
             raise AttributeError
@@ -226,13 +225,11 @@ class gib:
     def roulette(cls, roulette_type):
         """Get a random image or video link"""
         # take all the messages in the channel, filtered for links
-        messages = []
-        for channel in cls.channels:
-            for user in cls.users:
-                messages = DB.get_messages(channel, user, _URL_PATT)
-                if len(messages) == 0 and len(cls.users) <= 1:
-                    raise MyFaultError("I didn't find any URLs in the "
-                                       "selection criteria.")
+        messages = DB.get_messages(cls.channels, senders=cls.users,
+                                   patterns=[_URL_PATT])
+        if len(messages) == 0 and len(cls.users) <= 1:
+            raise MyFaultError("I didn't find any URLs in the "
+                               "selection criteria.")
         # then reduce strings containing urls to urls
         urls = [re.search(_URL_PATT, message).group(0) for message in messages]
         # make urls unique

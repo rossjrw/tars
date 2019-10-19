@@ -14,9 +14,9 @@ from pprint import pprint
 from helpers.parse import nickColor
 import pandas
 import pendulum as pd
-from pypika import MySQLQuery, Table, Field
+from pypika import MySQLQuery, Table, Field, Order
 from pypika.terms import ValueWrapper
-from pypika.functions import Max
+from pypika.functions import Max, Length
 from pprint import pprint
 from helpers.config import CONFIG
 from pyaib.irc import Message
@@ -38,6 +38,7 @@ def dbprint(text, error=False):
 
 def norm(thing):
     """fetchX often returns a tuple or a list of tuples because it's dumb"""
+    # This function needs to fucking go
     if thing is None:
         return None
     if all(isinstance(el, (list, tuple)) for el in thing):
@@ -342,30 +343,53 @@ class SqliteDriver:
                   ''')
         return [r['alias'] for r in c.fetchall()]
 
-    def get_messages(self, channel, user=None, pattern=None):
-        """Returns all messages from the channel by the user"""
+    def get_messages(self, channels, users=None, senders=None, patterns=None,
+                     contains=None, minlength=None, limit=None):
+        """Returns all messages from the channel by the user.\
+        user, sender, pattern, contains should be lists (and channel can be)."""
         c = self.conn.cursor()
+        print("Getting messages")
         # TODO make this lookup all names of a user and do an IN check
         # need to convert channel name to channel id
-        assert isinstance(channel, str) and channel.startswith('#')
+        if not isinstance(channels, list): channels = [channels]
+        for channel in channels:
+            assert isinstance(channel, str) and channel.startswith('#')
+        assert isinstance(users, (list, type(None)))
+        assert isinstance(senders, (list, type(None)))
+        assert isinstance(patterns, (list, type(None)))
+        assert isinstance(contains, (list, type(None)))
+        assert isinstance(minlength, (int, type(None)))
+        assert isinstance(limit, (int, type(None)))
         c.execute('''
             SELECT id FROM channels
-            WHERE channel_name=?
-                  ''', (channel,))
-        channel = norm(c.fetchone())
-        if channel is None:
+            WHERE channel_name IN ({})'''.format(",".join(["?"]*len(channels)))
+                  , channels)
+        channels = [row['id'] for row in c.fetchall()]
+        if None in channels:
             raise ValueError("That channel does not exist")
         messages = Table('messages')
         q = MySQLQuery.from_(messages).select(messages.message)
-        q = q.where(messages.channel_id == channel)
+        q = q.where(messages.channel_id.isin(channels))
         q = q.where(messages.command == 0)
         q = q.where(messages.kind == 'PRIVMSG')
         q = q.where(messages.ignore == 0)
-        if user is not None:
-            q = q.where(messages.sender == user)
-        if pattern is not None:
-            q = q.where(messages.message.regex(pattern))
+        # if user is not None: TODO
+        #     q = q.where(messages.sender == user)
+        if senders is not None:
+            q = q.where(messages.sender.isin(senders))
+        if patterns is not None:
+            for pattern in patterns:
+                q = q.where(messages.message.regex(patterns))
+        if contains is not None:
+            for contain in contains:
+                q = q.where(messages.message.like(contain))
+        if minlength is not None:
+            q = q.where(Length(messages.message) >= minlength)
+        q = q.orderby(messages.timestamp, order=Order.desc)
+        if limit is not None:
+            q = q[:limit]
         q = str(q).replace(" LIKE "," GLOB ").replace(" REGEX "," REGEXP ")
+        print("Getting messages:", str(q))
         c.execute(str(q))
         result = c.fetchall()
         messages = [m['message'] for m in result]
