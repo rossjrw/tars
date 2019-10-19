@@ -98,6 +98,13 @@ class gib:
             cls.nocache = True
         else:
             cls.nocache = False
+        if 'limit' in cmd:
+            try:
+                limit = int(cmd['limit'][0])
+            except ValueError:
+                raise CommandError("When using --limit, the limit must be an int")
+        else:
+            limit = 7500
         # can only gib a channel both the user and the bot are in
         for channel in channels:
             if channel is msg.channel:
@@ -134,7 +141,7 @@ class gib:
             return
         # gibbing:
         try:
-            sentence = cls.get_gib_sentence()
+            sentence = cls.get_gib_sentence(limit=limit)
             if sentence is None:
                 raise AttributeError
         except RuntimeError:
@@ -167,7 +174,7 @@ class gib:
         msg.reply(sentence)
 
     @classmethod
-    def get_gib_sentence(cls, attempts=0):
+    def get_gib_sentence(cls, attempts=0, limit=7500):
         print("Getting a gib sentence")
         # messages = []
         # for channel in cls.channels:
@@ -175,7 +182,7 @@ class gib:
         #     for user in cls.users:
         #         print("Iterating users")
         #         messages.extend(DB.get_messages(channel, user))
-        messages = DB.get_messages(cls.channels, minlength=40, limit=7500,
+        messages = DB.get_messages(cls.channels, minlength=40, limit=limit,
                                    senders=None if cls.users == [None] else cls.users)
         print("messages found: {}".format(len(messages)))
         if len(messages) == 0:
@@ -192,7 +199,7 @@ class gib:
             print("Sentence already sent, {} attempts remaining".format(cls.ATTEMPT_LIMIT-attempts))
             try:
                 if attempts < cls.ATTEMPT_LIMIT:
-                    sentence = cls.get_gib_sentence(attempts+1)
+                    sentence = cls.get_gib_sentence(attempts+1, limit)
                 else:
                     raise RecursionError
             except RecursionError:
