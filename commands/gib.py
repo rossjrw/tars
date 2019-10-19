@@ -103,6 +103,9 @@ class gib:
                 limit = int(cmd['limit'][0])
             except ValueError:
                 raise CommandError("When using --limit, the limit must be an int")
+            if limit < 200:
+                raise CommandError("When using --limit, the limit cannot be "
+                                   "lower than 200")
         else:
             limit = 7500
         # can only gib a channel both the user and the bot are in
