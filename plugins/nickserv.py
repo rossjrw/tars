@@ -9,6 +9,7 @@ from time import sleep
 from helpers.greetings import greet
 from helpers.api import password
 from helpers.database import DB
+from helpers.config import CONFIG
 
 def nsprint(message):
     print("[\x1b[38;5;212mNickServ\x1b[0m] " + str(message))
@@ -50,11 +51,11 @@ class NickServ(object):
         irc_c.PRIVMSG("nickserv",
                       "IDENTIFY {}".format(self.password))
         nsprint("Marking myself as a bot...")
-        irc_c.RAW("mode TARS +B")
+        irc_c.RAW("mode {} +B".format(CONFIG.nick))
 
     @observes("IRC_MSG_NOTICE")
     def autojoin(self, irc_c, msg):
-        if "Password accepted" in msg.message:
+        if "Password accepted" in msg.message and CONFIG.channels.db:
             for channel in DB.get_autojoins():
                 irc_c.JOIN(channel)
                 nsprint("Joining " + str(channel))

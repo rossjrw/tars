@@ -10,6 +10,7 @@ Provides functions for manipulating the database.
 # reminder: 'single quotes' for string literals eg for tables that don't exist
 
 import sqlite3
+import random
 from pprint import pprint
 from helpers.parse import nickColor
 import pandas
@@ -379,7 +380,7 @@ class SqliteDriver:
             q = q.where(messages.sender.isin(senders))
         if patterns is not None:
             for pattern in patterns:
-                q = q.where(messages.message.regex(patterns))
+                q = q.where(messages.message.regex(pattern))
         if contains is not None:
             for contain in contains:
                 q = q.where(messages.message.like(contain))

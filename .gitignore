@@ -8,3 +8,5 @@ env
 .vscode
 pylintrc
 *.csv
+*.so
+*.c

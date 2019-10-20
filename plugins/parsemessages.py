@@ -13,6 +13,7 @@ from importlib import reload
 from pprint import pprint
 import time
 import cProfile, pstats, io
+from plop.collector import Collector, FlamegraphFormatter
 import bpaste
 
 def try_command(attempt, irc_c, msg, cmd):
