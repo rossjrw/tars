@@ -10,3 +10,4 @@ pylintrc
 *.csv
 *.so
 *.c
+build/
