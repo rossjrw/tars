@@ -24,9 +24,6 @@ _URL_PATT = (r"https?:\/\/(www\.)?"
 _YT_PATT = re.compile(r"^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+")
 _IMG_PATT = re.compile(r"(imgur)|(((jpeg)|(jpg)|(png)|(gif)))$")
 
-from helpers.build_chain import build
-markovify.chain.Chain.build = build
-
 class MarkovFromList(markovify.Text):
     def sentence_split(self, text):
         return [text]
