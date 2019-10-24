@@ -6,6 +6,14 @@ More commands can be added by request.
 
 from random import choice
 from emoji import emojize
+import requests
+
+class idea:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        msg.reply("{} · {}".format(
+            "http://bit.ly/scp-gen",
+            requests.get("https://scp-generator.herokuapp.com/newscp").text))
 
 class hug:
     @classmethod
@@ -47,20 +55,21 @@ class cat:
         repeat = 2
         output = ""
         for _ in range(0,repeat):
-            output += emojize(choice([":cat:", ":cat2:", ":smirk_cat:", ":joy_cat:",
-                                      ":scream_cat:", ":pouting_cat:", ":crying_cat_face:",
-                                      ":heart_eyes_cat:", ":smiley_cat:", ":smile_cat:",
-                                      ":kissing_cat:"]))
+            output += emojize(choice([":cat:", ":cat2:", ":smirk_cat:",
+                                      ":joy_cat:", ":scream_cat:",
+                                      ":pouting_cat:", ":crying_cat_face:",
+                                      ":heart_eyes_cat:", ":smiley_cat:",
+                                      ":smile_cat:", ":kissing_cat:"]))
         msg.reply(output)
 
 class narcissism:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        if cmd.command == 'rounderhouse':
+        if cmd.command == "rounderhouse":
             msg.reply(emojize(":red_circle::house:"))
-        if cmd.command == 'jazstar':
+        if cmd.command == "jazstar":
             msg.reply(emojize(":saxophone::star:"))
-        if cmd.command == 'themightymcb':
+        if cmd.command == "themightymcb":
             msg.reply(emojize(":muscle::flag-ie::bee:"))
 
 class password:

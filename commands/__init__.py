@@ -48,6 +48,7 @@ COMMANDS = {
                 "password": {"password","passcode"},
                 "hug": {"hug","hugtars"},
                 "fiction": {"isthisreal"},
+                "idea": {"idea"},
                },
     "converse": {"converse": {"converse"},
                 },
