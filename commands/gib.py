@@ -19,8 +19,8 @@ from emoji import emojize
 from helpers.defer import defer
 
 _URL_PATT = (r"https?:\/\/(www\.)?"
-                r"[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}"
-                r"\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)")
+             r"[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}"
+             r"\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)")
 _YT_PATT = re.compile(r"^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+")
 _IMG_PATT = re.compile(r"(imgur)|(((jpeg)|(jpg)|(png)|(gif)))$")
 
@@ -85,14 +85,6 @@ class gib:
                 raise CommandError("Sizes must be numbers")
         else:
             cls.size = 3
-        if 'roulette' in cmd:
-            if len(cmd['roulette']) == 0:
-                raise CommandError("When using roulette mode, you must "
-                                   "specify a roulette type")
-            roulette_type = cmd['roulette'][0]
-            if roulette_type not in ['video','image','youtube','yt']:
-                raise CommandError("The roulette type must be either "
-                                   "'image' or one of 'video','youtube','yt'")
         # ignore gib cache?
         if 'no-cache' in cmd:
             cls.nocache = True
@@ -108,6 +100,15 @@ class gib:
                                    "lower than 200")
         else:
             limit = 7500
+        if 'roulette' in cmd:
+            if len(cmd['roulette']) == 0:
+                raise CommandError("When using roulette mode, you must "
+                                   "specify a roulette type")
+            roulette_type = cmd['roulette'][0]
+            if roulette_type not in ['video','image','youtube','yt']:
+                raise CommandError("The roulette type must be either "
+                                   "'image' or one of 'video','youtube','yt'")
+            limit = None
         # can only gib a channel both the user and the bot are in
         for channel in channels:
             if channel is msg.channel:
@@ -237,7 +238,7 @@ class gib:
         # take all the messages in the channel, filtered for links
         messages = DB.get_messages(cls.channels, senders=cls.users,
                                    patterns=[_URL_PATT])
-        if len(messages) == 0 and len(cls.users) <= 1:
+        if len(messages) == 0:
             raise MyFaultError("I didn't find any URLs in the "
                                "selection criteria.")
         # then reduce strings containing urls to urls

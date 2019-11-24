@@ -376,12 +376,12 @@ class SqliteDriver:
         q = q.where(messages.ignore == 0)
         # if user is not None: TODO
         #     q = q.where(messages.sender == user)
-        if senders is not None:
+        if senders is not None and senders is not [None]:
             q = q.where(messages.sender.isin(senders))
-        if patterns is not None:
+        if patterns is not None and patterns is not [None]:
             for pattern in patterns:
                 q = q.where(messages.message.regex(pattern))
-        if contains is not None:
+        if contains is not None and contains is not [None]:
             for contain in contains:
                 q = q.where(messages.message.like(contain))
         if minlength is not None:
