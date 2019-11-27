@@ -23,6 +23,7 @@ class converse:
                 "fuck you",
                 "piss off",
                 "fuck off",
+                "shut up",
             ]):
                 msg.reply("{}: no u".format(msg.nick))
                 return

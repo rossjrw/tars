@@ -7,6 +7,7 @@ Commands:
     tags - search with root params lumped into -t
 """
 
+import argparse
 from pprint import pprint
 import pendulum
 from edtf import parse_edtf
@@ -27,24 +28,23 @@ class search:
     @staticmethod
     def expandargs(cmd):
         cmd.expandargs(
-            [
-                "tags tag tagged t",
-                "author au a",
-                "rating r",
-                "created date c",
-                "category cat y",
-                "parent p",
-                "regex x",
-                "summary summarise u",
-                "random rand ran d",
-                "recommend rec m",
-                "newest new n",
-                "verbose v",
-                "order o",
-                "limit l",
-                "offset f",
-                "ignorepromoted",
-            ]
+            [[list, str, "title"],
+             [list, str, "--tags", "--tag", "--tagged", "-t"],
+             [list, str, "--author", "--au", "-a"],
+             [list, str, "--rating", "-r"],
+             [list, str, "--created", "--date", "-c"],
+             [list, str, "--category", "--cat", "-y"],
+             [str, "--parent", "-p"],
+             [list, str, "--regex", "-x"],
+             [bool, "--summary", "--summarise", "-u"],
+             [bool, "--random", "--rand", "--ran", "-d"],
+             [bool, "--recommend", "--rec", "-m"],
+             [bool, "--newest", "--new", "-n"],
+             [bool, "--verbose", "-v"],
+             [str, "--order", "-o"],
+             [int, "--limit", "-l"],
+             [int, "--offset", "-f"],
+             [bool, "--ignorepromoted"]]
         )
 
     @classmethod
@@ -315,7 +315,7 @@ class search:
             created = [DateRange(c) for c in created]
             # created is now a list of DateRanges with min and max
             try:
-                for key, selector in enumerate(created):
+                for selector in created:
                     if selector.max is not None:
                         createds <= selector.max
                     if selector.min is not None:
@@ -455,10 +455,8 @@ class search:
             msg.reply(
                 "{} results: {}".format(
                     len(pages), " · ".join(
-                        [
-                            "\x02{}\x0F {}".format(i + 1, p['title'])
-                            for i, p in enumerate(pages)
-                        ]
+                        ["\x02{}\x0F {}".format(i + 1, p['title'])
+                            for i, p in enumerate(pages)]
                     )
                 )
             )

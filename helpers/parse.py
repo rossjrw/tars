@@ -5,6 +5,7 @@ Provides functions for parsing and formatting stuff into other stuff.
 
 import re
 import shlex
+import argparse
 import pyaib.util.data as data
 from helpers.config import CONFIG
 
@@ -13,18 +14,6 @@ def parseprint(message):
     pass
 
 class ParsedCommand():
-    """ParsedCommand
-
-    A dictionary with pings, commands and arguments bundled up nicely.
-    .raw - the original message, unchanged
-    .ping - nick of the message's ping
-    .pinged - bool; was TARS pinged?
-    .command - the actual command itself
-        .command - the root command
-        .arguments - dict with each keys of tags and values as argument
-                     tuples. First tuple has tag "root". Tags will be
-                     either long or short depending on user input.
-    """
     def __init__(self, irc_c, message):
         # Check that the message is a string
         self.sender = message.sender
@@ -37,7 +26,7 @@ class ParsedCommand():
         self.command = None # base command
         self.message = None # varies
         self.quote_error = False # was there a shlex error?
-        self.args = None # command arguments as dict w/ subargs as list
+        self.args = {} # command arguments as dict w/ subargs as list
         self.force = False # . or .. ?
         self.context = irc_c
         parseprint("Raw input: " + self.raw)
@@ -95,99 +84,69 @@ class ParsedCommand():
             # No command - work out what to do here
             parseprint("No command!")
 
-        # What were the arguments?
-        if self.command:
-            # remove apostrophes because they'll fuck with shlex
-            self.message = self.message.replace("'", "<<APOS>>")
-            self.message = self.message.replace('\\"', "<<QUOT>>")
-            try:
-                self.message = shlex.split(self.message, posix=False)
-                # posix=False does not remove quotes
-                for i,word in enumerate(self.message):
-                    if word.startswith('"') and word.endswith('"'):
-                        self.message[i] = word[1:-1]
-            except ValueError:
-                # raised if shlex detects fucked up quotemarks
-                self.message = self.message.split()
-                self.quote_error = True
-            self.message = [w.replace("<<APOS>>", "'") for w in self.message]
-            self.message = [w.replace("<<QUOT>>", '"') for w in self.message]
-            # arguments is now a list, quotes are preserved
-            # need to split it into different lists per tag, though
-        self.args = {'root': []}
-        currArg = 'root'
-        for argument in self.message:
-            if argument[:1] == "-" and len(argument) == 2 \
-            or argument[:2] == "--" and len(argument) >= 2:
-                currArg = argument.strip("-")
-                self.args[currArg] = []
-            else:
-                self.args[currArg].append(argument)
-        # empty args exist as a present but empty list
-        if self.command is not None:
-            # detect a chevron command
-            pattern = r"^(\^+)$"
-            match = re.match(pattern, self.command)
-            if match:
-                chevs = str(len(self.command))
-                self.command = "chevron"
-                if 'root' in self.args:
-                    self.args['root'].insert(0, chevs)
-                else:
-                    self.args['root'] = [chevs]
+        # arguments will be added via expandargs
 
-    def hasarg(self, *args):
-        """Checks whether this command has a given argument."""
-        # args should be ('argument','a')
-        for arg in args:
-            if arg in self.args:
-                return True
-        return False
-
-    def getarg(self, *args):
-        """Gets the value of a given argument."""
-        for arg in args:
-            if arg in self.args:
-                return self.args[arg]
-        raise AttributeError("Command does not have argument(s):"
-                             + ", ".join(args))
+        # TODO reimplement chevron
+        # if self.command is not None:
+        #     # detect a chevron command
+        #     pattern = r"^(\^+)$"
+        #     match = re.match(pattern, self.command)
+        #     if match:
+        #         chevs = str(len(self.command))
+        #         self.command = "chevron"
+        #         if 'root' in self.args:
+        #             self.args['root'].insert(0, chevs)
+        #         else:
+        #             self.args['root'] = [chevs]
 
     def __contains__(self, arg):
         """Allows cmd.hasarg via the `in` operator"""
-        return self.hasarg(arg)
+        return arg in self.args
 
     def __getitem__(self, arg):
         """Allows cmd.getarg via the [] operator"""
-        return self.getarg(arg)
+        return self.args['arg']
 
-    def expandargs(self, args):
-        """Expand short args to long ones
-        Expects one array of "long s" pairs (or multiples)
-        All will be collapsed to the first value in the string
-        Other flags will be deleted"""
-        for pair in args:
-            aliases = pair.split()
-            # Keep the parent alias for reference
-            parent = ""
-            for key,alias in enumerate(aliases):
-                # ignore the 1st one
-                if key == 0:
-                    parent = alias
-                    continue
-                else:
-                    if alias in self.args:
-                        # Get and delete shorthand property in one swoop
-                        self.args[parent] = self.args.pop(alias, None)
+    def expandargs(self, arglist):
+        nargs = { list: '*', str: 1, bool: '?', int: 1 }
+        parser = argparse.ArgumentParser()
+        # arglist is a list of arguments like ["--longname", "--ln", "-l"]
+        for arg in arglist:
+            narg = nargs[arg[0]]
+            if arg[0] is list: arg.pop(0)
+            kwargs = {'default': False if arg[0] is bool else None,
+                      'action': 'store_true' if arg[0] is bool else 'store'}
+            if arg[0] is not bool:
+                kwargs['nargs'] = narg
+            parser.add_argument(*arg[1:], **kwargs)
+        # remove apostrophes because they'll fuck with shlex
+        self.message = self.message.replace("'", "<<APOS>>")
+        self.message = self.message.replace('\\"', "<<QUOT>>") # explicit \"
+        try:
+            self.message = shlex.split(self.message, posix=False)
+            # posix=False does not remove quotes
+            for i,word in enumerate(self.message):
+                if word.startswith('"') and word.endswith('"'):
+                    self.message[i] = word[1:-1]
+        except ValueError:
+            # raised if shlex detects fucked up quotemarks
+            self.message = self.message.split()
+            self.quote_error = True
+        self.message = [w.replace("<<APOS>>", "'") for w in self.message]
+        self.message = [w.replace("<<QUOT>>", '"') for w in self.message]
+        self.args = parser.parse_args(self.message)
+        print("args!")
+        print(vars(self.args))
 
 # Parse a nick to its IRCCloud colour
 def nickColor(string, html=False):
     length = 27
-    colours = [180,220,216,209,208,
-               46 ,11 ,143,113,77 ,
-               108,71 ,79 ,37 ,80 ,
-               14 ,39 ,117,75 ,69 ,
-               146,205,170,213,177,
-               13 ,217]
+    colours =      [180,220,216,209,208,
+                     46, 11,143,113, 77,
+                    108, 71, 79, 37, 80,
+                     14, 39,117, 75, 69,
+                    146,205,170,213,177,
+                     13,217]
     html_colours = ['#b22222','#d2691e','#ff9166','#fa8072','#ff8c00',
                     '#228b22','#808000','#b7b05d','#8ebd2e','#2ebd2e',
                     '#82b482','#37a467','#57c8a1','#1da199','#579193',
