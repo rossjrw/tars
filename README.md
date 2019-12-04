@@ -5,18 +5,6 @@ This README contains instructions for command line usage and implementation
 details. End users looking for command instruction should look at the
 documentation: https://rossjrw.github.io/tars/help/
 
-TARS' development philosophy is to be **dynamic** and **responsive**.
-* **dynamic** - TARS should not hold any non-essential data and should get its
-  content direct from the source. Where data must be held, it should be updated
-  frequently. Data that TARS relies on but that is able to change (e.g.
-  config files; specific exceptions) must be stored externally.
-* **responsive** - TARS should never need to be asked to do something twice -
-  it should just work. It should play nicely with other bots and do its part to
-  ensure that it does not respond to queries that it was not asked. When errors
-  occur as a result of the user, they must be reported explicitly such that the
-  user may fix them. When errors occur as a result of internal failure, they
-  should be reported and fixed without any input from the user who caused them.
-
 ## Current state
 
 TARS is not yet finished and has no ETA. TARS is, however, operational.
@@ -81,39 +69,29 @@ alias, or it won't be able to be called.
 
 ## Commands
 
-Command objects (`cmd`) consist of a dictionary of lists. Each item in the
-dictionary will be named for its flag, and will consist of the list of
-arguments that follow the flag.
+Command objects (`cmd`) are parsed by argparse. Arguments are accessible from
+`cmd.args`, after `cmd.expandargs()` has been called.
 
-`cmd.hasarg('argname')` will return whether or not a flag is present in the
-command.
+`cmd.expandargs()` should be called at the start of command execution, and will
+execute argparse. `expandargs` takes a list of lists, which define each
+argument of the command. Each list should look like the following:
 
-`cmd.getarg('argname')` will return the list of arguments that follows that
-flag. Where there are no arguments but the flag is present, an empty list will
-be returned.
+```python
+[type, nargs, "--long", "--altlong", ... , "-s"]
+```
 
-To account for variations in flag names, `cmd.expandargs` can be called on a
-list of strings that represent flag transformations. For each entry in the
-list, the flag name will be changed to the first entry in the string, delimited
-by a space.
+*type* should be the type of the argument, either `str`, `int`, `float` or
+`bool`. If `bool`, then *nargs* must be `0`.
 
-`cmd.expandargs(['tags t', 'author a'])` will mean that `.command --tags -a`
-means the same as `.command -t --author`. The arguments will be accessible from
-`cmd.getarg('tags')` and `cmd.getargs('author')`. `cmd.hasarg('t')` will return
-false.
+*nargs* is the number of arguments to be expected, in the same syntax as
+argparse.
 
-It is up to the command author to ensure that all flags are unique.
+The remainder of the argument are the possible flag names.
 
-The base arguments (those that appear before any flag) are accessible from the
-pseudoflag `root`, which will always be present.
-
-`cmd` has a few other properties:
-* `cmd.raw` - The original, unparsed message
-* `cmd.ping` - The identity of the command's ping, if any
-* `cmd.unping` - The original message sans ping
-* `cmd.pinged` - Boolean, whether or not the bot was pinged
-* `cmd.command` - The identity of the actual command issued
-* `cmd.args` - The dictionary of arguments
+Additionally, a further item can be added to the start of the list: either
+`"default"` or `"hidden"`. *default* will prepend that argument to the input
+string, making the first argument that option (its *nargs* mut be `'*'`).
+*hidden* will hide an option from the help.
 
 A few other important pieces of information:
 

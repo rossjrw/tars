@@ -8,7 +8,10 @@ import commands
 from pyaib.plugins import observe, plugin_class
 import sys
 import inspect
-from helpers.error import CommandError, CommandNotExistError, MyFaultError
+from helpers.error import CommandError
+from helpers.error import CommandNotExistError
+from helpers.error import MyFaultError
+from helpers.error import ArgumentMessage
 from importlib import reload
 from pprint import pprint
 import time
@@ -39,6 +42,8 @@ def try_command(attempt, irc_c, msg, cmd):
             # should be only in pm
             msg.reply("That's not a command.")
     except CommandError as e:
+        msg.reply("\x02Invalid command:\x0F {}".format(str(e)))
+    except ArgumentMessage as e:
         msg.reply("\x02Invalid command:\x0F {}".format(str(e)))
     except MyFaultError as e:
         msg.reply("\x02Sorry!\x0F {}".format(str(e)))
@@ -76,12 +81,8 @@ class ParseMessages():
                     raise
                 else:
                     msg.reply("Reload successful.")
-                return
-            # notify of a shlex error, if present
-            if cmd.quote_error:
-                msg.reply(("I wasn't able to correctly parse your quotemarks, "
-                           "so I have interpreted them literally."))
-            try_command(cmd.command, irc_c, msg, cmd)
+            else:
+                try_command(cmd.command, irc_c, msg, cmd)
         else:
             # not a command, and not pinged
             # Send the message over to .converse

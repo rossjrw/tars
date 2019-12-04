@@ -6,14 +6,27 @@ Provides functions for parsing and formatting stuff into other stuff.
 import re
 import shlex
 import argparse
-import pyaib.util.data as data
 from helpers.config import CONFIG
+from helpers.error import CommandError, ArgumentMessage
 
-def parseprint(message):
-    #print("[\x1b[1;32mParser\x1b[0m] " + str(message))
-    pass
+class ArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        raise ArgumentMessage(message)
+    def exit(self, status=0, message=None):
+        if message: raise ArgumentMessage(message)
+class HelpFormatter(argparse.HelpFormatter):
+    def _format_args(self, action, default_metavar):
+        get_metavar = self._metavar_formatter(action, default_metavar)
+        if action.nargs is argparse.ZERO_OR_MORE:
+            return "[{}...]".format(get_metavar(1)[0])
+        elif action.nargs is argparse.ONE_OR_MORE:
+            return "{}...".format(get_metavar(1)[0])
+        else:
+            return super()._format_args(action, default_metavar)
+    def _get_default_metavar_for_optional(self, action):
+        return action.dest
 
-class ParsedCommand():
+class ParsedCommand:
     def __init__(self, irc_c, message):
         # Check that the message is a string
         self.sender = message.sender
@@ -25,11 +38,9 @@ class ParsedCommand():
         self.pinged = False # was the ping TARS?
         self.command = None # base command
         self.message = None # varies
-        self.quote_error = False # was there a shlex error?
         self.args = {} # command arguments as dict w/ subargs as list
         self.force = False # . or .. ?
         self.context = irc_c
-        parseprint("Raw input: " + self.raw)
 
         # Was someone pinged?
         pattern = r"^([A-Za-z0-9\\\[\]\^_-{\|}]+)[,:]+\s*(.*)$"
@@ -47,11 +58,6 @@ class ParsedCommand():
             if self.ping.upper() == CONFIG.nick:
                 self.pinged = True
 
-        parseprint("After ping extraction: " +
-                   "\nping: >{}<".format(self.ping) +
-                   "\nmessage: >{}<".format(self.message) +
-                   "\npinged: >{}<".format(self.pinged))
-
         # What was the command?
         # Check for regular commands (including chevron)
         if self.pinged:
@@ -66,7 +72,7 @@ class ParsedCommand():
         match = re.search(pattern, self.message)
         if self.ping is not None and not self.pinged:
             # someone was pinged, but not us
-            parseprint("No command!")
+            pass
         elif match:
             # Remove command from the message
             self.command = match.group('cmd').strip().lower()
@@ -76,13 +82,12 @@ class ParsedCommand():
                 self.message = match.group('rest').strip()
             except IndexError:
                 self.message = ""
-            parseprint("Doing a " + self.command + "!")
             # if >1 punctuation used, override bot detection later
             if len(match.group('signal')) > 1:
                 self.force = True
         else:
             # No command - work out what to do here
-            parseprint("No command!")
+            pass
 
         # arguments will be added via expandargs
 
@@ -108,17 +113,31 @@ class ParsedCommand():
         return self.args['arg']
 
     def expandargs(self, arglist):
-        nargs = { list: '*', str: 1, bool: '?', int: 1 }
-        parser = argparse.ArgumentParser()
+        parser = ArgumentParser(prog=arglist.pop(0),
+                                formatter_class=HelpFormatter)
         # arglist is a list of arguments like ["--longname", "--ln", "-l"]
+
+        # TODO TODO TODO
+        # Regardless of input make the nargs * and then manually validate
+        # afterwards with more verbose error messages
+        # TODO TODO TODO
         for arg in arglist:
-            narg = nargs[arg[0]]
-            if arg[0] is list: arg.pop(0)
-            kwargs = {'default': False if arg[0] is bool else None,
-                      'action': 'store_true' if arg[0] is bool else 'store'}
-            if arg[0] is not bool:
-                kwargs['nargs'] = narg
-            parser.add_argument(*arg[1:], **kwargs)
+            kwargs = {}
+            if arg[0] is 'default':
+                arg.pop(0)
+                self.message = " ".join([arg[-1], self.message])
+            if arg[0] is 'hidden':
+                kwargs['help'] = argparse.SUPPRESS
+                arg.pop(0)
+            if arg[0] is bool:
+                assert arg[1] == 0
+                kwargs['default'] = False
+                kwargs['action'] = 'store_true'
+            else:
+                kwargs['type'] = arg[0]
+                # temporarily assume any number of args is ok
+                kwargs['nargs'] = '*'
+            parser.add_argument(*arg[2:], **kwargs)
         # remove apostrophes because they'll fuck with shlex
         self.message = self.message.replace("'", "<<APOS>>")
         self.message = self.message.replace('\\"', "<<QUOT>>") # explicit \"
@@ -130,12 +149,44 @@ class ParsedCommand():
                     self.message[i] = word[1:-1]
         except ValueError:
             # raised if shlex detects fucked up quotemarks
-            self.message = self.message.split()
-            self.quote_error = True
+            # self.message = self.message.split()
+            raise CommandError("Unmatched quotemark. Use \\\" to escape a "
+                               "literal quotemark.")
         self.message = [w.replace("<<APOS>>", "'") for w in self.message]
         self.message = [w.replace("<<QUOT>>", '"') for w in self.message]
-        self.args = parser.parse_args(self.message)
-        print("args!")
+        try:
+            self.args = parser.parse_args(self.message)
+        except ArgumentMessage as e:
+            raise CommandError(str(e))
+        # now validate the args against the nargs that were actually provided
+        for arg in arglist:
+            argname = (arg[2][2:], arg[-1][1:])
+            print(self.args, argname)
+            value = getattr(self.args, argname[0])
+            err_start = "When using the {} option (--{}{}), {{}}".format(
+                argname[0], argname[0],
+                "/-{}".format(argname[1]) if len(argname[1]) == 1 else "")
+            if arg[1] == '*':
+                # all good!
+                pass
+            elif arg[1] == '+' and len(value) <= 1:
+                raise CommandError(err_start.format(
+                    "at least one argument should be specified"))
+            elif arg[1] is None:
+                if len(value) != 1:
+                    raise CommandError(err_start.format(
+                        "exactly one argument should be specified"))
+                setattr(self.args, argname[0], value[0])
+            elif arg[1] is 0 and len(value) != 0:
+                raise CommandError(err_start.format(
+                    "no arguments should be specified"))
+            elif isinstance(arg[1], (int, float)) and len(value) != arg[1]:
+                raise CommandError(err_start.format(
+                    "exactly {} arguments should be specified".format(arg[1])))
+            else:
+                raise CommandError(err_start.format(
+                    "the correct number of arguments must be provided"))
+
         print(vars(self.args))
 
 # Parse a nick to its IRCCloud colour

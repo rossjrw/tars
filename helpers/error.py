@@ -15,6 +15,10 @@ class MyFaultError(Exception):
     """Used for when a command succeeds but the output is failure"""
     pass
 
+class ArgumentMessage(Exception):
+    """Used for when argparse emits an error"""
+    pass
+
 def isint(i):
     """Checks if something is an integer."""
     try:

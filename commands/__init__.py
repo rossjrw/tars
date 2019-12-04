@@ -11,7 +11,7 @@ COMMANDS = {
 """
 
 COMMANDS = {
-    "search": {"search": {"search","sea","s"},
+    "search": {"search": {"search","sea","s","??"},
                "regexsearch": {"regexsearch","rsearch","rsea","rs"},
                "tags": {"tags"},
                "lastcreated": {"lastcreated","lc","l"},
