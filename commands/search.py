@@ -58,9 +58,6 @@ class search:
         # check to see if there are any arguments
         if len(cmd.args) == 1 and len(cmd.args['root']) == 0:
             raise CommandError("Must specify at least one search term")
-        # remove "??" for CROM compatibility
-        if cmd.args['root'][0] == "??":
-            cmd.args['root'].remove("??")
         # fullname is deprecated for tars
         if 'fullname' in cmd:
             raise CommandError(
