@@ -16,3 +16,4 @@ emoji
 distro
 -e git+git://github.com/rossjrw/bpaste.git#egg=bpaste
 requests
+plop
