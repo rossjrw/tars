@@ -9,6 +9,8 @@ from pprint import pprint
 from helpers.parse import nickColor
 from helpers.database import DB
 from helpers.defer import defer
+from bs4 import BeautifulSoup
+import re
 
 def prop_print(text):
     print("[{}] {}".format(nickColor("Propagation"), text))
@@ -26,28 +28,42 @@ class propagate:
                        'listpages-magic-and-you','scp-4205','omega-k',
                        'component:ar-theme','fragment:scp-3939-64']
             msg.reply("Adding sample data...")
-            propagate.get_wiki_data_for(irc_c, samples, reply=msg.reply)
+            propagate.get_wiki_data_for(samples, reply=msg.reply)
         elif 'tales' in cmd:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
             msg.reply("Fetching all tales... this will take a few minutes.")
             tales = SCPWiki.select({'tags_all':['tale']})
             pprint(tales)
-            propagate.get_wiki_data_for(irc_c, tales, reply=msg.reply)
+            propagate.get_wiki_data_for(tales, reply=msg.reply)
             return
         elif 'all' in cmd:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
-            propagate.get_wiki_data(irc_c, reply = msg.reply)
+            msg.reply("Propagating all pages...")
+            propagate.get_all_pages(reply=msg.reply)
             return
+        elif 'metadata' in cmd:
+            # meta_urls = ['attribution-metadata',
+            #              'scp-series',
+            #              'scp-series-2',
+            #              'scp-series-3',
+            #              'scp-series-4',
+            #              'scp-series-5',
+            #              'scp-series-6']
+            meta_urls = ['scp-series-4']
+            # XXX TODO replace with getting pages tagged "metadata"
+            msg.reply("Propagating metadata...")
+            for url in meta_urls:
+                propagate.get_metadata(url, reply=msg.reply)
         elif len(cmd.args['root']) > 0:
-            propagate.get_wiki_data_for(irc_c, cmd.args['root'], reply = msg.reply)
+            propagate.get_wiki_data_for(cmd.args['root'], reply=msg.reply)
             return
         else:
             raise CommandError("Bad command")
 
     @classmethod
-    def get_wiki_data(cls, irc_c, **kwargs):
+    def get_all_pages(cls, **kwargs):
         reply = kwargs.get('reply', lambda x: None)
         # 1. get a list of articles
         # 2. get data for each article
@@ -55,11 +71,11 @@ class propagate:
         prop_print("Getting list of pages...")
         pages = SCPWiki.select({'categories': ["_default"]})
         prop_print("Found {} pages".format(len(pages)))
-        propagate.get_wiki_data_for(irc_c, pages, reply=reply)
+        propagate.get_wiki_data_for(pages, reply=reply)
         reply("Done!")
 
     @classmethod
-    def get_wiki_data_for(cls, irc_c, urls, **kwargs):
+    def get_wiki_data_for(cls, urls, **kwargs):
         print("Getting wiki data!")
         reply = kwargs.get('reply', lambda x: None)
         # get the wiki data for this article
@@ -70,17 +86,43 @@ class propagate:
             for url,article in articles.items():
                 prop_print("Updating {} in the database".format(url))
                 DB.add_article(article, commit=False)
+                if 'metadata' in articles['tags']:
+                    # TODO use list from above
+                    propagate.get_metadata(url, reply=reply)
         reply("Done!")
         DB.commit()
-        if urls[0] == 'attribution-metadata':
-            metadata.external(irc_c)
 
-class metadata:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
-        """Gets the attribution metadata."""
-        metadata.external(irc_c)
-
-    @staticmethod
-    def external(irc_c):
-        pass
+    def get_metadata(cls, url, **kwargs):
+        print("Getting metadata for {}".format(url))
+        reply = kwargs.get('reply', lambda x: None)
+        # either attribution metadata or titles
+        # we'll need the actual contents of the page
+        reply("Getting metadata from {}".format(url))
+        page = SCPWiki.get_page({'page': url})
+        soup = BeautifulSoup(page['html'], "html.parser")
+        # parse the html
+        titles = soup.select(".content-panel:nth-of-type(1) > ul:not(:first-of-type) li")
+        # <li><a href="/scp-xxx">SCP-xxx</a> - Title</li>
+        for title in titles:
+            # title.children
+            # take the scp number from the URL, not the URL link
+            # take the scp name from the text
+            # if ANYTHING is unexpected, cancel and throw
+            link, *text = title.children
+            print(link, text)
+            # sort out the scp-number
+            match = re.search(r"/(scp-[0-9]{3,4})", link['href'])
+            if not match:
+                reply("Unknown link format: {}".format(link))
+                # raise ValueError("Unknown link format: {}".format(link))
+                continue
+            num = match.groups(1)
+            # if newpage in class then article does not exist
+            text = "".join([str(t) for t in text])
+            if text.startswith(" - "): text = text[3:]
+            print(num, text)
+            if len(text) == 0:
+                reply("0-length title for {}".format(num))
+                continue
+            # then add these numbers and names to the DB

@@ -179,7 +179,7 @@ class SqliteDriver:
                     COLLATE NOCASE,
                 category TEXT NOT NULL
                     DEFAULT '_default',
-                title TEXT NOT NULL,
+                title TEXT,
                 scp_num TEXT,
                 parent TEXT,
                 rating INTEGER NOT NULL,
@@ -1020,7 +1020,7 @@ class SqliteDriver:
         article_data = {
             'url': article['url'],
             'category': article['category'],
-            'title': ('[ACCESS DENIED]' if 'scp' in article['tags']
+            'title': (None if 'scp' in article['tags']
                       else article['title']),
             'scp_num': (None if 'scp' not in article['tags']
                         else article['title']),
@@ -1073,6 +1073,9 @@ class SqliteDriver:
                   ''', (article_data['id'], article['created_by']))
         if commit:
             self.conn.commit()
+
+    def add_article_title(self, num, title, commit=True):
+        pass
 
     def get_article_info(self, id):
         """Gets info about an article"""
