@@ -51,7 +51,7 @@ class propagate:
             #              'scp-series-4',
             #              'scp-series-5',
             #              'scp-series-6']
-            meta_urls = ['scp-series-4']
+            meta_urls = ['scp-series-5']
             # XXX TODO replace with getting pages tagged "metadata"
             msg.reply("Propagating metadata...")
             for url in meta_urls:
@@ -68,9 +68,8 @@ class propagate:
         # 1. get a list of articles
         # 2. get data for each article
         # 2.5. put that data in the db
-        prop_print("Getting list of pages...")
         pages = SCPWiki.select({'categories': ["_default"]})
-        prop_print("Found {} pages".format(len(pages)))
+        reply("{} pages to propagate".format(len(pages)))
         propagate.get_wiki_data_for(pages, reply=reply)
         reply("Done!")
 
@@ -86,8 +85,9 @@ class propagate:
             for url,article in articles.items():
                 prop_print("Updating {} in the database".format(url))
                 DB.add_article(article, commit=False)
-                if 'metadata' in articles['tags']:
+                if 'metadata' in article['tags']:
                     # TODO use list from above
+                    pass # skip for now
                     propagate.get_metadata(url, reply=reply)
         reply("Done!")
         DB.commit()
@@ -105,12 +105,10 @@ class propagate:
         titles = soup.select(".content-panel:nth-of-type(1) > ul:not(:first-of-type) li")
         # <li><a href="/scp-xxx">SCP-xxx</a> - Title</li>
         for title in titles:
-            # title.children
             # take the scp number from the URL, not the URL link
             # take the scp name from the text
             # if ANYTHING is unexpected, cancel and throw
-            link, *text = title.children
-            print(link, text)
+            title = str(title)
             # sort out the scp-number
             match = re.search(r"/(scp-[0-9]{3,4})", link['href'])
             if not match:
