@@ -22,16 +22,16 @@ class Log:
         print("Test signal recieved!")
         print("The data is {}".format(data))
         print("Emitting another signal!")
-        emit_signal(irc_c, 'ANOTHER_SIGNAL', "yeet")
+        emit_signal(irc_c, 'ANOTHER_SIGNAL', data="yeet")
 
     @observe('IRC_MSG_PRIVMSG')
     def send_signal_test(self, irc_c, msg):
         print("Privmsg recieved!")
         print("Sending a signal!")
-        emit_signal(irc_c, 'TEST_SIGNAL', "mope")
+        emit_signal(irc_c, 'TEST_SIGNAL', data="mope")
         print("Awaiting another signal!")
         try:
-            data = await_signal('ANOTHER_SIGNAL', 5.0)
+            data = await_signal(irc_c, 'ANOTHER_SIGNAL', timeout=5.0)
         except TimeoutError:
             print("The signal timed out!")
         print("Second signal recieved! {}".format(data))
