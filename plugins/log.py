@@ -4,7 +4,8 @@ Logs all input and output for recordkeeping purposes.
 """
 
 import time
-from pyaib.plugins import observe, plugin_class
+from pyaib.plugins import plugin_class
+from pyaib.components import observe, awaits_signal
 from helpers import parse
 from pprint import pprint
 from helpers.database import DB
@@ -14,6 +15,10 @@ from helpers.config import CONFIG
 class Log:
     def __init__(self, irc_c, config):
         print("Log Plugin Loaded!")
+
+    @awaits_signal('TEST_SIGNAL')
+    def awaited(self, irc_c):
+        print("Test signal recieved!")
 
     # @observe('IRC_RAW_MSG','IRC_RAW_SEND')
     # def print_everything(self, irc_c, msg):
