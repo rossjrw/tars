@@ -5,7 +5,7 @@ Logs all input and output for recordkeeping purposes.
 
 import time
 from pyaib.plugins import plugin_class
-from pyaib.components import observe, awaits_signal
+from pyaib.components import observe
 from pyaib.signals import emit_signal, await_signal
 from helpers import parse
 from pprint import pprint
@@ -16,25 +16,6 @@ from helpers.config import CONFIG
 class Log:
     def __init__(self, irc_c, config):
         print("Log Plugin Loaded!")
-
-    @awaits_signal('TEST_SIGNAL')
-    def await_signal_test(self, irc_c, data):
-        print("Test signal recieved!")
-        print("The data is {}".format(data))
-        print("Emitting another signal!")
-        emit_signal(irc_c, 'ANOTHER_SIGNAL', data="yeet")
-
-    @observe('IRC_MSG_PRIVMSG')
-    def send_signal_test(self, irc_c, msg):
-        print("Privmsg recieved!")
-        print("Sending a signal!")
-        emit_signal(irc_c, 'TEST_SIGNAL', data="mope")
-        print("Awaiting another signal!")
-        try:
-            data = await_signal(irc_c, 'ANOTHER_SIGNAL', timeout=5.0)
-        except TimeoutError:
-            print("The signal timed out!")
-        print("Second signal recieved! {}".format(data))
 
     # @observe('IRC_RAW_MSG','IRC_RAW_SEND')
     # def print_everything(self, irc_c, msg):
