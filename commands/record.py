@@ -31,10 +31,8 @@ class pingall:
             response = await_signal(irc_c, 'NAMES_RESPONSE', timeout=5.0)
             assert response[0] == channel
             members = [name['nick'] for name in response[1]]
-            msg.reply("It's fresh")
         except (TimeoutError, AssertionError):
             members = DB.get_occupants(channel, True)
-            msg.reply("It's stale")
         if len(cmd.args['root']) == 0:
             # no message
             msg.reply(", ".join(members))
