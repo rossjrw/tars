@@ -8,6 +8,7 @@ Whenever we gets a NAMES response from the server, save that info to the db.
 # typing `.alias newname`?
 
 from pyaib.plugins import observe, plugin_class
+from pyaib.signals import emit_signal
 import re
 from pprint import pprint
 from helpers.parse import nickColor
@@ -45,6 +46,8 @@ class Names:
                     'nick': name['nick'],
                     'mode': None
                 }
+        # broadcast this info to whatever needs it
+        emit_signal(irc_c, 'NAMES_RESPONSE', data=(channel, names))
         # just need to log these names to the db now
         nameprint("Updating NAMES for {}".format(nickColor(channel)))
         try:
