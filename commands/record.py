@@ -10,7 +10,7 @@ from helpers.parse import nickColor
 from helpers.database import DB
 from helpers.defer import defer
 from helpers.api import Topia
-from pyaib.signals import await_signal
+from pyaib.signals import await_signal, clear_signal
 
 IS_RECORDING = False
 
@@ -29,6 +29,7 @@ class pingall:
         defer.get_users(irc_c, channel)
         try:
             response = await_signal(irc_c, 'NAMES_RESPONSE', timeout=5.0)
+            clear_signal(irc_c, 'NAMES_RESPONSE')
             assert response[0] == channel
             members = [name['nick'] for name in response[1]]
         except (TimeoutError, AssertionError):
