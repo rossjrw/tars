@@ -29,12 +29,10 @@ internal database.
 
 ## Usage
 
-Extact anywhere then
+Extact anywhere, set up your venv and install the dependencies from Pipfile,
+then:
 
 ```
-python3 -m venv env
-source env/bin/activate
-pip3 install -r requirements.txt --no-cache-dir
 python3 bot.py [tars.conf]
 ```
 
@@ -42,7 +40,7 @@ All modules are from PyPI except:
 - pyaib, which is forked here: https://github.com/rossjrw/pyaib
 - re2, which is forked here: https://github.com/andreasvc/pyre2
 
-re2 will not be installed from requirements.txt as it has a specific install
+re2 will not be installed from Pipfile as it has a specific install
 process detailed in its README. TARS will operate fine without re2 but will be
 vulnerable to catastrophic backtracking regular expression attacks.
 
