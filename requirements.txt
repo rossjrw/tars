@@ -17,5 +17,4 @@ gitPython == 2.1.11
 munch == 2.3.2
 emoji == 0.5.3
 distro
--e git+git://github.com/rossjrw/bpaste.git#egg=bpaste == 1.1.0
 requests
