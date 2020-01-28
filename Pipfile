@@ -1,0 +1,29 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+edtf = "*"
+fuzzywuzzy = "*"
+google-api-python-client = "*"
+markovify = "*"
+numpy = "*"
+pandas = "*"
+pendulum = "*"
+tomlkit = "*"
+urllib3 = "*"
+pyaib = {editable = true,git = "git://github.com/rossjrw/pyaib.git"}
+munch = "*"
+emoji = "*"
+distro = "*"
+requests = "*"
+plop = "*"
+PyPika = "*"
+python-Levenshtein = "*"
+GitPython = "*"
+
+[requires]
+python_version = "3.6"
