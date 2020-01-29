@@ -12,25 +12,13 @@ from helpers.error import CommandError, CommandNotExistError, MyFaultError
 from importlib import reload
 from pprint import pprint
 import time
-import cProfile, pstats, io
-from plop.collector import Collector, FlamegraphFormatter
-import bpaste
 
 def try_command(attempt, irc_c, msg, cmd):
     try:
         # Call the command from the right file in commands/
         # getattr instead of commands[cmd] bc module subscriptability
         command_class = getattr(commands.COMMANDS, attempt)
-        if 'profile' in cmd:
-            del cmd.args['profile']
-            cProfile.runctx("command_class.command(irc_c, msg, cmd)",
-                            globals(), locals(), filename="output.secret.txt")
-            s = io.StringIO()
-            ps = pstats.Stats("output.secret.txt", stream=s).sort_stats('tottime')
-            ps.print_stats()
-            msg.reply("Profile: http://bpaste.net"+bpaste.upload(s.getvalue()))
-        else:
-            command_class.command(irc_c, msg, cmd)
+        command_class.command(irc_c, msg, cmd)
     except CommandNotExistError:
         if cmd.pinged:
             # there are .converse strings for pinged
