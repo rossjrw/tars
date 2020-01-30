@@ -51,8 +51,7 @@ class propagate:
                          'scp-series-2',
                          'scp-series-3',
                          'scp-series-4',
-                         'scp-series-5',
-                         'scp-series-6']
+                         'scp-series-5']
             # meta_urls = ['scp-series-4']
             # XXX TODO replace with getting pages tagged "metadata"
             msg.reply("Propagating metadata...")
@@ -89,7 +88,7 @@ class propagate:
                 DB.add_article(article, commit=False)
                 if 'metadata' in article['tags']:
                     # TODO use list from above
-                    pass # skip for now
+                    continue # skip for now
                     propagate.get_metadata(url, reply=reply)
         reply("Done!")
         DB.commit()
@@ -132,10 +131,11 @@ class propagate:
             num = match.group(2)
             meta_title = match.group(4)
             print(num, meta_title)
-            if meta_title is None:
-                reply("{} has no title".format(num))
-                continue
-            if len(meta_title) == 0:
-                reply("0-length title for {}".format(num))
-                continue
+            if meta_title is None or len(meta_title) == 0:
+                if num.lower() != match.group(3).lower():
+                    meta_title = match.group(3)
+                    reply("Assuming title '{}' for {}".format(meta_title, num))
+                else:
+                    reply("{} has no title".format(num))
+                    continue
             # then add these numbers and names to the DB
