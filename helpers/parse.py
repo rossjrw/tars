@@ -5,8 +5,10 @@ Provides functions for parsing and formatting stuff into other stuff.
 
 import re
 import shlex
-from copy import copy
+from copy import deepcopy
 from helpers.config import CONFIG
+
+from pprint import pprint
 
 def parseprint(message):
     #print("[\x1b[1;32mParser\x1b[0m] " + str(message))
@@ -14,21 +16,16 @@ def parseprint(message):
 
 def parse_commands(irc_c, message):
     """Takes a message object and returns a list of parsed commands."""
-    submessages = [m.trim() for m in message.message.split("&&")]
-    messages = []
-    for submessage in submessages:
-        msg = copy(message)
-        msg.message = submessage
-        messages.append(msg)
-    return [ParsedCommand(irc_c, m) for m in messages]
+    submessages = [m.strip() for m in message.message.split("&&")]
+    return [ParsedCommand(irc_c, message, m) for m in submessages]
 
 class ParsedCommand():
     """Object representing a single command"""
-    def __init__(self, irc_c, message):
+    def __init__(self, irc_c, msg, message_text):
         # Check that the message is a string
-        self.sender = message.sender
-        self.channel = message.channel
-        message = message.message
+        self.sender = msg.sender
+        self.channel = msg.channel
+        message = message_text
         self.raw = str(message)
         self.ping = None # identity of the ping
         self.unping = None # raw command without ping
