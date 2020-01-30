@@ -3,19 +3,21 @@
 For propagating the database with wiki data.
 """
 
+import re
+from pprint import pprint
+from bs4 import BeautifulSoup
 from helpers.api import SCPWiki
 from helpers.error import CommandError
-from pprint import pprint
 from helpers.parse import nickColor
 from helpers.database import DB
 from helpers.defer import defer
-from bs4 import BeautifulSoup
-import re
 
 def prop_print(text):
+    """Prints with propagation identifier"""
     print("[{}] {}".format(nickColor("Propagation"), text))
 
 def chunks(array, length):
+    """Splits list into lists of given length"""
     for i in range(0, len(array), length):
         yield array[i:i + length]
 
@@ -24,9 +26,9 @@ class propagate:
     def command(cls, irc_c, msg, cmd):
         # arg 1 should be a url name
         if 'sample' in cmd:
-            samples = ['scp-173','scp-1111','scp-3939','cone','scp-series',
-                       'listpages-magic-and-you','scp-4205','omega-k',
-                       'component:ar-theme','fragment:scp-3939-64']
+            samples = ['scp-173', 'scp-1111', 'scp-3939', 'cone', 'scp-series',
+                       'listpages-magic-and-you', 'scp-4205', 'omega-k',
+                       'component:ar-theme', 'fragment:scp-3939-64']
             msg.reply("Adding sample data...")
             propagate.get_wiki_data_for(samples, reply=msg.reply)
         elif 'tales' in cmd:
@@ -44,14 +46,14 @@ class propagate:
             propagate.get_all_pages(reply=msg.reply)
             return
         elif 'metadata' in cmd:
-            # meta_urls = ['attribution-metadata',
-            #              'scp-series',
-            #              'scp-series-2',
-            #              'scp-series-3',
-            #              'scp-series-4',
-            #              'scp-series-5',
-            #              'scp-series-6']
-            meta_urls = ['scp-series-5']
+            meta_urls = ['attribution-metadata',
+                         'scp-series',
+                         'scp-series-2',
+                         'scp-series-3',
+                         'scp-series-4',
+                         'scp-series-5',
+                         'scp-series-6']
+            # meta_urls = ['scp-series-4']
             # XXX TODO replace with getting pages tagged "metadata"
             msg.reply("Propagating metadata...")
             for url in meta_urls:
@@ -110,17 +112,30 @@ class propagate:
             # if ANYTHING is unexpected, cancel and throw
             title = str(title)
             # sort out the scp-number
-            match = re.search(r"/(scp-[0-9]{3,4})", link['href'])
+            pattern = re.compile(r"""
+                <li>                  # start of the "title"
+                .+?                   # anything before the link
+                (class="newpage")?.*? # newpage indicator, if it exists
+                href="/(.+?)"         # page url
+                >(.+?)</a>            # page's literal title
+                (?:                   # start post-link group
+                  .+?-\s?             # anything after link & before title
+                  (.*?)               # page's meta title
+                )?                    # end post-link group; select if present
+                </li>                 # end of the "title"
+            """, re.VERBOSE)
+            match = pattern.search(title)
             if not match:
-                reply("Unknown link format: {}".format(link))
-                # raise ValueError("Unknown link format: {}".format(link))
+                reply("Unknown link format: {}".format(title))
                 continue
-            num = match.groups(1)
-            # if newpage in class then article does not exist
-            text = "".join([str(t) for t in text])
-            if text.startswith(" - "): text = text[3:]
-            print(num, text)
-            if len(text) == 0:
+            # TODO if newpage in class then article does not exist
+            num = match.group(2)
+            meta_title = match.group(4)
+            print(num, meta_title)
+            if meta_title is None:
+                reply("{} has no title".format(num))
+                continue
+            if len(meta_title) == 0:
                 reply("0-length title for {}".format(num))
                 continue
             # then add these numbers and names to the DB
