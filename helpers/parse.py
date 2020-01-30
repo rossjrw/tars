@@ -5,26 +5,25 @@ Provides functions for parsing and formatting stuff into other stuff.
 
 import re
 import shlex
-import pyaib.util.data as data
+from copy import copy
 from helpers.config import CONFIG
 
 def parseprint(message):
     #print("[\x1b[1;32mParser\x1b[0m] " + str(message))
     pass
 
-class ParsedCommand():
-    """ParsedCommand
+def parse_commands(irc_c, message):
+    """Takes a message object and returns a list of parsed commands."""
+    submessages = [m.trim() for m in message.message.split("&&")]
+    messages = []
+    for submessage in submessages:
+        msg = copy(message)
+        msg.message = submessage
+        messages.append(msg)
+    return [ParsedCommand(irc_c, m) for m in messages]
 
-    A dictionary with pings, commands and arguments bundled up nicely.
-    .raw - the original message, unchanged
-    .ping - nick of the message's ping
-    .pinged - bool; was TARS pinged?
-    .command - the actual command itself
-        .command - the root command
-        .arguments - dict with each keys of tags and values as argument
-                     tuples. First tuple has tag "root". Tags will be
-                     either long or short depending on user input.
-    """
+class ParsedCommand():
+    """Object representing a single command"""
     def __init__(self, irc_c, message):
         # Check that the message is a string
         self.sender = message.sender
