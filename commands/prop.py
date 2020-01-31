@@ -128,6 +128,10 @@ class propagate:
                 reply("Unknown link format: {}".format(title))
                 continue
             # TODO if newpage in class then article does not exist
+            if match.group(1):
+                # article doesn't exist
+                DB.remove_article()
+                continue
             num = match.group(2)
             meta_title = match.group(4)
             if meta_title == "[ACCESS DENIED]":
@@ -137,10 +141,9 @@ class propagate:
                     meta_title = match.group(3)
                     reply("Assuming title '{}' for {}".format(meta_title, num))
                 else:
-                    print(match.group(1))
                     reply("{} has no title".format(num))
                     # don't add title but also don't delete
-                    break
                     continue
             # then add these numbers and names to the DB
             if "<" in meta_title: print(num, meta_title)
+            DB.add_article_title(num, meta_title)

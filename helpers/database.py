@@ -1075,7 +1075,17 @@ class SqliteDriver:
             self.conn.commit()
 
     def add_article_title(self, num, title, commit=True):
-        pass
+        """Update the meta title for an SCP"""
+        c = self.conn.cursor()
+        # for most articles: title is full, scp-num is null
+        # for scps: scp-num is fill, title is to be filled
+        # possibly TODO throw if scp doesn't exist
+        c.execute('''
+            UPDATE articles
+            SET title=? WHERE scp-num=?
+                  ''', (title, num))
+        if commit:
+            self.conn.commit()
 
     def get_article_info(self, id):
         """Gets info about an article"""
