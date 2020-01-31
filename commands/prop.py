@@ -133,9 +133,9 @@ class propagate:
                 continue
             num = match.group(2)
             meta_title = match.group(4)
-            if meta_title == "[ACCESS DENIED]":
+            if meta_title in ("[ACCESS DENIED]", ""):
                 meta_title = None
-            if meta_title is None or len(meta_title) == 0:
+            if meta_title is None:
                 if num.lower() != match.group(3).lower():
                     meta_title = match.group(3)
                     reply("Assuming title '{}' for {}".format(meta_title, num))
