@@ -417,8 +417,9 @@ class search:
         # pages is a list of results
         # now need to put them in the right order
 
-        if len(pages) >= 10:
-            msg.reply("{} results found.".format(len(pages)))
+        if len(pages) >= 50:
+            msg.reply("{} results found - you're going to have to be more "
+                      "specific!".format(len(pages)))
             return
         pages = [DB.get_article_info(p['id']) for p in pages]
         if len(pages) > 1:
@@ -427,7 +428,7 @@ class search:
                     len(pages), " · ".join(
                         [
                             "\x02{}\x0F {}".format(i + 1, p['title'])
-                            for i, p in enumerate(pages)
+                            for i, p in enumerate(pages[:10])
                         ]
                     )
                 )
