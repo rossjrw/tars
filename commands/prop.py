@@ -130,7 +130,7 @@ class propagate:
             # TODO if newpage in class then article does not exist
             if match.group(1):
                 # article doesn't exist
-                DB.remove_article()
+                # DB.remove_article()
                 continue
             num = match.group(2)
             meta_title = match.group(4)
@@ -146,4 +146,5 @@ class propagate:
                     continue
             # then add these numbers and names to the DB
             if "<" in meta_title: print(num, meta_title)
-            DB.add_article_title(num, meta_title)
+            DB.add_article_title(num, meta_title, False)
+        DB.commit()
