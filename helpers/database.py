@@ -64,6 +64,7 @@ def _regexp(expr, item):
 
 def _glob(expr, item):
     """For evaluating db strings against a given string."""
+    if item is None: return False
     return expr.lower() in item.lower()
 
 # mark this file as the driver instead of pyaib.dbd.sqlite
@@ -1020,10 +1021,8 @@ class SqliteDriver:
         article_data = {
             'url': article['url'],
             'category': article['category'],
-            'title': (None if 'scp' in article['tags']
-                      else article['title']),
-            'scp_num': (None if 'scp' not in article['tags']
-                        else article['title']),
+            'title': article['title'],
+            'scp_num': None,
             'parent': article['parent_fullname'],
             'rating': article['rating'],
             'ups': article['ups'],
@@ -1074,16 +1073,18 @@ class SqliteDriver:
         if commit:
             self.conn.commit()
 
-    def add_article_title(self, num, title, commit=True):
+    def add_article_title(self, url, num, title, commit=True):
         """Update the meta title for an SCP"""
         c = self.conn.cursor()
         # for most articles: title is full, scp-num is null
         # for scps: scp-num is fill, title is to be filled
         # possibly TODO throw if scp doesn't exist
+        # title is allowed to be None
         c.execute('''
             UPDATE articles
-            SET title=? WHERE scp-num=?
-                  ''', (title, num))
+            SET title=?, scp_num=?
+            WHERE url=?
+                  ''', (title, num, url))
         if commit:
             self.conn.commit()
 
@@ -1190,6 +1191,7 @@ class SqliteDriver:
         # like --> "glob" which is a custom function
         q = str(q).replace(" LIKE "," GLOB ").replace(" REGEX "," REGEXP ")
         c = self.conn.cursor()
+        print(str(q))
         c.execute(str(q))
         return c.fetchall()
 

@@ -113,10 +113,9 @@ class propagate:
             # sort out the scp-number
             pattern = re.compile(r"""
                 <li>                  # start of the "title"
-                .+?                   # anything before the link
-                (class="newpage")?.*? # newpage indicator, if it exists
+                (.+?                  # anything before the link
                 href="/(.+?)"         # page url
-                >(.+?)</a>            # page's literal title
+                >)(.+?)</a>           # page's literal title
                 (?:                   # start post-link group
                   .+?-\s?             # anything after link & before title
                   (.*?)               # page's meta title
@@ -128,7 +127,7 @@ class propagate:
                 reply("Unknown link format: {}".format(title))
                 continue
             # TODO if newpage in class then article does not exist
-            if match.group(1):
+            if "class=\"newpage\"" in match.group(1):
                 # article doesn't exist
                 # DB.remove_article()
                 continue
@@ -143,8 +142,7 @@ class propagate:
                 else:
                     reply("{} has no title".format(num))
                     # don't add title but also don't delete
-                    continue
             # then add these numbers and names to the DB
-            if "<" in meta_title: print(num, meta_title)
-            DB.add_article_title(num, meta_title, False)
+            # if "<" in meta_title: print(num, meta_title)
+            DB.add_article_title(num, num, meta_title, False)
         DB.commit()
