@@ -161,7 +161,7 @@ class search:
             for regex in cmd['regex']:
                 try:
                     re.compile(regex)
-                except re.RegexError as e:
+                except re.error as e:
                     raise CommandError(
                         "'{}' isn't a valid regular expression: {}".format(
                             regex, e
