@@ -448,9 +448,8 @@ class search:
                 if url['title'].endswith(" - SCP Foundation"):
                     url['title'] = url['title'][:-17]
                 msg.reply(
-                    "No matches found. Did you mean \x02{}\x0F? {}".format(
-                        url['title'], url['link']
-                    )
+                    "No matches found. Did you mean \x02{}\x0F? {}"
+                    .format(url['title'], url['link'])
                 )
             else:
                 msg.reply("No matches found.")
@@ -458,12 +457,17 @@ class search:
         for page in pages:
             page_is_scp = any(
                 ['scp' in page['tags'],
-                 re.search(r"scp-[0-9]{3,}", page['url'])])
+                 re.search(r"^scp-[0-9]{3,}", page['url'])])
+            title_preview = "\x02{}\x0F"
+            if page_is_scp:
+                title_preview = title_preview.format(page['scp_num'])
+                if page['title']:
+                    title_preview += ": {}".format(page['title'])
+            else:
+                title_preview = title_preview.format(page['title'])
             msg.reply(
                 "{} · {} · {} · {} · {}".format(
-                    ("\x02{}\x0F: {}".format(page['scp_num'], page['title'])
-                     if page_is_scp else
-                     "\x02{}\x0F".format(page['title'])),
+                    title_preview,
                     "by " + " & ".join(page['authors']),
                     ("+" if page['rating'] >= 0 else "") + str(page['rating']),
                     pendulum.parse(page['date_posted']).diff_for_humans(),
