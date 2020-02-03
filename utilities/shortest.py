@@ -19,9 +19,9 @@ def get_term_sizes(longest_term_length, term_count_limit):
     # the result should be ordered by the total length of the search term as a
     # string (which means including whitespace)
     terms = []
-    # iterate through term counts
     for count in range(1, term_count_limit+1):
-        terms.extend(combinations_with_replacement(range(longest_term_length, 0, -1), count))
+        terms.extend(combinations_with_replacement(
+            range(longest_term_length, 0, -1), count))
     return sorted(terms, key=lambda l: sum(l) + len(l) - 1)
 
 def get_all_substrings(selected_name, space_allowed=True):
@@ -51,15 +51,6 @@ def get_substring(selected_name, all_names):
     return None
 
 def get_substring_no_spaces(selected_name, all_names):
-    # same as before, except now we can have multiple search terms, all of
-    # which must match
-    # challenge is to get the most efficient match
-    # will need to iterate through search term counts, up to a max of like 5 or
-    # so - but even then, how will we know what the shortest one is?
-    # could keep a list of all successful hits and then pick the shortest, but
-    # that means that we wouldn't be able to terminate
-    # better solution: order all the substrings by length initially, stop at
-    # first match
     length_substrings = get_all_substrings(selected_name, False)
     template_terms = get_term_sizes(min(4, len(selected_name)), 4)
     # iterate through each template term
@@ -75,7 +66,8 @@ def get_substring_no_spaces(selected_name, all_names):
             if not any([all([term.lower() in name.lower()
                              for term in search_term])
                         for name in all_names if name != selected_name]):
-                return search_term
+                return " ".join(search_term)
+    return None
 
 def go():
     try:
