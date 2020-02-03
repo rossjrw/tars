@@ -27,6 +27,3 @@ python-Levenshtein = "*"
 GitPython = "*"
 pyaib = {git = "https://github.com/rossjrw/pyaib.git"}
 beautifulsoup4 = "*"
-
-[requires]
-python_version = ">3.5.2"
