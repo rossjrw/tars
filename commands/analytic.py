@@ -35,6 +35,9 @@ class shortest:
         except IndexError:
             raise MyFaultError("I couldn't find the page with that URL.")
         term = shortest.get_substring(title, pages)
+        if term is None:
+            raise MyFaultError("There's no unique search for {} (\"{}\")"
+                               .format(cmd.args['root'][0], title))
         msg.reply("The shortest search term for \x02{}\x0F is: \"{}\""
                   .format(cmd.args['root'][0], term))
 
@@ -45,7 +48,7 @@ class shortest:
             # get name from start->length to (end-length)->end
             for offset in range(0, len(selected_name)-length+1):
                 substring = selected_name[offset:offset+length]
-                if not any([substring in name
+                if not any([substring.lower() in name.lower()
                             for name in all_names
                             if name is not None
                             and name != selected_name]):
