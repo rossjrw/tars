@@ -18,6 +18,40 @@ import random
 from emoji import emojize
 from helpers.defer import defer
 
+class shortest:
+    """Get the shortest unique search term for a page"""
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        if len(cmd.args['root']) < 1:
+            raise CommandError("Specify a page's URL whose shortest search "
+                               "term you want to find.")
+        pages = [DB.get_article_info(
+            p['id'])['title'] for p in DB.get_articles([], {})]
+        try:
+            title = DB.get_article_info(
+                DB.get_articles(
+                    [{'type': 'url', 'term': cmd.args['root'][0]}]
+                )[0]['id'])['title']
+        except IndexError:
+            raise MyFaultError("I couldn't find the page with that URL.")
+        term = shortest.get_substring(title, pages)
+        msg.reply("The shortest search term for \x02{}\x0F is: \"{}\""
+                  .format(cmd.args['root'][0], term))
+
+    @staticmethod
+    def get_substring(selected_name, all_names):
+        # iterate through lengths
+        for length in [l+1 for l in range(len(selected_name))]:
+            # get name from start->length to (end-length)->end
+            for offset in range(0, len(selected_name)-length+1):
+                substring = selected_name[offset:offset+length]
+                if not any([substring in name
+                            for name in all_names
+                            if name is not None
+                            and name != selected_name]):
+                    return substring
+        return None
+
 class analyse_wiki:
     """For compiling data of the file contents of a sandbox"""
     @classmethod

@@ -1104,13 +1104,14 @@ class SqliteDriver:
             page['authors'].append(row['author'])
         return page
 
-    def get_articles(self, searches, selection):
+    def get_articles(self, searches, selection=None):
         """Get a list of articles that match the criteria.
         searches must be a LIST consisting of DICTS.
         Each dict must contain the following:
             * 'term' - the search term as a string, MinMax or inc/exc list.
             * 'type' - the type of search:
-                * None, regex, tags, author, rating, date, category, parent
+                * None, regex, tags, author, rating, date, category, parent,
+                  url
         selection must be a DICT containing the following:
             * 'ignorepromoted' - defaults to False
             * 'order' - the order of the output list:
@@ -1121,8 +1122,8 @@ class SqliteDriver:
         each."""
         # loop through searches and query the database, I guess
         # start with the least intensive process, to most intensive:
-        keyorder = {'rating': 0, 'parent': 1, 'category': 2, 'date': 3,
-                    'author': 4, 'tags': 5, None: 6, 'regex': 7}
+        keyorder = {'url': 0, 'rating': 0, 'parent': 1, 'category': 2,
+                    'date': 3, 'author': 4, 'tags': 5, None: 6, 'regex': 7}
         searches.sort(key=lambda x: keyorder[x['type']])
         # begin query
         art = Table('articles')
@@ -1172,6 +1173,8 @@ class SqliteDriver:
                 )
             elif search['type'] == 'regex':
                 q = q.where(art.title.regex(search['term']))
+            elif search['type'] == 'url':
+                q = q.where(art.url == search['term'])
         # query complete
         # make the query sqlite-compatible
         # like --> "glob" which is a custom function
