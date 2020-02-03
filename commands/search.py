@@ -461,9 +461,12 @@ class search:
                  re.search(r"^scp-[0-9]{3,}", page['url'])])
             title_preview = "\x02{}\x0F"
             if page_is_scp:
-                title_preview = title_preview.format(page['scp_num'].upper())
-                if page['title']:
-                    title_preview += ": {}".format(page['title'])
+                if page['scp_num']:
+                    title_preview = title_preview.format(page['scp_num'].upper())
+                    if page['title']:
+                        title_preview += ": {}".format(page['title'])
+                else:
+                    title_preview = title_preview.format(page['title'].upper())
             else:
                 title_preview = title_preview.format(page['title'])
             msg.reply(
