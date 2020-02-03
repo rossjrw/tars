@@ -25,6 +25,4 @@ PyPika = "*"
 python-Levenshtein = "*"
 GitPython = "*"
 pyaib = {git = "https://github.com/rossjrw/pyaib.git"}
-
-[requires]
-python_version = "3.6"
+beautifulsoup4 = "*"
