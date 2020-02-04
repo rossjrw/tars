@@ -98,12 +98,10 @@ class shortest:
         # iterate through each template term
         # need to replace each value in the template with a value from the
         # length_substrings
-        print("Template terms to evaluate:",len(template_terms))
         for template_term in template_terms:
             # template_term = (4, 3, 2) or somesuch
             term_substring_lists = [length_substrings[l] for l in template_term]
             search_terms = list(product(*term_substring_lists))
-            print("Search terms:",len(search_terms),template_term)
             for search_term in search_terms:
                 if len(search_term) != len(set(search_term)):
                     continue

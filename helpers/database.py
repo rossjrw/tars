@@ -1088,6 +1088,28 @@ class SqliteDriver:
         if commit:
             self.conn.commit()
 
+    def set_authors(self, url, authors, commit=True):
+        """Set the authors for a given article."""
+        c = self.conn.cursor()
+        c.execute('''
+            SELECT id FROM articles WHERE url=?
+                  ''', (url,))
+        page_id = c.fetchone()
+        if page_id is None:
+            raise ValueError("page {} doesn't exist".format(url))
+        page_id = page_id['id']
+        c.execute('''
+            DELETE FROM articles_authors
+            WHERE article_id=?
+                  ''', (page_id,))
+        c.executemany('''
+            INSERT INTO articles_authors (article_id, author)
+            VALUES ( ? , ? )
+                      ''' , ((page_id, author) for author in authors))
+        if commit:
+            self.conn.commit()
+
+
     def get_article_info(self, id):
         """Gets info about an article"""
         page = {'id': id, 'tags': [], 'authors': []}
