@@ -60,11 +60,12 @@ COMMANDS = {
     "prop": {"propagate": {"propagate","prop"},
             },
     "analytic": {"analyse_wiki": {"analyse_wiki"},
-                 "shortest": {"shortest"},
                 },
     "gib": {"gib": {"gib"},
            },
     "nick": {"alias": {"alias"},
+            },
+    "shortest": {"shortest": {"shortest"}
                 },
 }
 

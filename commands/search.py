@@ -161,11 +161,10 @@ class search:
             for regex in cmd['regex']:
                 try:
                     re.compile(regex)
-                except re.RegexError as e:
+                except re.error as e:
                     raise CommandError(
-                        "'{}' isn't a valid regular expression: {}".format(
-                            regex, e
-                        )
+                        "'{}' isn't a valid regular expression: {}"
+                        .format(regex, e)
                     )
                 regexes.append(regex)
                 # don't append the compiled - SQL doesn't like that
@@ -175,10 +174,8 @@ class search:
         if 'tags' in cmd:
             if len(cmd['tags']) == 0:
                 raise CommandError(
-                    (
-                        "When using the tag filter (--tag/-t), at "
-                        "least one tag must be specified"
-                    )
+                    "When using the tag filter (--tag/-t), at "
+                    "least one tag must be specified"
                 )
             for tag in cmd['tags']:
                 if tag[0] == "-":
@@ -194,11 +191,9 @@ class search:
         if 'author' in cmd:
             if len(cmd['author']) == 0:
                 raise CommandError(
-                    (
-                        "When using the author filter "
-                        "(--author/-a), at least one author must "
-                        "be specified"
-                    )
+                    "When using the author filter "
+                    "(--author/-a), at least one author must "
+                    "be specified"
                 )
             for author in cmd['author']:
                 if author[0] == "-":
@@ -215,11 +210,9 @@ class search:
         if 'rating' in cmd:
             if len(cmd['rating']) == 0:
                 raise CommandError(
-                    (
-                        "When using the rating filter "
-                        "(--rating/-r), at least one rating must "
-                        "be specified"
-                    )
+                    "When using the rating filter "
+                    "(--rating/-r), at least one rating must "
+                    "be specified"
                 )
             for rating in cmd['rating']:
                 if ".." in rating:
@@ -230,8 +223,7 @@ class search:
                         rating = [int(x) for x in rating]
                     except ValueError:
                         raise CommandError(
-                            ("Ratings in a range must be plain "
-                             "numbers")
+                            "Ratings in a range must be plain numbers"
                         )
                     try:
                         ratings >= min(rating)
@@ -259,19 +251,9 @@ class search:
                             elif comp == "=":
                                 ratings >= rating
                                 ratings <= rating
-                            elif comp == ">=" or comp == "<=":
-                                raise CommandError(
-                                    (
-                                        "Rating comparisons do not "
-                                        "support 'greater than' or 'lesser than' operators"
-                                    )
-                                )
                             else:
                                 raise CommandError(
-                                    (
-                                        "Unknown operator in rating "
-                                        "comparison"
-                                    )
+                                    "Unknown operator in rating comparison"
                                 )
                         except MinMaxError as e:
                             raise CommandError(str(e).format("rating"))
@@ -282,10 +264,7 @@ class search:
                         rating = int(rating)
                     except ValueError:
                         raise CommandError(
-                            (
-                                "Rating must be a range, "
-                                "comparison, or number"
-                            )
+                            "Rating must be a range, comparison, or number"
                         )
                     # Assume =, assign both
                     try:
@@ -300,11 +279,9 @@ class search:
         if 'created' in cmd:
             if len(cmd['created']) == 0:
                 raise CommandError(
-                    (
-                        "When using the date of creation filter "
-                        "(--created/-c), at least one date must "
-                        "be specified"
-                    )
+                    "When using the date of creation filter "
+                    "(--created/-c), at least one date must "
+                    "be specified"
                 )
             created = cmd['created']
             # created is a list of date selectors - ranges, abs and rels
@@ -325,11 +302,9 @@ class search:
         if 'category' in cmd:
             if len(cmd['category']) == 0:
                 raise CommandError(
-                    (
-                        "When using the category filter "
-                        "(--category/-y), at least one category "
-                        "must be specified"
-                    )
+                    "When using the category filter "
+                    "(--category/-y), at least one category "
+                    "must be specified"
                 )
             for category in cmd['category']:
                 if category[0] == "-":
@@ -345,11 +320,9 @@ class search:
         if 'parent' in cmd:
             if len(cmd['parent']) != 1:
                 raise CommandError(
-                    (
-                        "When using the parent page filter "
-                        "(--parent/-p), exactly one parent URL "
-                        "must be specified"
-                    )
+                    "When using the parent page filter "
+                    "(--parent/-p), exactly one parent URL "
+                    "must be specified"
                 )
             parents = cmd['parent'][0]
             searches.append({'term': parents, 'type': 'parent'})
@@ -444,8 +417,9 @@ class search:
         # pages is a list of results
         # now need to put them in the right order
 
-        if len(pages) >= 10:
-            msg.reply("{} results found.".format(len(pages)))
+        if len(pages) >= 50:
+            msg.reply("{} results found - you're going to have to be more "
+                      "specific!".format(len(pages)))
             return
         pages = [DB.get_article_info(p['id']) for p in pages]
         if len(pages) > 1:
@@ -454,7 +428,7 @@ class search:
                     len(pages), " · ".join(
                         [
                             "\x02{}\x0F {}".format(i + 1, p['title'])
-                            for i, p in enumerate(pages)
+                            for i, p in enumerate(pages[:10])
                         ]
                     )
                 )
@@ -475,21 +449,29 @@ class search:
                 if url['title'].endswith(" - SCP Foundation"):
                     url['title'] = url['title'][:-17]
                 msg.reply(
-                    "No matches found. Did you mean \x02{}\x0F? {}".format(
-                        url['title'], url['link']
-                    )
+                    "No matches found. Did you mean \x02{}\x0F? {}"
+                    .format(url['title'], url['link'])
                 )
             else:
                 msg.reply("No matches found.")
             return
         for page in pages:
+            page_is_scp = any(
+                ['scp' in page['tags'],
+                 re.search(r"^scp-[0-9]{3,}", page['url'])])
+            title_preview = "\x02{}\x0F"
+            if page_is_scp:
+                if page['scp_num']:
+                    title_preview = title_preview.format(page['scp_num'].upper())
+                    if page['title']:
+                        title_preview += ": {}".format(page['title'])
+                else:
+                    title_preview = title_preview.format(page['title'].upper())
+            else:
+                title_preview = title_preview.format(page['title'])
             msg.reply(
                 "{} · {} · {} · {} · {}".format(
-                    (
-                        "\x02{}\x0F: {}".format(page['scp_num'], page['title'])
-                        if 'scp' in page['tags'] else
-                        "\x02{}\x0F".format(page['title'])
-                    ),
+                    title_preview,
                     "by " + " & ".join(page['authors']),
                     ("+" if page['rating'] >= 0 else "") + str(page['rating']),
                     pendulum.parse(page['date_posted']).diff_for_humans(),
