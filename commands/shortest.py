@@ -40,12 +40,12 @@ class shortest:
             raise TypeError("None check should have been done by now")
         if helen_style is None or single_string == helen_style:
             if ' ' in single_string:
-                return "\"{}\"".format(single_string)
-            return single_string
+                return "\"{}\"".format(single_string.lower())
+            return single_string.lower()
         if single_string is None:
-            return helen_style
+            return helen_style.lower()
         return "single string: \"{}\" · Helen-style: {}".format(
-            single_string, helen_style)
+            single_string.lower(), helen_style.lower())
 
     @staticmethod
     def get_term_sizes(longest_term_length, term_count_limit):
@@ -93,16 +93,21 @@ class shortest:
     @staticmethod
     def get_multi_substring(selected_name, all_names):
         length_substrings = shortest.get_all_substrings(selected_name, False)
-        template_terms = shortest.get_term_sizes(min(4, len(selected_name)), 4)
+        template_terms = shortest.get_term_sizes(min(3, len(selected_name)), 4)
+        already_searched_terms = []
         # iterate through each template term
         # need to replace each value in the template with a value from the
         # length_substrings
+        print("Template terms to evaluate:",len(template_terms))
         for template_term in template_terms:
             # template_term = (4, 3, 2) or somesuch
             term_substring_lists = [length_substrings[l] for l in template_term]
-            search_terms = product(*term_substring_lists)
+            search_terms = list(product(*term_substring_lists))
+            print("Search terms:",len(search_terms),template_term)
             for search_term in search_terms:
                 if len(search_term) != len(set(search_term)):
+                    continue
+                if sorted(search_term) in already_searched_terms:
                     continue
                 if not any([all([term.lower() in name.lower()
                                  for term in search_term])
@@ -110,4 +115,5 @@ class shortest:
                             if name is not None
                             and name != selected_name]):
                     return " ".join(search_term)
+                already_searched_terms.append(sorted(search_term))
         return None
