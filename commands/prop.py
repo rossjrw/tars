@@ -47,13 +47,13 @@ class propagate:
             propagate.get_all_pages(reply=msg.reply)
             return
         elif 'metadata' in cmd:
-            # meta_urls = ['attribution-metadata',
-            #              'scp-series',
-            #              'scp-series-2',
-            #              'scp-series-3',
-            #              'scp-series-4',
-            #              'scp-series-5']
-            meta_urls = ['attribution-metadata']
+            meta_urls = ['attribution-metadata',
+                         'scp-series',
+                         'scp-series-2',
+                         'scp-series-3',
+                         'scp-series-4',
+                         'scp-series-5']
+            # meta_urls = ['attribution-metadata']
             # XXX TODO replace with getting pages tagged "metadata"
             msg.reply("Propagating metadata...")
             for url in meta_urls:
