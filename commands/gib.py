@@ -3,20 +3,14 @@
 Gib gab gibber gob!
 """
 
-from helpers.api import WikidotAPI
-from commands.prop import chunks
-import numpy
-import math
-from pprint import pprint
-import csv
-from helpers.error import CommandError, MyFaultError, isint
-import markovify
-from helpers.database import DB
-import re
-from helpers.config import CONFIG
 import random
+import re
 from emoji import emojize
+import markovify
+from helpers.config import CONFIG
+from helpers.database import DB
 from helpers.defer import defer
+from helpers.error import CommandError, MyFaultError, isint
 
 _URL_PATT = (r"https?:\/\/(www\.)?"
              r"[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}"
@@ -33,7 +27,7 @@ class gib:
     channels = []
     model = None
     size = 3
-    ATTEMPT_LIMIT = 30
+    ATTEMPT_LIMIT = 5
     nocache = False
     @classmethod
     def command(cls, irc_c, msg, cmd):
@@ -43,6 +37,9 @@ class gib:
                         "channel c",
                         "size s",
                         "roulette r",
+                        "regex x",
+                        "minlength length l",
+                        "me",
                         "help h"])
         if 'help' in cmd:
             msg.reply("Usage: .gib [--channel #channel] [--user user] "
@@ -73,6 +70,9 @@ class gib:
                     if not channel.startswith('#'):
                         raise CommandError("Channel names must start with #.")
                 channels = cmd['channel']
+        elif msg.channel is None:
+            raise CommandError("Specify a channel to gib from with "
+                               "--channel/-c")
         if 'user' in cmd:
             if len(cmd['user']) == 0:
                 raise CommandError("When using the --user/-u filter, "
@@ -99,7 +99,9 @@ class gib:
                 raise CommandError("When using --limit, the limit cannot be "
                                    "lower than 200")
         else:
-            limit = 7500
+            limit = CONFIG['gib']['limit']
+            if not limit:
+                limit = 5000
         if 'roulette' in cmd:
             if len(cmd['roulette']) == 0:
                 raise CommandError("When using roulette mode, you must "
@@ -143,28 +145,54 @@ class gib:
                               len(urls),
                               ("s" if len(urls) > 1 else "")))
             return
+        if 'regex' in cmd:
+            if len(cmd['regex']) == 0:
+                raise CommandError("When using the regex filter, you must "
+                                   "specify a regex")
+            patterns = cmd['regex']
+        else:
+            patterns = []
+        if 'me' in cmd:
+            patterns.append(r"\u0001ACTION ")
+        if 'minlength' in cmd:
+            if len(cmd['minlength']) == 0:
+                raise CommandError("When using the minimum length modifier "
+                                   "(--length/-l), you must specify a "
+                                   "minimum length")
+            minlength = cmd['minlength'][0]
+            if not isint(minlength):
+                raise CommandError("When using the minimum length modifier "
+                                   "(--length/-l), the minimum length must be "
+                                   "an integer")
+            minlength = int(minlength)
+        else:
+            minlength = 0
         # gibbing:
         try:
-            sentence = cls.get_gib_sentence(limit=limit)
+            sentence = cls.get_gib_sentence(limit=limit, minlength=minlength,
+                                            patterns=patterns)
             if sentence is None:
                 raise AttributeError
-        except RuntimeError:
-            msg.reply("Looks like {} spoken enough in {} just yet.{}".format(
-                ("you haven't" if msg.sender in users and len(users) == 1
-                 else "nobody has" if len(users) == 0
-                 else "{} hasn't".format(users[0]) if len(users) == 1
-                 else "they haven't"),
-                (channels[0] if len(channels) == 1 and channels[0] == msg.channel
-                 else "that channel" if len(channels) == 1
-                 else "those channels"),
-                " ({} messages)".format(
-                    len(cls.model.to_dict()['parsed_sentences'])
-                    if cls.model is not None
-                    else 0)))
-            return
-        # now we need to remove pings from the sentence
+        except (RuntimeError, AttributeError):
+            raise MyFaultError("Looks like {} spoken enough in {} just yet.{}"
+                .format(
+                    ("you haven't"
+                     if msg.sender in users and len(users) == 1
+                     else "nobody has"
+                     if len(users) == 0
+                     else "{} hasn't".format(users[0])
+                     if len(users) == 1
+                     else "they haven't"),
+                    (channels[0]
+                     if len(channels) == 1 and channels[0] == msg.channel
+                     else "that channel"
+                     if len(channels) == 1
+                     else "those channels"),
+                    " ({} messages)".format(
+                        len(cls.model.to_dict()['parsed_sentences'])
+                        if cls.model is not None
+                        else 0)))
         # first: remove a ping at the beginning of the sentence
-        print(sentence)
         pattern = r"^(\S+[:,]\s+)(.*)$"
         match = re.match(pattern, sentence)
         if match:
@@ -175,10 +203,34 @@ class gib:
                              flags=re.IGNORECASE)
         if msg.channel is not None:
             sentence = members.sub(cls.obfuscate, sentence)
+        # match any unmatched pairs
+        if sentence.count("\"") % 2 != 0:
+            sentence += "\""
+        sentence = gib.bracketify(sentence)
+        sentence = gib.bracketify(sentence, "[]")
+        sentence = gib.bracketify(sentence, "{}")
         msg.reply(sentence)
 
+    @staticmethod
+    def bracketify(string, bracket="()"):
+        """Return a bool indicating that the string is missing an opening
+        bracket"""
+        opening = bracket[0]
+        closing = bracket[1]
+        depths = [0]
+        for char in string:
+            if char == opening:
+                depths.append(depths[-1] + 1)
+            elif char == closing:
+                depths.append(depths[-1] - 1)
+            else:
+                depths.append(depths[-1])
+        string = opening * -min(depths) + string
+        string += closing * depths[-1]
+        return string
+
     @classmethod
-    def get_gib_sentence(cls, attempts=0, limit=7500):
+    def get_gib_sentence(cls, attempts=0, limit=7500, minlength=0, patterns=None):
         print("Getting a gib sentence")
         # messages = []
         # for channel in cls.channels:
@@ -187,7 +239,9 @@ class gib:
         #         print("Iterating users")
         #         messages.extend(DB.get_messages(channel, user))
         messages = DB.get_messages(cls.channels, minlength=40, limit=limit,
-                                   senders=None if cls.users == [None] else cls.users)
+                                   senders=None if cls.users == [None] else
+                                   cls.users,
+                                   patterns=patterns)
         print("messages found: {}".format(len(messages)))
         if len(messages) == 0:
             raise AttributeError
@@ -195,15 +249,18 @@ class gib:
             print("Making model from messages, size {}".format(cls.size-decr))
             cls.model = cls.make_model(messages, decrement=decr)
             print("Making sentence")
-            sentence = cls.model.make_short_sentence(400, tries=200, force_result=False)
+            sentence = cls.model.make_short_sentence(
+                400, minlength, tries=200, force_result=False)
             if sentence is not None:
                 break
             print("Sentence is None")
         if not cls.nocache and sentence in DB.get_gibs():
-            print("Sentence already sent, {} attempts remaining".format(cls.ATTEMPT_LIMIT-attempts))
+            print("Sentence already sent, {} attempts remaining"
+                  .format(cls.ATTEMPT_LIMIT-attempts))
             try:
                 if attempts < cls.ATTEMPT_LIMIT:
-                    sentence = cls.get_gib_sentence(attempts+1, limit)
+                    sentence = cls.get_gib_sentence(attempts+1, limit,
+                                                    minlength, patterns)
                 else:
                     raise RecursionError
             except RecursionError:
