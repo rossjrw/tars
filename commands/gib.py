@@ -27,7 +27,7 @@ class gib:
     channels = []
     model = None
     size = 3
-    ATTEMPT_LIMIT = 30
+    ATTEMPT_LIMIT = 5
     nocache = False
     @classmethod
     def command(cls, irc_c, msg, cmd):
@@ -93,7 +93,9 @@ class gib:
                 raise CommandError("When using --limit, the limit cannot be "
                                    "lower than 200")
         else:
-            limit = 7500
+            limit = CONFIG['gib']['limit']
+            if not limit:
+                limit = 5000
         if 'roulette' in cmd:
             if len(cmd['roulette']) == 0:
                 raise CommandError("When using roulette mode, you must "
