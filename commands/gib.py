@@ -69,6 +69,9 @@ class gib:
                     if not channel.startswith('#'):
                         raise CommandError("Channel names must start with #.")
                 channels = cmd['channel']
+        elif msg.channel is None:
+            raise CommandError("Specify a channel to gib from with "
+                               "--channel/-c")
         if 'user' in cmd:
             if len(cmd['user']) == 0:
                 raise CommandError("When using the --user/-u filter, "
