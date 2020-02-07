@@ -37,6 +37,8 @@ class gib:
                         "channel c",
                         "size s",
                         "roulette r",
+                        "regex x",
+                        "me",
                         "help h"])
         if 'help' in cmd:
             msg.reply("Usage: .gib [--channel #channel] [--user user] "
@@ -139,25 +141,39 @@ class gib:
                               len(urls),
                               ("s" if len(urls) > 1 else "")))
             return
+        if 'regex' in cmd:
+            if len(cmd['regex']) == 0:
+                raise CommandError("When using the regex filter, you must "
+                                   "specify a regex")
+            patterns = cmd['regex']
+        else:
+            patterns = []
+        if 'me' in cmd:
+            patterns.append(r"\u0001ACTION ")
         # gibbing:
         try:
-            sentence = cls.get_gib_sentence(limit=limit)
+            sentence = cls.get_gib_sentence(limit=limit, patterns=patterns)
             if sentence is None:
                 raise AttributeError
-        except RuntimeError:
-            msg.reply("Looks like {} spoken enough in {} just yet.{}".format(
-                ("you haven't" if msg.sender in users and len(users) == 1
-                 else "nobody has" if len(users) == 0
-                 else "{} hasn't".format(users[0]) if len(users) == 1
-                 else "they haven't"),
-                (channels[0] if len(channels) == 1 and channels[0] == msg.channel
-                 else "that channel" if len(channels) == 1
-                 else "those channels"),
-                " ({} messages)".format(
-                    len(cls.model.to_dict()['parsed_sentences'])
-                    if cls.model is not None
-                    else 0)))
-            return
+        except (RuntimeError, AttributeError):
+            raise MyFaultError("Looks like {} spoken enough in {} just yet.{}"
+                .format(
+                    ("you haven't"
+                     if msg.sender in users and len(users) == 1
+                     else "nobody has"
+                     if len(users) == 0
+                     else "{} hasn't".format(users[0])
+                     if len(users) == 1
+                     else "they haven't"),
+                    (channels[0]
+                     if len(channels) == 1 and channels[0] == msg.channel
+                     else "that channel"
+                     if len(channels) == 1
+                     else "those channels"),
+                    " ({} messages)".format(
+                        len(cls.model.to_dict()['parsed_sentences'])
+                        if cls.model is not None
+                        else 0)))
         # first: remove a ping at the beginning of the sentence
         pattern = r"^(\S+[:,]\s+)(.*)$"
         match = re.match(pattern, sentence)
@@ -196,7 +212,7 @@ class gib:
         return string
 
     @classmethod
-    def get_gib_sentence(cls, attempts=0, limit=7500):
+    def get_gib_sentence(cls, attempts=0, limit=7500, patterns=None):
         print("Getting a gib sentence")
         # messages = []
         # for channel in cls.channels:
@@ -205,7 +221,9 @@ class gib:
         #         print("Iterating users")
         #         messages.extend(DB.get_messages(channel, user))
         messages = DB.get_messages(cls.channels, minlength=40, limit=limit,
-                                   senders=None if cls.users == [None] else cls.users)
+                                   senders=None if cls.users == [None] else
+                                   cls.users,
+                                   patterns=patterns)
         print("messages found: {}".format(len(messages)))
         if len(messages) == 0:
             raise AttributeError
@@ -221,7 +239,8 @@ class gib:
             print("Sentence already sent, {} attempts remaining".format(cls.ATTEMPT_LIMIT-attempts))
             try:
                 if attempts < cls.ATTEMPT_LIMIT:
-                    sentence = cls.get_gib_sentence(attempts+1, limit)
+                    sentence = cls.get_gib_sentence(attempts+1, limit,
+                                                    patterns)
                 else:
                     raise RecursionError
             except RecursionError:
