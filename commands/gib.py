@@ -3,20 +3,14 @@
 Gib gab gibber gob!
 """
 
-from helpers.api import WikidotAPI
-from commands.prop import chunks
-import numpy
-import math
-from pprint import pprint
-import csv
-from helpers.error import CommandError, MyFaultError, isint
-import markovify
-from helpers.database import DB
-import re
-from helpers.config import CONFIG
 import random
+import re
 from emoji import emojize
+import markovify
+from helpers.config import CONFIG
+from helpers.database import DB
 from helpers.defer import defer
+from helpers.error import CommandError, MyFaultError
 
 _URL_PATT = (r"https?:\/\/(www\.)?"
              r"[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}"
