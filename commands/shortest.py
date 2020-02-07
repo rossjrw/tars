@@ -48,17 +48,20 @@ class shortest:
             single_string.lower(), helen_style.lower())
 
     @staticmethod
-    def get_term_sizes(longest_term_length, term_count_limit):
+    def get_term_sizes(max_length, term_count_limit):
         # terms is a list of lists
         # each sublist is a list of ints
         # each int is the length of the partial search term for this term
         # the result should be ordered by the total length of the search term
         # as a string (which means including whitespace)
+        def whitelen(l):
+            return sum(l) + len(l) - 1
         terms = []
         for count in range(1, term_count_limit+1):
             terms.extend(combinations_with_replacement(
-                range(longest_term_length, 0, -1), count))
-        return sorted(terms, key=lambda l: sum(l) + len(l) - 1)
+                range(max_length, 0, -1), count))
+        terms = sorted(terms, key=whitelen)
+        return list(filter(lambda l: whitelen(l) <= max_length, terms))
 
     @staticmethod
     def get_all_substrings(selected_name, space_allowed=True):
@@ -93,7 +96,7 @@ class shortest:
     @staticmethod
     def get_multi_substring(selected_name, all_names):
         length_substrings = shortest.get_all_substrings(selected_name, False)
-        template_terms = shortest.get_term_sizes(min(3, len(selected_name)), 4)
+        template_terms = shortest.get_term_sizes(min(10, len(selected_name)), 4)
         already_searched_terms = []
         # iterate through each template term
         # need to replace each value in the template with a value from the

@@ -12,17 +12,20 @@ NAMES = ['john smith',
          'glomorthy martin',
          'andolandoman anderson']
 
-def get_term_sizes(longest_term_length, term_count_limit):
+def get_term_sizes(max_length, term_count_limit):
     # terms is a list of lists
     # each sublist is a list of ints
     # each int is the length of the partial search term for this term
     # the result should be ordered by the total length of the search term as a
     # string (which means including whitespace)
+    def whitelen(l):
+        return sum(l) + len(l) - 1
     terms = []
     for count in range(1, term_count_limit+1):
         terms.extend(combinations_with_replacement(
-            range(longest_term_length, 0, -1), count))
-    return sorted(terms, key=lambda l: sum(l) + len(l) - 1)
+            range(max_length, 0, -1), count))
+    terms = sorted(terms, key=whitelen)
+    return list(filter(lambda l: whitelen(l) <= max_length, terms))
 
 def get_all_substrings(selected_name, space_allowed=True):
     # returns a list of lists
@@ -81,4 +84,5 @@ def go():
     print("Shortest unique substring without spaces: {}".format(substring))
 
 if __name__ == '__main__':
-    go()
+    print(get_term_sizes(10,5))
+    # go()
