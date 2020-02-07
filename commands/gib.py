@@ -10,7 +10,7 @@ import markovify
 from helpers.config import CONFIG
 from helpers.database import DB
 from helpers.defer import defer
-from helpers.error import CommandError, MyFaultError
+from helpers.error import CommandError, MyFaultError, isint
 
 _URL_PATT = (r"https?:\/\/(www\.)?"
              r"[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}"
@@ -38,6 +38,7 @@ class gib:
                         "size s",
                         "roulette r",
                         "regex x",
+                        "minlength length l",
                         "me",
                         "help h"])
         if 'help' in cmd:
@@ -153,9 +154,23 @@ class gib:
             patterns = []
         if 'me' in cmd:
             patterns.append(r"\u0001ACTION ")
+        if 'minlength' in cmd:
+            if len(cmd['minlength']) == 0:
+                raise CommandError("When using the minimum length modifier "
+                                   "(--length/-l), you must specify a "
+                                   "minimum length")
+            minlength = cmd['minlength'][0]
+            if not isint(minlength):
+                raise CommandError("When using the minimum length modifier "
+                                   "(--length/-l), the minimum length must be "
+                                   "an integer")
+            minlength = int(minlength)
+        else:
+            minlength = 0
         # gibbing:
         try:
-            sentence = cls.get_gib_sentence(limit=limit, patterns=patterns)
+            sentence = cls.get_gib_sentence(limit=limit, minlength=minlength,
+                                            patterns=patterns)
             if sentence is None:
                 raise AttributeError
         except (RuntimeError, AttributeError):
@@ -215,7 +230,7 @@ class gib:
         return string
 
     @classmethod
-    def get_gib_sentence(cls, attempts=0, limit=7500, patterns=None):
+    def get_gib_sentence(cls, attempts=0, limit=7500, minlength=0, patterns=None):
         print("Getting a gib sentence")
         # messages = []
         # for channel in cls.channels:
@@ -234,16 +249,18 @@ class gib:
             print("Making model from messages, size {}".format(cls.size-decr))
             cls.model = cls.make_model(messages, decrement=decr)
             print("Making sentence")
-            sentence = cls.model.make_short_sentence(400, tries=200, force_result=False)
+            sentence = cls.model.make_short_sentence(
+                400, minlength, tries=200, force_result=False)
             if sentence is not None:
                 break
             print("Sentence is None")
         if not cls.nocache and sentence in DB.get_gibs():
-            print("Sentence already sent, {} attempts remaining".format(cls.ATTEMPT_LIMIT-attempts))
+            print("Sentence already sent, {} attempts remaining"
+                  .format(cls.ATTEMPT_LIMIT-attempts))
             try:
                 if attempts < cls.ATTEMPT_LIMIT:
                     sentence = cls.get_gib_sentence(attempts+1, limit,
-                                                    patterns)
+                                                    minlength, patterns)
                 else:
                     raise RecursionError
             except RecursionError:
