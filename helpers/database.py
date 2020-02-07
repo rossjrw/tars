@@ -378,7 +378,14 @@ class SqliteDriver:
         # if user is not None: TODO
         #     q = q.where(messages.sender == user)
         if senders is not None and senders is not [None]:
-            q = q.where(messages.sender.isin(senders))
+            senders_in = [s.lstrip("+") for s in senders
+                          if not s.startswith("-")]
+            senders_out = [s.lstrip("-") for s in senders
+                           if s.startswith("-")]
+            if len(senders_in):
+                q = q.where(messages.sender.isin(senders_in))
+            if len(senders_out):
+                q = q.where(messages.sender.notin(senders_out))
         if patterns is not None and patterns is not [None]:
             for pattern in patterns:
                 q = q.where(messages.message.regex(pattern))
