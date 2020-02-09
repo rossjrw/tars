@@ -30,10 +30,10 @@ class Names:
     def record_names(self, irc_c, msg):
         # msg.args is a string
         # "TARS = #channel :name1 name2 name3 name4"
-        names = re.split(r"\s:?", msg.args.strip())
-        names = names[2:]
-        channel = names.pop(0)
-        names = [{'nick': name} for name in names]
+        nicks = re.split(r"\s:?", msg.args.strip())
+        nicks = nicks[2:]
+        channel = nicks.pop(0)
+        names = [{'nick': name} for name in nicks]
         # chatstaff names start with a punctuation
         for key,name in enumerate(names):
             if name['nick'][0] in '+%@&~':
@@ -49,7 +49,9 @@ class Names:
         # broadcast this info to whatever needs it
         emit_signal(irc_c, 'NAMES_RESPONSE', data=(channel, names))
         # just need to log these names to the db now
-        nameprint("Updating NAMES for {}".format(nickColor(channel)))
+        nameprint("Updating NAMES for {}: {}".format(
+            nickColor(channel),
+            ", ".join(nickColor(nick) for nick in sorted(nicks))))
         try:
             DB.sort_names(channel, names)
         except Exception as e:
