@@ -15,6 +15,14 @@ from helpers.database import DB
 from helpers.defer import defer
 from helpers.parse import nickColor
 
+class helenhere:
+    """Checks if Helen is in the room"""
+    @staticmethod
+    def command(irc_c, msg, cmd):
+        if defer.check(cmd, 'Secretary_Helen'):
+            msg.reply("Yep, I can see Helen.")
+        else:
+            msg.reply("Nope, I can't see Helen.")
 
 class kill:
     """Kills the bot"""

@@ -27,6 +27,7 @@ COMMANDS = {
               "reboot": {"reboot"},
               "debug": {"debug"},
               "update": {"update"},
+              "helenhere": {"checkhelen","helenhere"},
              },
     "refactor": {"refactor": {"refactor"},
                 },
