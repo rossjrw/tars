@@ -26,6 +26,7 @@ class shortest:
         except IndexError:
             raise MyFaultError("I couldn't find the page with that URL.")
         single_string = shortest.get_substring(title, pages)
+        print("Single string:", single_string)
         helen_style = shortest.get_multi_substring(title, pages)
         if single_string is None and helen_style is None:
             raise MyFaultError("There's no unique search for {} (\"{}\")"
@@ -44,7 +45,7 @@ class shortest:
             return single_string.lower()
         if single_string is None:
             return helen_style.lower()
-        return "single string: \"{}\" · Helen-style: {}".format(
+        return "single string: \"{}\" · multi string: {}".format(
             single_string.lower(), helen_style.lower())
 
     @staticmethod
@@ -95,6 +96,13 @@ class shortest:
 
     @staticmethod
     def get_multi_substring(selected_name, all_names):
+        all_names = [name for name in all_names
+                     if name is not None]
+        # first: check if there are *any* unique matches
+        if shortest.count_matches(selected_name.split(), all_names) == 0:
+            print("Returning early")
+            return None
+        # then check normally
         length_substrings = shortest.get_all_substrings(selected_name, False)
         template_terms = shortest.get_term_sizes(min(10, len(selected_name)), 4)
         already_searched_terms = []
@@ -103,6 +111,7 @@ class shortest:
         # length_substrings
         for template_term in template_terms:
             # template_term = (4, 3, 2) or somesuch
+            print(template_term)
             term_substring_lists = [length_substrings[l] for l in template_term]
             search_terms = list(product(*term_substring_lists))
             for search_term in search_terms:
@@ -110,11 +119,30 @@ class shortest:
                     continue
                 if sorted(search_term) in already_searched_terms:
                     continue
-                if not any([all([term.lower() in name.lower()
-                                 for term in search_term])
-                            for name in all_names
-                            if name is not None
-                            and name != selected_name]):
+                if shortest.count_matches(search_term, all_names) == 1:
                     return " ".join(search_term)
                 already_searched_terms.append(sorted(search_term))
         return None
+
+    @staticmethod
+    def count_matches(search_term, all_names):
+        """Returns whether or not a search is a unique match.
+
+        str full_search_term: The unparsed original search.
+        list search_term: List of substrings to search for.
+        list all_names: List of strings to search in.
+
+        Returns enum matches:
+            0 = search term does not appear
+            1 = search term is unique
+            2 = search term appears more than once
+        """
+        matches = 0
+        for name in all_names:
+            if all(term.lower() in name.lower() for term in search_term):
+                matches += 1
+                if matches > 1:
+                    return 2
+        if matches == 1:
+            return 1
+        return 0

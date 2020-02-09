@@ -52,7 +52,8 @@ class propagate:
                          'scp-series-2',
                          'scp-series-3',
                          'scp-series-4',
-                         'scp-series-5']
+                         'scp-series-5',
+                         'scp-series-6']
             # meta_urls = ['attribution-metadata']
             # XXX TODO replace with getting pages tagged "metadata"
             msg.reply("Propagating metadata...")
