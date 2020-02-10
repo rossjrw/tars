@@ -11,16 +11,13 @@ Provides functions for manipulating the database.
 
 import sqlite3
 import random
-from pprint import pprint
-from helpers.parse import nickColor
 import pandas
 import pendulum as pd
-from pypika import MySQLQuery, Table, Field, Order
+from pypika import MySQLQuery, Table, Order
 from pypika.terms import ValueWrapper
 from pypika.functions import Max, Length
-from pprint import pprint
-from helpers.config import CONFIG
 from pyaib.irc import Message
+from helpers.config import CONFIG
 from helpers.error import nonelist
 try:
     import re2 as re
@@ -188,12 +185,12 @@ class SqliteDriver:
                 rating INTEGER NOT NULL,
                 ups INTEGER,
                 downs INTEGER,
-                date_posted TEXT NOT NULL,
+                date_posted INTEGER NOT NULL,
                 is_promoted BOOLEAN NOT NULL
                     CHECK (is_promoted IN (0,1))
                     DEFAULT 0,
-                date_checked TEXT NOT NULL
-                    DEFAULT CURRENT_TIMESTAMP,
+                date_checked INTEGER NOT NULL
+                    DEFAULT (CAST(STRFTIME('%s','now') AS INT)),
                 UNIQUE(url)
             );
             CREATE TABLE IF NOT EXISTS articles_tags (
@@ -1036,7 +1033,7 @@ class SqliteDriver:
             'rating': article['rating'],
             'ups': article['ups'],
             'downs': article['downs'],
-            'date_posted': pd.parse(article['created_at']).to_datetime_string()}
+            'date_posted': pd.parse(article['created_at']).int_timestamp}
         c.execute('''
             SELECT id FROM articles WHERE url=?
                   ''', (article['url'], ))

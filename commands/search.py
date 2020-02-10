@@ -22,7 +22,6 @@ except ImportError:
     print("re2 failed to load, falling back to re")
     import re
 
-
 class search:
     @staticmethod
     def expandargs(cmd):
@@ -424,13 +423,10 @@ class search:
         pages = [DB.get_article_info(p['id']) for p in pages]
         if len(pages) > 1:
             msg.reply(
-                "{} results: {}".format(
-                    len(pages), " · ".join(
-                        [
-                            "\x02{}\x0F {}".format(i + 1, p['title'])
-                            for i, p in enumerate(pages[:10])
-                        ]
-                    )
+                "{} results (use ..sm to choose): {}".format(
+                    len(pages),
+                    " · ".join(["\x02{}\x0F {}".format(i + 1, p['title'])
+                                for i, p in enumerate(pages[:10])])
                 )
             )
             if len(pages) > 3:
@@ -515,17 +511,22 @@ class lastcreated:
 
 
 class MinMax:
-    """A dictionary whose keys are only mutable if they are None"""
+    """Stores a minimum int and a maximum int representing a range of values,
+    inclusive.
+    Once set, values are immutable.
+    """
     def __repr__(self):
         return "MinMax({}..{})".format(self.min, self.max)
 
-    def __init__(self, min=None, max=None):
-        self.min = min
-        self.max = min
+    def __init__(self, min_value=None, max_value=None):
+        assert isinstance(min_value, int), "Min must be int"
+        assert isinstance(max_value, int), "Max must be int"
+        self.min = min_value
+        self.max = min_value
 
     def __lt__(self, other):  # MinMax < 20
-        if self.max == None:
-            if self.min != None and self.min > other:
+        if self.max is None:
+            if self.min is not None and self.min > other:
                 MinMax.throw('discrep')
             else:
                 self.max = other - 1
@@ -533,8 +534,8 @@ class MinMax:
             MinMax.throw('max')
 
     def __gt__(self, other):  # MinMax > 20
-        if self.min == None:
-            if self.max != None and self.max < other:
+        if self.min is None:
+            if self.max is not None and self.max < other:
                 MinMax.throw('discrep')
             else:
                 self.min = other + 1
@@ -542,8 +543,8 @@ class MinMax:
             MinMax.throw('min')
 
     def __le__(self, other):  # MinMax <= 20
-        if self.max == None:
-            if self.min != None and self.min > other:
+        if self.max is None:
+            if self.min is not None and self.min > other:
                 MinMax.throw('discrep')
             else:
                 self.max = other
@@ -551,8 +552,8 @@ class MinMax:
             MinMax.throw('max')
 
     def __ge__(self, other):  # MinMax <= 20
-        if self.min == None:
-            if self.max != None and self.max < other:
+        if self.min is None:
+            if self.max is not None and self.max < other:
                 MinMax.throw('discrep')
             else:
                 self.min = other
@@ -560,25 +561,24 @@ class MinMax:
             MinMax.throw('min')
 
     def __getitem__(self, arg):  # MinMax['min']
-        if arg is 'min':
+        if arg == 'min':
             return self.min
-        elif arg is 'max':
+        if arg == 'max':
             return self.max
-        else:
-            raise KeyError(arg + " not in a MinMax object")
+        raise KeyError(arg + " not in a MinMax object")
 
     @staticmethod
     def throw(type):
         if type == 'discrep':
             raise MinMaxError("Minimum {0} cannot be greater than maximum {0}")
-        else:
-            # Do I look like I give a damn
-            raise MinMaxError("Can only have one " + type + "imum {0}")
-
+        if type == 'min':
+            raise MinMaxError("Can only have one minimum {0}")
+        if type == 'max':
+            raise MinMaxError("Can only have one maximum {0}")
+        raise ValueError("Unknown MinMaxError {}".format(type))
 
 class MinMaxError(Exception):
     pass
-
 
 class DateRange:
     """A non-precise date for creating date ranges"""
@@ -593,8 +593,8 @@ class DateRange:
     # Takes BOTH explicit ranges and implicit dates
     datestr = "{}-{}-{} {}:{}:{}"
 
-    def __init__(self, date):
-        self.input = date
+    def __init__(self, input_date):
+        self.input = input_date
         self.min = None
         self.max = None
         self.compare = None
@@ -615,7 +615,7 @@ class DateRange:
         # first let's handle the range
         if ".." in self.input:
             self.input = self.input.split("..")
-            if len(self.input) is not 2:
+            if len(self.input) != 2:
                 raise CommandError("Date ranges must have 2 dates")
             # if the date is a manual range, convert to a DateRange
             self.max = []
@@ -655,7 +655,7 @@ class DateRange:
             # do other stuff
             return
         # strip the comparison
-        match = re.match(r"([<>=]{1,2})(.*)", self.input)
+        match = re.match(r"([>=<]{1,2})(.*)", self.input)
         if match:
             self.compare = match.group(1)
             self.input = match.group(2)
@@ -678,17 +678,12 @@ class DateRange:
             sel = dict([a, int(x)] for a, x in sel.items())
             self.date = pendulum.now()
             # check time units
-            for key, value in sel.items():
-                # make units not case sensitive
-                if key != 'M':
-                    sel[key.lower()] = sel.pop(key)
+            for key in sel:
                 if key not in 'smhdwMy':
                     raise CommandError(
-                        (
-                            "{} isn't a valid unit of time in a "
-                            "relative date. Valid units are s, m, "
-                            "h, d, w, M, and y."
-                        ).format(key)
+                        "'{}' isn't a valid unit of time in a relative date. "
+                        "Valid units are s, m, h, d, w, M, and y."
+                        .format(key)
                     )
             self.date = pendulum.now().subtract(
                 years=sel.get('y', 0),
