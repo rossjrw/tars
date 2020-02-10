@@ -209,7 +209,10 @@ class gib:
         sentence = gib.bracketify(sentence)
         sentence = gib.bracketify(sentence, "[]")
         sentence = gib.bracketify(sentence, "{}")
-        msg.reply(sentence)
+        if cmd.command == "big":
+            msg.reply(sentence.upper())
+        else:
+            msg.reply(sentence)
 
     @staticmethod
     def bracketify(string, bracket="()"):
