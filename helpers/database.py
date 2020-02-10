@@ -61,6 +61,7 @@ def norm(thing):
 
 def _regexp(expr, item):
     """For evaluating db strings against a given regex."""
+    if item is None: return False
     return re.search(expr, item, re.IGNORECASE) is not None
 
 def _glob(expr, item):
