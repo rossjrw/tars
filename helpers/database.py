@@ -327,11 +327,14 @@ class SqliteDriver:
             # fail silently so that users can't see what channels exist
             print("The table {} does not exist.".format(table))
 
-    def print_selection(self, query):
+    def print_selection(self, query, string=False):
         """Pretty print a selection"""
         try:
             df = pandas.read_sql_query(query, self.conn)
-            print(df)
+            if string:
+                print(df.to_string())
+            else:
+                print(df)
         except pandas.io.sql.DatabaseError as e:
             # fail silently
             dbprint("There was a problem with the selection statement.", True)
@@ -643,7 +646,7 @@ class SqliteDriver:
         """Sort the results of a NAMES query"""
         # should already have channel row + table set up.
         if not self._check_exists(channel, 'channel'):
-            dbprint('{} does not exist, creating'.format(channel), True)
+            dbprint("{} does not exist, creating".format(channel), True)
             self.join_channel(channel)
         # names is a list of objects {nick, mode}
         # 1. add new users and user_aliases

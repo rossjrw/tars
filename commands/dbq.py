@@ -49,7 +49,7 @@ class query:
                 search = msg.sender
             else:
                 search = cmd.args['root'][1]
-            id,type = DB.get_generic_id(search)
+            id, type = DB.get_generic_id(search)
             if id:
                 if type == 'user' and search == msg.sender:
                     msg.reply("{}, your ID is {}.".format(msg.sender, id))
@@ -92,7 +92,7 @@ class query:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
             try:
-                DB.print_selection(" ".join(cmd['sql']))
+                DB.print_selection(" ".join(cmd['sql']), 'str' in cmd)
                 msg.reply("Printing that selection to console")
             except:
                 msg.reply("There was a problem with the selection")
