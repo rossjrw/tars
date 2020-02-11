@@ -209,8 +209,10 @@ class gib:
         sentence = gib.bracketify(sentence)
         sentence = gib.bracketify(sentence, "[]")
         sentence = gib.bracketify(sentence, "{}")
-        if cmd.command == "big":
+        if cmd.command.lower() == "big":
             msg.reply(sentence.upper())
+        elif cmd.command.lower() == "goob":
+            msg.reply(re.sub(r"[aeiou]", "oob", sentence, flags=re.I))
         else:
             msg.reply(sentence)
 
