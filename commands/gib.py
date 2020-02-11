@@ -45,7 +45,7 @@ class gib:
             msg.reply("Usage: .gib [--channel #channel] [--user user] "
                       "[--no-cache]")
             return
-        channels = [msg.channel]
+        channels = [msg.raw_channel]
         users = []
         # root has 1 num, 1 string, 1 string startswith #
         for arg in cmd.args['root']:
@@ -70,7 +70,7 @@ class gib:
                     if not channel.startswith('#'):
                         raise CommandError("Channel names must start with #.")
                 channels = cmd['channel']
-        elif msg.channel is None:
+        elif msg.raw_channel is None:
             raise CommandError("Specify a channel to gib from with "
                                "--channel/-c")
         if 'user' in cmd:
@@ -113,16 +113,16 @@ class gib:
             limit = None
         # can only gib a channel both the user and the bot are in
         for channel in channels:
-            if channel is msg.channel:
+            if channel is msg.raw_channel:
                 continue
-            if msg.channel is not None \
+            if msg.raw_channel is not None \
                and cmd['channel'][0] != 'all' \
                and not all(x in DB.get_channel_members(channel)
                            for x in [msg.sender, CONFIG.nick]):
                 raise CommandError("Both you and the bot must be in a channel "
                                    "in order to gib it.")
-            if msg.channel is not None \
-               and channel != msg.channel \
+            if msg.raw_channel is not None \
+               and channel != msg.raw_channel \
                and not defer.controller(cmd):
                 raise CommandError("You can only gib the current channel (or "
                                    "any channel from PMs)")
@@ -133,7 +133,7 @@ class gib:
         else:
             cls.model = None
             cls.channels = channels
-            if len(cls.channels) == 0: cls.channels = [msg.channel]
+            if len(cls.channels) == 0: cls.channels = [msg.raw_channel]
             cls.users = users
             if len(cls.users) == 0: cls.users = [None]
         # are we gibbing or rouletting?
@@ -184,7 +184,7 @@ class gib:
                      if len(users) == 1
                      else "they haven't"),
                     (channels[0]
-                     if len(channels) == 1 and channels[0] == msg.channel
+                     if len(channels) == 1 and channels[0] == msg.raw_channel
                      else "that channel"
                      if len(channels) == 1
                      else "those channels"),
@@ -198,10 +198,10 @@ class gib:
         if match:
             sentence = match.group(2).strip()
         # second: modify any words that match the names of channel members
-        members = DB.get_channel_members(msg.channel) + ["ops"]
+        members = DB.get_channel_members(msg.raw_channel) + ["ops"]
         members = re.compile(r"\b" + r"\b|\b".join(members) + r"\b",
                              flags=re.IGNORECASE)
-        if msg.channel is not None:
+        if msg.raw_channel is not None:
             sentence = members.sub(cls.obfuscate, sentence)
         # match any unmatched pairs
         if sentence.count("\"") % 2 != 0:

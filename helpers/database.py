@@ -942,7 +942,7 @@ class SqliteDriver:
         """Logs a message in the db.
         inp should be either a message object or equivalent dict"""
         if isinstance(msg, Message):
-            msg = {'channel': msg.channel,
+            msg = {'channel': msg.raw_channel,
                    'sender': msg.sender,
                    'kind': msg.kind,
                    'message': msg.message,

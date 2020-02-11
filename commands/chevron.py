@@ -23,7 +23,7 @@ class chevron:
             raise CommandError("Chevron limit cannot be less than 1")
         limit = 50 if limit > 50 else limit
         msg.reply("CHEVRON - skip {} - limit {}".format(skip, limit))
-        messages = DB.get_messages_to_command_limit(msg.channel, limit)
+        messages = DB.get_messages_to_command_limit(msg.raw_channel, limit)
         # messages is now a list of messages, with the most recent one last
         # try to get some sort of behaviour from each one
         # 1. Match commands that were ignored because a bot was present
