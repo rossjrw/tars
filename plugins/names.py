@@ -70,7 +70,7 @@ class Names:
     @observe('IRC_MSG_JOIN')
     def join_names(self, irc_c, msg):
         # make sure the names are always up to date
-        defer.get_users(irc_c, msg.channel)
+        defer.get_users(irc_c, msg.raw_channel)
 
     @observe('IRC_MSG_PART')
     def part_names(self, irc_c, msg):

@@ -24,7 +24,7 @@ class pingall:
         if "channel" in cmd:
             channel = cmd['channel'][0]
         else:
-            channel = msg.channel
+            channel = msg.raw_channel
         # Issue a fresh NAMES request and await the response
         defer.get_users(irc_c, channel)
         try:
