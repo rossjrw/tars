@@ -14,6 +14,8 @@ from helpers.config import CONFIG
 
 def gimmick(message):
     """Detect if a message is the result of a gib gimmick."""
+    if message is None:
+        return False
     if 'oob' in message:
         return True
     if message.isupper():
