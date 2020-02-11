@@ -12,6 +12,14 @@ from pprint import pprint
 from helpers.database import DB
 from helpers.config import CONFIG
 
+def gimmick(message):
+    """Detect if a message is the result of a gib gimmick."""
+    if 'oob' in message:
+        return True
+    if message.isupper():
+        return True
+    return False
+
 @plugin_class('log')
 class Log:
     def __init__(self, irc_c, config):
@@ -43,7 +51,8 @@ class Log:
                 "joined" if msg.kind == 'JOIN' else "left",
                 parse.nickColor(chname)))
         try:
-            DB.log_message(msg)
+            if not gimmick(msg.message):
+                DB.log_message(msg)
         except:
             irc_c.RAW("PRIVMSG #tars A logging error has occurred.")
             raise
