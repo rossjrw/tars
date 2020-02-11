@@ -212,7 +212,7 @@ class gib:
         if cmd.command.lower() == "big":
             msg.reply(sentence.upper())
         elif cmd.command.lower() == "goob":
-            msg.reply(re.sub(r"[aeiou]", "oob", sentence, flags=re.I))
+            msg.reply(re.sub(r"[aeiou]", "oob", sentence))
         else:
             msg.reply(sentence)
 
