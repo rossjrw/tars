@@ -29,9 +29,12 @@ class pingall:
         defer.get_users(irc_c, channel)
         try:
             response = await_signal(irc_c, 'NAMES_RESPONSE', timeout=5.0)
-            assert response[0] == channel
-            members = [name['nick'] for name in response[1]]
+            # returned data is the channel name
+            assert response == channel
         except (TimeoutError, AssertionError):
+            # response to success/failure is the same, so doesn't matter
+            pass
+        finally:
             members = DB.get_occupants(channel, True)
         if len(cmd.args['root']) == 0:
             # no message
