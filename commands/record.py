@@ -38,7 +38,7 @@ class pingall:
             members = DB.get_occupants(channel, True)
         if len(cmd.args['root']) == 0:
             # no message
-            msg.reply(", ".join(members))
+            msg.reply("{}: ping!".format(", ".join(members)))
         else:
             for member in members:
                 irc_c.PRIVMSG(member, "{} (from {} in {})".format(
