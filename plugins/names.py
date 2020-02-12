@@ -45,8 +45,6 @@ class Names:
                     'nick': name['nick'],
                     'mode': None
                 }
-        # broadcast this info to whatever needs it
-        emit_signal(irc_c, 'NAMES_RESPONSE', data=(channel, names))
         # just need to log these names to the db now
         nameprint("Updating NAMES for {}: {}".format(
             nickColor(channel),
@@ -56,6 +54,9 @@ class Names:
         except Exception as e:
             irc_c.RAW("PRIVMSG #tars NAMES error: " + str(e))
             raise
+        finally:
+            # broadcast this info to whatever needs it
+            emit_signal(irc_c, 'NAMES_RESPONSE')
 
     @observe('IRC_MSG_NICK') # someone changes their name
     def change_name(self, irc_c, msg):
