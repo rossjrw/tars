@@ -159,6 +159,8 @@ class SqliteDriver:
                 user_id INTEGER NOT NULL
                     REFERENCES users(id),
                 user_mode CHARACTER(1),
+                date_checked INTEGER NOT NULL
+                    DEFAULT (CAST(STRFTIME('%s','now') AS INT)),
                 UNIQUE(channel_id, user_id)
             );
             CREATE TABLE IF NOT EXISTS user_aliases (
@@ -643,7 +645,11 @@ class SqliteDriver:
             raise Exception("More than one ID for alias {}".format(alias))
 
     def sort_names(self, channel, names):
-        """Sort the results of a NAMES query"""
+        """Sort the results of a NAMES query.
+
+        str channel: The channel name whose NAMES we recieved
+        list names: [{'nick': str, 'mode': str in +%@&~}]
+        """
         # should already have channel row + table set up.
         if not self._check_exists(channel, 'channel'):
             dbprint("{} does not exist, creating".format(channel), True)
@@ -662,7 +668,9 @@ class SqliteDriver:
         # need to delete old NAMES data for this channel
         # (may want to waive this in the future for single user changes)
         c.execute('''
-            DELETE FROM channels_users WHERE channel_id=?
+            DELETE FROM channels_users
+            WHERE channel_id=?
+            AND date_checked < CAST(STRFTIME('%s','now') AS INT) - 60
                   ''', (channel, ))
         # then add new NAMES data
         for name in names:
