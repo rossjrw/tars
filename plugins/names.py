@@ -54,9 +54,8 @@ class Names:
         except Exception as e:
             irc_c.RAW("PRIVMSG #tars NAMES error: " + str(e))
             raise
-        finally:
-            # broadcast this info to whatever needs it
-            emit_signal(irc_c, 'NAMES_RESPONSE', data=channel)
+        # broadcast this info to whatever needs it
+        emit_signal(irc_c, 'NAMES_RESPONSE', data=channel)
 
     @observe('IRC_MSG_NICK') # someone changes their name
     def change_name(self, irc_c, msg):
