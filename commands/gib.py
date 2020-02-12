@@ -211,13 +211,12 @@ class gib:
         sentence = gib.bracketify(sentence, "{}")
 
         cmd.command = cmd.command.lower()
+        if "oo" in cmd.command:
+            sentence = re.sub(r"[aeiou]", "oob", sentence)
+        elif "o" in cmd.command:
+            sentence = re.sub(r"[aeiou]", "ob", sentence)
         if cmd.command.startswith("b") and cmd.command.endswith("g"):
             sentence = sentence.upper()
-            cmd.command = cmd.command[::-1]
-        if cmd.command == "goob":
-            sentence = re.sub(r"[aeiou]", "oob", sentence)
-        elif cmd.command == "gob":
-            sentence = re.sub(r"[aeiou]", "ob", sentence)
         msg.reply(sentence)
 
     @staticmethod
