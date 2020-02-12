@@ -159,6 +159,8 @@ class SqliteDriver:
                 user_id INTEGER NOT NULL
                     REFERENCES users(id),
                 user_mode CHARACTER(1),
+                date_checked INTEGER NOT NULL
+                    DEFAULT (CAST(STRFTIME('%s','now') AS INT)),
                 UNIQUE(channel_id, user_id)
             );
             CREATE TABLE IF NOT EXISTS user_aliases (
