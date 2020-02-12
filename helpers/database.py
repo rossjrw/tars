@@ -670,7 +670,7 @@ class SqliteDriver:
         c.execute('''
             DELETE FROM channels_users
             WHERE channel_id=?
-            AND date_checked < CAST(STRFTIME('%s','now' AS INT)) - 60
+            AND date_checked < CAST(STRFTIME('%s','now') AS INT) - 60
                   ''', (channel, ))
         # then add new NAMES data
         for name in names:
