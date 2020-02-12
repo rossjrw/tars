@@ -209,12 +209,16 @@ class gib:
         sentence = gib.bracketify(sentence)
         sentence = gib.bracketify(sentence, "[]")
         sentence = gib.bracketify(sentence, "{}")
-        if cmd.command.lower() == "big":
-            msg.reply(sentence.upper())
-        elif cmd.command.lower() == "goob":
-            msg.reply(re.sub(r"[aeiou]", "oob", sentence))
-        else:
-            msg.reply(sentence)
+
+        cmd.command = cmd.command.lower()
+        if cmd.command.startswith("b") and cmd.command.endswith("g"):
+            sentence = sentence.upper()
+            cmd.command = cmd.command[::-1]
+        if cmd.command == "goob":
+            sentence = re.sub(r"[aeiou]", "oob", sentence)
+        elif cmd.command == "gob":
+            sentence = re.sub(r"[aeiou]", "ob", sentence)
+        msg.reply(sentence)
 
     @staticmethod
     def bracketify(string, bracket="()"):

@@ -18,6 +18,8 @@ def gimmick(message):
         return False
     if message.count("oob") > 3:
         return True
+    if message.count("ob") > 4:
+        return True
     if message.isupper():
         return True
     return False
