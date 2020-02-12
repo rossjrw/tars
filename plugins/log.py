@@ -16,9 +16,9 @@ def gimmick(message):
     """Detect if a message is the result of a gib gimmick."""
     if message is None:
         return False
-    if message.count("oob") > 3:
+    if message.lower().count("oob") > 3:
         return True
-    if message.count("ob") > 4:
+    if message.lower().count("ob") > 4:
         return True
     if message.isupper():
         return True
