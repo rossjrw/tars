@@ -57,19 +57,20 @@ def kill_bye():
 
 def acronym_gen():
     responses = [
+        "!Totally !Awesome !Robot (/!S)", # TSATPWTCOTTTADC
+        "!Total !Annihilation !Reigns !Supreme", # TSATPWTCOTTTADC
+        "ano!Ther bot that !Also helps io do p!Romotion !Stuff", # Croquembouche
         "!Tool-!Assisted !Robotic !Sassmouth",
-        "!TARS: !A !Recursive !Semantic",
-        "!Totally !Awesome !Robot (/!S)",
-        "!Tantalising !And !Rambunctious !Sexbot",
-        "ano!Ther bot that !Also helps io do p!Romotion !Stuff",
-        "!Target !Attack !Radar !System",
+        "!Tantalising !And !Rambunctious !Sexbot", # Croquembouche
+        "!Target !Attack !Radar !System", # https://acronyms.thefreedictionary.com/TARS
         "!This's !A !Random !Sentence",
-        "!Tell !Aaron !Rocks !Suck",
-        "!There's !A !Rong !Spelling",
-        "!This !Asshole !Robot !Sucks",
-        "!Try !And !Rate !SCPs",
-        "!These !Acronyms !Really !Suck",
-        "I stand for robot rights.",
+        "!Tell !Aaron !Rocks !Suck", # ROUNDERHOUSE
+        "!There's !A !Rong !Spelling", # ROUNDERHOUSE
+        "!This !Asshole !Robot !Sucks", # ROUNDERHOUSE
+        "!TARS: !A !Recursive !Semantic", # CuteGirl
+        "!Try !And !Rate !SCPs", # CuteGirl
+        "!These !Acronyms !Really !Suck", # ROUNDERHOUSE
+        "I stand for robot rights.", # ROUNDERHOUSE
         "!Top !And !Rear !Suggested",
         "!Tales !Are !Real !Shit",
         "!TARS' !Ass? !Real !Soft.",
@@ -84,8 +85,15 @@ def acronym_gen():
         "!Turnt !At #!Romanticpenthouse!Suite",
         "!T!A!R!SPWTCOTTTADC",
         "!Total !Anal !Relapse !Surgery",
-        "!Two !Anuses !Rigorously !Spread",
-        "!Talking !Animals? *!Rawr* *!Snuggles*",
+        "!Two !Anuses !Rigorously !Spread", # plaidypus
+        "!Talking !Animals? *!Rawr* *!Snuggles*", # LordofLaugh
+        "!Thrice-!Assembled !Rectum !Seal", # Arlexus
+        "!Tortoises !Are !Robustly !Slow", # LordOdin
+        "!Tagliatelle !And !Rice !Sperm", # LordOdin
+        "!Toronto !Activists: !Really !Sad", # Arlexus
+        "!Temperatures !Are !Rising - !Sorry!", # LordOdin
+        "!Tanks !Are !Really !Strong", # LordOdin
+        "!Try !And !Run, !Samuel.", # Arlexus
     ]
     last_response = []
     while True:
