@@ -85,6 +85,7 @@ def acronym_gen():
         "!T!A!R!SPWTCOTTTADC",
         "!Total !Anal !Relapse !Surgery",
         "!Two !Anuses !Rigorously !Spread",
+        "!Talking !Animals? *!Rawr* *!Snuggles*",
     ]
     last_response = []
     while True:
