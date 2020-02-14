@@ -86,14 +86,17 @@ def acronym_gen():
         "!T!A!R!SPWTCOTTTADC",
         "!Total !Anal !Relapse !Surgery",
         "!Two !Anuses !Rigorously !Spread", # plaidypus
+        "!The !Angry !Rash !Spreads", # bluesoul
         "!Talking !Animals? *!Rawr* *!Snuggles*", # LordofLaugh
-        "!Thrice-!Assembled !Rectum !Seal", # Arlexus
         "!Tortoises !Are !Robustly !Slow", # LordOdin
-        "!Tagliatelle !And !Rice !Sperm", # LordOdin
+        "!Tagliatelle !And !Ragù !Sauce", # LordOdin
         "!Toronto !Activists: !Really !Sad", # Arlexus
         "!Temperatures !Are !Rising - !Sorry!", # LordOdin
-        "!Tanks !Are !Really !Strong", # LordOdin
         "!Try !And !Run, !Samuel.", # Arlexus
+        "!Transmission !Aborted; !Return to !Sender", # Arlexus
+        #"!Travesty !Awaits !Remaining !",
+        "!T y p i n g !A c r o n y m s !R e a l l y !S l o w l y", #Arlexus
+        "!Tomorrow, !Another !Revolution !Starts", # Arlexus
     ]
     last_response = []
     while True:
