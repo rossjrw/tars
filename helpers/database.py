@@ -1187,9 +1187,11 @@ class SqliteDriver:
                     q = q.where(art.category.isin(search['term']['include']))
             elif search['type'] == 'date':
                 if search['term']['max'] is not None:
-                    q = q.where(art.date_posted <= search['term']['max'])
+                    timestamp = search['term']['max'].int_timestamp
+                    q = q.where(art.date_posted <= timestamp)
                 if search['term']['min'] is not None:
-                    q = q.where(art.date_posted >= search['term']['min'])
+                    timestamp = search['term']['min'].int_timestamp
+                    q = q.where(art.date_posted >= timestamp)
             elif search['type'] == 'author':
                 # yay for triple-nested queries!
                 meta_q = MySQLQuery.from_(art_au).select(Max(art_au.metadata)) \
@@ -1208,7 +1210,7 @@ class SqliteDriver:
                     q = q.where(ValueWrapper(tag).isin(tag_q))
                 for tag in search['term']['exclude']:
                     q = q.where(ValueWrapper(tag).notin(tag_q))
-            elif search['type'] == None:
+            elif search['type'] is None:
                 q = q.where(
                     (art.title.like(search['term']))
                     | (art.scp_num == search['term'])
@@ -1218,9 +1220,9 @@ class SqliteDriver:
             elif search['type'] == 'url':
                 q = q.where(art.url == search['term'])
         # query complete
-        # make the query sqlite-compatible
-        # like --> "glob" which is a custom function
-        q = str(q).replace(" LIKE "," GLOB ").replace(" REGEX "," REGEXP ")
+        # insert custom functions
+        q = str(q).replace(" LIKE ", " GLOB ")
+        q = str(q).replace(" REGEX ", " REGEXP ")
         c = self.conn.cursor()
         print(str(q))
         c.execute(str(q))

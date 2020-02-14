@@ -519,8 +519,10 @@ class MinMax:
         return "MinMax({}..{})".format(self.min, self.max)
 
     def __init__(self, min_value=None, max_value=None):
-        assert isinstance(min_value, int), "Min must be int"
-        assert isinstance(max_value, int), "Max must be int"
+        if max_value is not None and not isinstance(max_value, int):
+            raise TypeError("Max must be int or None ({})".format(max_value))
+        if min_value is not None and not isinstance(min_value, int):
+            raise TypeError("Min must be int or None ({})".format(min_value))
         self.min = min_value
         self.max = min_value
 
