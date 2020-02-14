@@ -8,7 +8,7 @@ Commands:
 """
 
 from pprint import pprint
-import pendulum
+import pendulum as pd
 from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
 from googleapiclient.discovery import build
@@ -470,7 +470,7 @@ class search:
                     title_preview,
                     "by " + " & ".join(page['authors']),
                     ("+" if page['rating'] >= 0 else "") + str(page['rating']),
-                    pendulum.parse(page['date_posted']).diff_for_humans(),
+                    pd.from_timestamp(page['date_posted']).diff_for_humans(),
                     "http://www.scp-wiki.net/" + page['fullname'],
                 )
             )
@@ -664,10 +664,10 @@ class DateRange:
         if self.date_is_absolute():
             # the date is absolute
             # minimise the date
-            self.min = pendulum.datetime(*self.date.lower_strict()[:6])
+            self.min = pd.datetime(*self.date.lower_strict()[:6])
             self.min = self.min.set(hour=0, minute=0, second=0)
             # maximise the date
-            self.max = pendulum.datetime(*self.date.upper_strict()[:6])
+            self.max = pd.datetime(*self.date.upper_strict()[:6])
             self.max = self.max.set(hour=23, minute=59, second=59)
             pass
         elif re.match(r"([0-9]+[A-Za-z])+$", self.input):
@@ -678,7 +678,7 @@ class DateRange:
             sel = DateRange.reverse_pairwise(sel)
             # convert all numbers to int
             sel = dict([a, int(x)] for a, x in sel.items())
-            self.date = pendulum.now()
+            self.date = pd.now()
             # check time units
             for key in sel:
                 if key not in 'smhdwMy':
@@ -687,7 +687,7 @@ class DateRange:
                         "Valid units are s, m, h, d, w, M, and y."
                         .format(key)
                     )
-            self.date = pendulum.now().subtract(
+            self.date = pd.now().subtract(
                 years=sel.get('y', 0),
                 months=sel.get('M', 0),
                 weeks=sel.get('w', 0),
@@ -720,16 +720,12 @@ class DateRange:
             self.date = parse_edtf(self.input)
         except EDTFParseException:
             try:
-                pendulum.parse(self.input)
-            except pendulum.parsing.exceptions.ParserError:
+                pd.parse(self.input)
+            except pd.parsing.exceptions.ParserError:
                 return False
             else:
-                raise CommandError(
-                    (
-                        "Absolute dates must be of the format "
-                        "YYYY, YYYY-MM or YYYY-MM-DD"
-                    )
-                )
+                raise CommandError("Absolute dates must be of the format "
+                                   "YYYY, YYYY-MM or YYYY-MM-DD")
         else:
             return True
 
