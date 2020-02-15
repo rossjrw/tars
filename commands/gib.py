@@ -204,11 +204,10 @@ class gib:
         if msg.raw_channel is not None:
             sentence = members.sub(cls.obfuscate, sentence)
         # match any unmatched pairs
-        if sentence.count("\"") % 2 != 0:
-            sentence += "\""
-        sentence = gib.bracketify(sentence)
-        sentence = gib.bracketify(sentence, "[]")
-        sentence = gib.bracketify(sentence, "{}")
+        sentence = gib.bracketify(sentence, r"\"\b", r"\b[.!?]*\"")
+        sentence = gib.bracketify(sentence, r"\(", r"\)")
+        sentence = gib.bracketify(sentence, r"\[", r"\}")
+        sentence = gib.bracketify(sentence, r"\{", r"\}")
 
         cmd.command = cmd.command.lower()
         if "oo" in cmd.command:
@@ -220,21 +219,26 @@ class gib:
         msg.reply(sentence)
 
     @staticmethod
-    def bracketify(string, bracket="()"):
+    def bracketify(string, opening, closing):
         """Return a bool indicating that the string is missing an opening
-        bracket"""
-        opening = bracket[0]
-        closing = bracket[1]
-        depths = [0]
-        for char in string:
-            if char == opening:
-                depths.append(depths[-1] + 1)
-            elif char == closing:
-                depths.append(depths[-1] - 1)
-            else:
-                depths.append(depths[-1])
-        string = opening * -min(depths) + string
-        string += closing * depths[-1]
+        bracket.
+
+        Both `opening` and `closing` should be a tuple. The first element
+        should be what bracket is being searched for as a regex string. The
+        second element should be what that bracket actually is, as a regular
+        string.
+        """
+        opening_bracket, opening_find = opening
+        closing_bracket, closing_find = closing
+        depths = [0] * len(string)
+        for match in re.finditer(opening_find, string):
+            for index in range(match.span()[0], len(depths)):
+                depths[index] += 1
+        for match in re.finditer(closing_find, string):
+            for index in range(match.span()[1], len(depths)):
+                depths[index] += -1
+        string = opening_bracket * -min(depths) + string
+        string += closing_bracket * depths[-1]
         return string
 
     @classmethod
