@@ -16,13 +16,13 @@ class shortest:
         if len(cmd.args['root']) < 1:
             raise CommandError("Specify a page's URL whose shortest search "
                                "term you want to find.")
-        pages = [DB.get_article_info(
-            p['id'])['title'] for p in DB.get_articles([])]
+        pages = [DB.get_article_info(p_id)['title']
+                 for p_id in DB.get_articles([])]
         try:
             title = DB.get_article_info(
                 DB.get_articles(
                     [{'type': 'url', 'term': cmd.args['root'][0]}]
-                )[0]['id'])['title']
+                )[0])['title']
         except IndexError:
             raise MyFaultError("I couldn't find the page with that URL.")
         single_string = shortest.get_substring(title, pages)

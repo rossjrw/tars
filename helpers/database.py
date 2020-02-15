@@ -211,10 +211,11 @@ class SqliteDriver:
                 UNIQUE(article_id, author, metadata)
             );
             CREATE TABLE IF NOT EXISTS showmore_list (
+                id INTEGER PRIMARY KEY,
                 channel_id INTEGER NOT NULL
                     REFERENCES channels(id),
-                id INTEGER NOT NULL,
-                article_id INTEGER NOT NULL,
+                article_id INTEGER NOT NULL
+                    REFERENCES articles(id),
                 UNIQUE(channel_id, id)
             );
             CREATE TABLE IF NOT EXISTS messages (
@@ -1160,7 +1161,7 @@ class SqliteDriver:
                 * None, random, recommend, recent
             * 'limit' - a limit on the list returned
             * 'offset' - how many articles to offset
-        Returns a list of articles. Use get_article_info for more detail on
+        Returns a list of article IDs. Use get_article_info for more detail on
         each."""
         # loop through searches and query the database, I guess
         # start with the least intensive process, to most intensive:
@@ -1229,6 +1230,38 @@ class SqliteDriver:
         c = self.conn.cursor()
         print(str(q))
         c.execute(str(q))
-        return c.fetchall()
+        return [row['id'] for row in c.fetchall()]
+
+    def set_showmore_list(self, channel_name, page_ids):
+        c = self.conn.cursor()
+        assert channel_name.startswith('#')
+        c.execute('''
+            SELECT id FROM channels
+            WHERE channel_name=?
+                  ''', (channel_name,))
+        channel_id = c.fetchone()['id']
+        assert channel_id is not None
+        c.execute('''
+            DELETE FROM showmore_list
+            WHERE channel_id=?
+                  ''', (channel_id,))
+        c.executemany('''
+            INSERT INTO showmore_list (channel_id, article_id)
+            VALUES ( ? , ? )
+                      ''', ((channel_id, p_id) for p_id in page_ids))
+        self.conn.commit()
+
+    def get_showmore_list(self, channel_name):
+        """Get the showmore list for the channel. Returns list of article
+        IDs."""
+        c = self.conn.cursor()
+        assert channel_name.startswith('#')
+        c.execute('''
+            SELECT article_id FROM showmore_list
+            WHERE channel_id=(
+                SELECT id FROM channels
+                WHERE channel_name=?)
+                  ''', (channel_name,))
+        return [row['article_id'] for row in c.fetchall()]
 
 DB = SqliteDriver()

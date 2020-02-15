@@ -406,8 +406,8 @@ class search:
             msg.reply(verbose)
             pprint(searches)
 
-        pages = DB.get_articles(searches)
-        pages = [DB.get_article_info(p['id']) for p in pages]
+        page_ids = DB.get_articles(searches)
+        pages = [DB.get_article_info(p_id) for p_id in page_ids]
         pages = search.order(pages, **selection)
 
         if len(pages) >= 50:
@@ -415,13 +415,11 @@ class search:
                       "specific!".format(len(pages)))
             return
         if len(pages) > 3:
-            msg.reply(
-                "{} results (use ..sm to choose): {}".format(
-                    len(pages),
-                    " · ".join(["\x02{}\x0F {}".format(i + 1, p['title'])
-                                for i, p in enumerate(pages[:10])])
-                )
-            )
+            msg.reply("{} results (use ..sm to choose): {}".format(
+                len(pages),
+                " · ".join(["\x02{}\x0F {}".format(i + 1, p['title'])
+                            for i, p in enumerate(pages[:10])])))
+            DB.set_showmore_list(msg.raw_channel, page_ids)
             return
         if len(pages) == 0:
             # check if there's no args other than --verbose
@@ -444,28 +442,31 @@ class search:
                 msg.reply("No matches found.")
             return
         for page in pages:
-            page_is_scp = any(
-                ['scp' in page['tags'],
-                 re.search(r"^scp-[0-9]{3,}", page['url'])])
-            title_preview = "\x02{}\x0F"
-            if page_is_scp:
-                if page['scp_num']:
-                    title_preview = title_preview.format(page['scp_num'].upper())
-                    if page['title']:
-                        title_preview += ": {}".format(page['title'])
-                else:
-                    title_preview = title_preview.format(page['title'].upper())
+            msg.reply(search.parse_title(page))
+
+    @staticmethod
+    def parse_title(page):
+        """Makes a pretty string containing page info."""
+        page_is_scp = any(
+            ['scp' in page['tags'],
+             re.search(r"^scp-[0-9]{3,}", page['url'])])
+        title_preview = "\x02{}\x0F"
+        if page_is_scp:
+            if page['scp_num']:
+                title_preview = title_preview.format(page['scp_num'].upper())
+                if page['title']:
+                    title_preview += ": {}".format(page['title'])
             else:
-                title_preview = title_preview.format(page['title'])
-            msg.reply(
-                "{} · {} · {} · {} · {}".format(
-                    title_preview,
-                    "by " + " & ".join(page['authors']),
-                    ("+" if page['rating'] >= 0 else "") + str(page['rating']),
-                    pd.from_timestamp(page['date_posted']).diff_for_humans(),
-                    "http://www.scp-wiki.net/" + page['fullname'],
-                )
-            )
+                title_preview = title_preview.format(page['title'].upper())
+        else:
+            title_preview = title_preview.format(page['title'])
+        return "{} · {} · {} · {} · {}".format(
+            title_preview,
+            "by " + " & ".join(page['authors']),
+            ("+" if page['rating'] >= 0 else "") + str(page['rating']),
+            pd.from_timestamp(page['date_posted']).diff_for_humans(),
+            "http://www.scp-wiki.net/" + page['fullname'],
+        )
 
     @staticmethod
     def order(pages, order=None, limit=None, offset=0, **wanted_filters):
