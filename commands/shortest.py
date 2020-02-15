@@ -17,7 +17,7 @@ class shortest:
             raise CommandError("Specify a page's URL whose shortest search "
                                "term you want to find.")
         pages = [DB.get_article_info(
-            p['id'])['title'] for p in DB.get_articles([], {})]
+            p['id'])['title'] for p in DB.get_articles([])]
         try:
             title = DB.get_article_info(
                 DB.get_articles(

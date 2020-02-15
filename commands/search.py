@@ -7,6 +7,7 @@ Commands:
     tags - search with root params lumped into -t
 """
 
+from random import random
 from pprint import pprint
 import pendulum as pd
 from edtf import parse_edtf
@@ -404,24 +405,16 @@ class search:
                 verbose = verbose[:-2]
             msg.reply(verbose)
             pprint(searches)
-        # \/ Test stuff to be moved elsewhere after DB stuff
-        # s = ServerProxy('https://TARS:{}@www.wikidot.com/xml-rpc-api.php' \
-        #                 .format(wikidot_api_key))
-        # pages = s.pages.get_meta({
-        #     'site': 'scp-wiki',
-        #     'pages': cmd.args['root']
-        # })
-        pages = DB.get_articles(searches, selection)
 
-        # pages is a list of results
-        # now need to put them in the right order
+        pages = DB.get_articles(searches)
+        pages = [DB.get_article_info(p['id']) for p in pages]
+        pages = search.order(pages, **selection)
 
         if len(pages) >= 50:
             msg.reply("{} results found - you're going to have to be more "
                       "specific!".format(len(pages)))
             return
-        pages = [DB.get_article_info(p['id']) for p in pages]
-        if len(pages) > 1:
+        if len(pages) > 3:
             msg.reply(
                 "{} results (use ..sm to choose): {}".format(
                     len(pages),
@@ -429,8 +422,7 @@ class search:
                                 for i, p in enumerate(pages[:10])])
                 )
             )
-            if len(pages) > 3:
-                return
+            return
         if len(pages) == 0:
             # check if there's no args other than --verbose
             if set(cmd.args).issubset({'root', 'verbose'}):
@@ -475,6 +467,26 @@ class search:
                 )
             )
 
+    @staticmethod
+    def order(pages, order=None, limit=None, offset=0, **wanted_filters):
+        # filters should only be {'ignorepromoted':False} atm
+        filters = {
+            'ignorepromoted': lambda page: not page['is_promoted'],
+        }
+        orders = {
+            'random': lambda page: random(),
+            'recent': lambda page: -page['date_posted'],
+            # 'recommend': None,
+        }
+        for wanted_filter, wanted in wanted_filters.items():
+            if not wanted:
+                continue
+            pages = filter(filters[wanted_filter], pages)
+        if order is not None:
+            pages = sorted(pages, key=orders[order])
+        pages = pages[offset:]
+        pages = pages[:limit]
+        return pages
 
 class regexsearch:
     @classmethod
@@ -483,14 +495,12 @@ class regexsearch:
         cmd.args['root'] = []
         search.command(irc_c, msg, cmd)
 
-
 class tags:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         cmd.args['tags'] = cmd.args['root']
         cmd.args['root'] = []
         search.command(irc_c, msg, cmd)
-
 
 class lastcreated:
     @classmethod
@@ -508,7 +518,6 @@ class lastcreated:
         if set(cmd.args).issubset({'root', 'order', 'limit', 'verbose'}):
             cmd.args['created'] = ["<3d"]
         search.command(irc_c, msg, cmd)
-
 
 class MinMax:
     """Stores a minimum int and a maximum int representing a range of values,
@@ -644,13 +653,11 @@ class DateRange:
             diffs = []
             for i, minimum in enumerate(self.min):
                 for j, maximum in enumerate(self.max):
-                    diffs.append(
-                        {
-                            'i': i,
-                            'j': j,
-                            'diff': self.min[i].diff(self.max[j]).in_seconds()
-                        }
-                    )
+                    diffs.append({
+                        'i': i,
+                        'j': j,
+                        'diff': self.min[i].diff(self.max[j]).in_seconds()
+                    })
             diffs = max(diffs, key=lambda x: x['diff'])
             self.max = self.max[diffs['j']]
             self.min = self.min[diffs['i']]

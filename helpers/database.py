@@ -18,7 +18,7 @@ from pypika.terms import ValueWrapper
 from pypika.functions import Max, Length
 from pyaib.irc import Message
 from helpers.config import CONFIG
-from helpers.error import nonelist
+from helpers.error import nonelist, MyFaultError
 try:
     import re2 as re
 except ImportError:
@@ -1146,7 +1146,7 @@ class SqliteDriver:
             page['authors'].append(row['author'])
         return page
 
-    def get_articles(self, searches, selection=None):
+    def get_articles(self, searches):
         """Get a list of articles that match the criteria.
         searches must be a LIST consisting of DICTS.
         Each dict must contain the following:
@@ -1219,6 +1219,9 @@ class SqliteDriver:
                 q = q.where(art.title.regex(search['term']))
             elif search['type'] == 'url':
                 q = q.where(art.url == search['term'])
+            else:
+                raise TypeError("Unknown search: {}/{}".format(
+                    search['type'], search['term']))
         # query complete
         # insert custom functions
         q = str(q).replace(" LIKE ", " GLOB ")
