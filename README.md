@@ -27,13 +27,25 @@ in the documentation are not yet present.
 Development is currently focused on the core implementation, particularly the
 internal database.
 
+## Installation
+
+TARS uses [Pipenv](https://github.com/pypa/pipenv) for environment management.
+
+```shell
+git clone https://github.com/rossjrw/tars
+cd tars
+pipenv install --dev
+```
+
 ## Usage
 
-Extact anywhere, set up your venv and install the dependencies from Pipfile,
-then:
-
-```
+```shell
+pipenv shell
 python3 bot.py [tars.conf]
+```
+or
+```shell
+pipenv run python3 bot.py [tars.conf]
 ```
 
 All modules are from PyPI except:
@@ -58,6 +70,14 @@ provided, it will default to `tars.conf`.
 
 TARS will use the nick provided in the config file and NickServ password as
 defined by the key `irc_password` in `keys.secret.txt`.
+
+## Testing
+
+```shell
+pipenv run pytest
+```
+Testing is... uh... a little spotty. Tests pass but the suite is not exactly
+comprehensive.
 
 ## Adding commands
 
