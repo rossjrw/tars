@@ -228,15 +228,18 @@ class gib:
         second element should be what that bracket actually is, as a regular
         string.
         """
-        opening_bracket, opening_find = opening
-        closing_bracket, closing_find = closing
+        opening_find, opening_bracket = opening
+        closing_find, closing_bracket = closing
         depths = [0] * len(string)
         for match in re.finditer(opening_find, string):
-            for index in range(match.span()[0], len(depths)):
+            print(match)
+            for index in range(match.span()[1], len(depths)):
                 depths[index] += 1
         for match in re.finditer(closing_find, string):
-            for index in range(match.span()[1], len(depths)):
+            print(match)
+            for index in range(match.span()[0], len(depths)):
                 depths[index] += -1
+        print("{} -> {}".format(string, depths))
         string = opening_bracket * -min(depths) + string
         string += closing_bracket * depths[-1]
         return string
