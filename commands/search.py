@@ -391,7 +391,7 @@ class search:
 
         page_ids = DB.get_articles(searches)
         pages = [DB.get_article_info(p_id) for p_id in page_ids]
-        pages = search.order(pages, **selection)
+        pages = search.order(pages, search_term=strings, **selection)
 
         if len(pages) >= 50:
             msg.reply("{} results found - you're going to have to be more "
@@ -465,8 +465,8 @@ class search:
         orders = {
             'random': lambda page: random(),
             'recent': lambda page: -page['date_posted'],
-            'fuzzy': lambda page: sum([fuzz.token_set_ratio(s, page['title'])
-                                       for s in search_term]),
+            'fuzzy': lambda page: -sum([fuzz.token_set_ratio(s, page['title'])
+                                        for s in search_term]),
             # 'recommend': None,
         }
         for wanted_filter, wanted in wanted_filters.items():
