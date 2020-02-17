@@ -12,6 +12,7 @@ from pprint import pprint
 import pendulum as pd
 from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
+from fuzzywuzzy import fuzz
 from googleapiclient.discovery import build
 from helpers.defer import defer
 from helpers.api import google_api_key, cse_key
@@ -60,80 +61,62 @@ class search:
             raise CommandError("Must specify at least one search term")
         # fullname is deprecated for tars
         if 'fullname' in cmd:
-            raise CommandError(
-                "TARS does not support fullname search - "
-                "wrap your search in quotemarks instead"
-            )
+            raise CommandError("TARS does not support fullname search - "
+                               "wrap your search in quotemarks instead")
         # Set the return mode of the output
         selection = {
             'ignorepromoted': 'ignorepromoted' in cmd,
-            'order': None,
+            'order': 'fuzzy',
             'limit': None,
             'offset': 0
         }
         # order, limit, offset
         if 'order' in cmd:
             if len(cmd['order']) != 1:
-                raise CommandError(
-                    "When using the order argument "
-                    "(--order/-o), exactly one order type must "
-                    "be specified"
-                )
-            if cmd['order'][0] in ['recent', 'recommend', 'random', 'none']:
+                raise CommandError("When using the order argument "
+                                   "(--order/-o), exactly one order type must "
+                                   "be specified")
+            if cmd['order'][0] in ['recent', 'recommend', 'random', 'fuzzy', 'none']:
                 if cmd['order'] == 'none':
                     selection['order'] = None
                 else:
                     selection['order'] = cmd['order'][0]
             else:
-                raise CommandError(
-                    "Selection return order ('{}') must be "
-                    "one of: recent, recommend, random, "
-                    "none".format(cmd['select'][0])
-                )
+                raise CommandError("Selection return order ('{}') must be "
+                                   "one of: recent, recommend, random, "
+                                   "fuzzy, none".format(cmd['order'][0]))
         if 'limit' in cmd:
             if len(cmd['limit']) != 1:
-                raise CommandError(
-                    "When using the limit argument "
-                    "(--limit/-l), exactly one limit must "
-                    "be specified"
-                )
+                raise CommandError("When using the limit argument "
+                                   "(--limit/-l), exactly one limit must "
+                                   "be specified")
             if isint(cmd['limit'][0]):
                 if int(cmd['limit'][0]) > 0:
                     selection['limit'] = int(cmd['limit'][0])
                 elif int(cmd['limit'][0]) == 0:
                     selection['limit'] = None
                 else:
-                    raise CommandError(
-                        "When using the limit argument "
-                        "(--limit/-l), the limit must be at "
-                        "least 0"
-                    )
+                    raise CommandError("When using the limit argument "
+                                       "(--limit/-l), the limit must be at "
+                                       "least 0")
             else:
-                raise CommandError(
-                    "When using the limit argument "
-                    "(--limit/-l), the limit must be an integer"
-                )
+                raise CommandError("When using the limit argument "
+                                   "(--limit/-l), the limit must be an integer")
         if 'offset' in cmd:
             if len(cmd['offset']) != 1:
-                raise CommandError(
-                    "When using the offset argument "
-                    "(--offset/-f), exactly one offset must "
-                    "be specified"
-                )
+                raise CommandError("When using the offset argument "
+                                   "(--offset/-f), exactly one offset must "
+                                   "be specified")
             if isint(cmd['offset'][0]):
                 if int(cmd['offset'][0]) >= 0:
                     selection['offset'] = int(cmd['offset'][0])
                 else:
-                    raise CommandError(
-                        "When using the offset argument "
-                        "(--offset/-f), the offset must be at "
-                        "least 0"
-                    )
+                    raise CommandError("When using the offset argument "
+                                       "(--offset/-f), the offset must be at "
+                                       "least 0")
             else:
-                raise CommandError(
-                    "When using the offset argument "
-                    "(--offset/-f), the offset must be an integer"
-                )
+                raise CommandError("When using the offset argument "
+                                   "(--offset/-f), the offset must be an integer")
         if 'random' in cmd:
             selection['order'] = 'random'
             selection['limit'] = 1
@@ -469,7 +452,12 @@ class search:
         )
 
     @staticmethod
-    def order(pages, order=None, limit=None, offset=0, **wanted_filters):
+    def order(pages, search_term=None,
+              order=None, limit=None, offset=0, **wanted_filters):
+        """Order the results of a search by `order`.
+        If `order` is None, then order by fuzzywuzzy of the search term.
+        `search_term` should be a list of strings.
+        """
         # filters should only be {'ignorepromoted':False} atm
         filters = {
             'ignorepromoted': lambda page: not page['is_promoted'],
@@ -477,6 +465,8 @@ class search:
         orders = {
             'random': lambda page: random(),
             'recent': lambda page: -page['date_posted'],
+            'fuzzy': lambda page: sum([fuzz.token_set_ratio(s, page['title'])
+                                       for s in search_term]),
             # 'recommend': None,
         }
         for wanted_filter, wanted in wanted_filters.items():
