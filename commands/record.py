@@ -24,24 +24,27 @@ class pingall:
         if "channel" in cmd:
             channel = cmd['channel'][0]
         else:
-            channel = msg.channel
+            channel = msg.raw_channel
         # Issue a fresh NAMES request and await the response
         defer.get_users(irc_c, channel)
         try:
             response = await_signal(irc_c, 'NAMES_RESPONSE', timeout=5.0)
-            assert response[0] == channel
-            members = [name['nick'] for name in response[1]]
+            # returned data is the channel name
+            assert response == channel
         except (TimeoutError, AssertionError):
+            # response to success/failure is the same, so doesn't matter
+            pass
+        finally:
             members = DB.get_occupants(channel, True)
         if len(cmd.args['root']) == 0:
             # no message
-            msg.reply(", ".join(members))
+            msg.reply("{}: ping!".format(", ".join(members)))
         else:
             for member in members:
                 irc_c.PRIVMSG(member, "{} (from {} in {})".format(
                     " ".join(cmd.args['root']),
                     msg.sender,
-                    msg.channel))
+                    msg.raw_channel))
 
 class record:
     settings = []
@@ -71,34 +74,34 @@ class record:
             msg.reply("Output page: http://topia.wikidot.com/tars:recording-output")
             return
         if action == 'status':
-            if msg.channel in cls.recording_channels():
+            if msg.raw_channel in cls.recording_channels():
                 msg.reply("Currently recording in this channel. "
                           "Use `.record stop` to stop the recording.")
             else:
                 msg.reply("Not currently recording in this channel.")
-            if defer.controller(cmd) and msg.channel is None:
+            if defer.controller(cmd) and msg.raw_channel is None:
                 # if a controller asks in pm, show all channels
                 msg.reply("Currently recording in: {}".format(", ".join(
                     [s['channel'] for s in cls.settings if s['recording']])))
             return
         elif action == 'start':
-            if msg.channel is None:
+            if msg.raw_channel is None:
                 raise CommandError("You can't record PMs.")
-            if msg.channel in cls.recording_channels():
+            if msg.raw_channel in cls.recording_channels():
                 raise CommandError("Already recording in {}"
-                                   .format(msg.channel))
+                                   .format(msg.raw_channel))
             else:
                 msg.reply("Starting recording messages in {}"
-                          .format(msg.channel))
+                          .format(msg.raw_channel))
                 if 'restrict-channel-name' in cmd:
                     msg.reply("I will hide the channel name from the output.")
         elif action == 'stop':
-            if msg.channel not in cls.recording_channels():
+            if msg.raw_channel not in cls.recording_channels():
                 raise CommandError("Not recording in {}"
-                                   .format(msg.channel))
+                                   .format(msg.raw_channel))
             else:
                 msg.reply("Stopping recording in {}"
-                          .format(msg.channel))
+                          .format(msg.raw_channel))
                 if 'restrict-channel-name' in cmd:
                     msg.reply("I will hide the channel name from the output.")
         else:
@@ -118,18 +121,18 @@ class record:
         # after everything else, set this channel as recording or not
         if action == 'start':
             # get the most recent message id in this channel
-            start_id = DB.get_most_recent_message(msg.channel)
+            start_id = DB.get_most_recent_message(msg.raw_channel)
             # add this channel to the settings list
-            cls.settings.append({'channel': msg.channel,
+            cls.settings.append({'channel': msg.raw_channel,
                                  'recording': True,
                                  'location': output_location,
                                  'format': output_format,
                                  'start_id': start_id,
                                  'hide': 'restrict-channel-name' in cmd})
         if action == 'stop':
-            sett = [s for s in cls.settings if s['channel'] == msg.channel][0]
-            end_id = DB.get_most_recent_message(msg.channel)
-            messages = DB.get_messages_between(msg.channel, sett['start_id'], end_id)
+            sett = [s for s in cls.settings if s['channel'] == msg.raw_channel][0]
+            end_id = DB.get_most_recent_message(msg.raw_channel)
+            messages = DB.get_messages_between(msg.raw_channel, sett['start_id'], end_id)
             if sett['location'] in ['topia', None]:
                 msg.reply("Uploading {} messages to topia..."
                           .format(len(messages)))

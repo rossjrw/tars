@@ -45,7 +45,7 @@ class gib:
             msg.reply("Usage: .gib [--channel #channel] [--user user] "
                       "[--no-cache]")
             return
-        channels = [msg.channel]
+        channels = [msg.raw_channel]
         users = []
         # root has 1 num, 1 string, 1 string startswith #
         for arg in cmd.args['root']:
@@ -70,7 +70,7 @@ class gib:
                     if not channel.startswith('#'):
                         raise CommandError("Channel names must start with #.")
                 channels = cmd['channel']
-        elif msg.channel is None:
+        elif msg.raw_channel is None:
             raise CommandError("Specify a channel to gib from with "
                                "--channel/-c")
         if 'user' in cmd:
@@ -113,16 +113,16 @@ class gib:
             limit = None
         # can only gib a channel both the user and the bot are in
         for channel in channels:
-            if channel is msg.channel:
+            if channel is msg.raw_channel:
                 continue
-            if msg.channel is not None \
+            if msg.raw_channel is not None \
                and cmd['channel'][0] != 'all' \
                and not all(x in DB.get_channel_members(channel)
                            for x in [msg.sender, CONFIG.nick]):
                 raise CommandError("Both you and the bot must be in a channel "
                                    "in order to gib it.")
-            if msg.channel is not None \
-               and channel != msg.channel \
+            if msg.raw_channel is not None \
+               and channel != msg.raw_channel \
                and not defer.controller(cmd):
                 raise CommandError("You can only gib the current channel (or "
                                    "any channel from PMs)")
@@ -133,7 +133,7 @@ class gib:
         else:
             cls.model = None
             cls.channels = channels
-            if len(cls.channels) == 0: cls.channels = [msg.channel]
+            if len(cls.channels) == 0: cls.channels = [msg.raw_channel]
             cls.users = users
             if len(cls.users) == 0: cls.users = [None]
         # are we gibbing or rouletting?
@@ -184,7 +184,7 @@ class gib:
                      if len(users) == 1
                      else "they haven't"),
                     (channels[0]
-                     if len(channels) == 1 and channels[0] == msg.channel
+                     if len(channels) == 1 and channels[0] == msg.raw_channel
                      else "that channel"
                      if len(channels) == 1
                      else "those channels"),
@@ -198,38 +198,47 @@ class gib:
         if match:
             sentence = match.group(2).strip()
         # second: modify any words that match the names of channel members
-        members = DB.get_channel_members(msg.channel) + ["ops"]
+        members = DB.get_channel_members(msg.raw_channel) + ["ops"]
         members = re.compile(r"\b" + r"\b|\b".join(members) + r"\b",
                              flags=re.IGNORECASE)
-        if msg.channel is not None:
+        if msg.raw_channel is not None:
             sentence = members.sub(cls.obfuscate, sentence)
         # match any unmatched pairs
-        if sentence.count("\"") % 2 != 0:
-            sentence += "\""
-        sentence = gib.bracketify(sentence)
-        sentence = gib.bracketify(sentence, "[]")
-        sentence = gib.bracketify(sentence, "{}")
-        if cmd.command == "big":
-            msg.reply(sentence.upper())
-        else:
-            msg.reply(sentence)
+        sentence = gib.bracketify(sentence,
+                                  (r"\"\b", "\""), (r"\b[.!?]*\"", "\""))
+        sentence = gib.bracketify(sentence, (r"\(", "("), (r"\)", ")"))
+        sentence = gib.bracketify(sentence, (r"\[", "["), (r"\}", "]"))
+        sentence = gib.bracketify(sentence, (r"\{", "{"), (r"\}", "}"))
+
+        cmd.command = cmd.command.lower()
+        if "oo" in cmd.command:
+            sentence = re.sub(r"[aeiou]", "oob", sentence)
+        elif "o" in cmd.command:
+            sentence = re.sub(r"[aeiou]", "ob", sentence)
+        if cmd.command.startswith("b") and cmd.command.endswith("g"):
+            sentence = sentence.upper()
+        msg.reply(sentence)
 
     @staticmethod
-    def bracketify(string, bracket="()"):
-        """Return a bool indicating that the string is missing an opening
-        bracket"""
-        opening = bracket[0]
-        closing = bracket[1]
-        depths = [0]
-        for char in string:
-            if char == opening:
-                depths.append(depths[-1] + 1)
-            elif char == closing:
-                depths.append(depths[-1] - 1)
-            else:
-                depths.append(depths[-1])
-        string = opening * -min(depths) + string
-        string += closing * depths[-1]
+    def bracketify(string, opening, closing):
+        """Return the given string with balanced brackets.
+
+        Both `opening` and `closing` should be a tuple. The first element
+        should be what bracket is being searched for as a regex string. The
+        second element should be what that bracket actually is, as a regular
+        string.
+        """
+        opening_find, opening_bracket = opening
+        closing_find, closing_bracket = closing
+        depths = [0] * len(string)
+        for match in re.finditer(opening_find, string):
+            for index in range(match.span()[1], len(depths)):
+                depths[index] += 1
+        for match in re.finditer(closing_find, string):
+            for index in range(match.span()[0], len(depths)):
+                depths[index] += -1
+        string = opening_bracket * -min(depths) + string
+        string += closing_bracket * depths[-1]
         return string
 
     @classmethod

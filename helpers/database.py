@@ -156,6 +156,8 @@ class SqliteDriver:
                 user_id INTEGER NOT NULL
                     REFERENCES users(id),
                 user_mode CHARACTER(1),
+                date_checked INTEGER NOT NULL
+                    DEFAULT (CAST(STRFTIME('%s','now') AS INT)),
                 UNIQUE(channel_id, user_id)
             );
             CREATE TABLE IF NOT EXISTS user_aliases (
@@ -325,11 +327,14 @@ class SqliteDriver:
             # fail silently so that users can't see what channels exist
             print("The table {} does not exist.".format(table))
 
-    def print_selection(self, query):
+    def print_selection(self, query, string=False):
         """Pretty print a selection"""
         try:
             df = pandas.read_sql_query(query, self.conn)
-            print(df)
+            if string:
+                print(df.to_string())
+            else:
+                print(df)
         except pandas.io.sql.DatabaseError as e:
             # fail silently
             dbprint("There was a problem with the selection statement.", True)
@@ -638,10 +643,14 @@ class SqliteDriver:
             raise Exception("More than one ID for alias {}".format(alias))
 
     def sort_names(self, channel, names):
-        """Sort the results of a NAMES query"""
+        """Sort the results of a NAMES query.
+
+        str channel: The channel name whose NAMES we recieved
+        list names: [{'nick': str, 'mode': str in +%@&~}]
+        """
         # should already have channel row + table set up.
         if not self._check_exists(channel, 'channel'):
-            dbprint('{} does not exist, creating'.format(channel), True)
+            dbprint("{} does not exist, creating".format(channel), True)
             self.join_channel(channel)
         # names is a list of objects {nick, mode}
         # 1. add new users and user_aliases
@@ -657,7 +666,9 @@ class SqliteDriver:
         # need to delete old NAMES data for this channel
         # (may want to waive this in the future for single user changes)
         c.execute('''
-            DELETE FROM channels_users WHERE channel_id=?
+            DELETE FROM channels_users
+            WHERE channel_id=?
+            AND date_checked < CAST(STRFTIME('%s','now') AS INT) - 60
                   ''', (channel, ))
         # then add new NAMES data
         for name in names:
@@ -937,7 +948,7 @@ class SqliteDriver:
         """Logs a message in the db.
         inp should be either a message object or equivalent dict"""
         if isinstance(msg, Message):
-            msg = {'channel': msg.channel,
+            msg = {'channel': msg.raw_channel,
                    'sender': msg.sender,
                    'kind': msg.kind,
                    'message': msg.message,

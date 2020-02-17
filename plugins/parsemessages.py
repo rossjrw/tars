@@ -23,7 +23,7 @@ def try_command(irc_c, msg, cmd, command_name=None):
         if cmd.pinged:
             # there are .converse strings for pinged
             return try_command('converse', irc_c, msg, cmd)
-        elif msg.channel is None:
+        elif msg.raw_channel is None:
             # should be only in pm
             msg.reply("I don't know what '{}' means.".format(command_name))
             return 1
@@ -34,7 +34,7 @@ def try_command(irc_c, msg, cmd, command_name=None):
         msg.reply("\x02Sorry!\x0F {}".format(str(exc)))
         return 1
     except Exception as exc:
-        if msg.channel != '#tars':
+        if msg.raw_channel != '#tars':
             msg.reply(("An unexpected error has occurred. "
                        "I've already reported it — you don't need to "
                        "do anything."))

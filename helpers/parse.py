@@ -24,7 +24,7 @@ class ParsedCommand():
     def __init__(self, irc_c, msg, message_text):
         # Check that the message is a string
         self.sender = msg.sender
-        self.channel = msg.channel
+        self.channel = msg.raw_channel
         message = message_text
         self.raw = str(message)
         self.ping = None # identity of the ping

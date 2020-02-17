@@ -71,7 +71,7 @@ class converse:
         # custom section
         if (msg.sender == "Jazstar" and
             "slime" in msg.message and
-            "XilasCrowe" in DB.get_channel_members(msg.channel)):
+            "XilasCrowe" in DB.get_channel_members(msg.raw_channel)):
             msg.reply("Oy xilas I heard you like slime!")
             return
 

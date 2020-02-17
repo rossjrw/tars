@@ -62,7 +62,7 @@ COMMANDS = {
             },
     "analytic": {"analyse_wiki": {"analyse_wiki"},
                 },
-    "gib": {"gib": {"gib","big"},
+    "gib": {"gib": {"gibber","gib","big","goob","boog","gob","bog"},
            },
     "nick": {"alias": {"alias"},
             },

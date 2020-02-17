@@ -131,7 +131,7 @@ class say:
             say.issue_raw(irc_c, msg, cmd)
         else:
             message = " ".join(cmd.args['root'][1:])
-            if 'obfuscate' in cmd and msg.channel is not None:
+            if 'obfuscate' in cmd and msg.raw_channel is not None:
                 members = DB.get_aliases(None) + ["ops"]
                 members = re.compile(
                     r"\b" + r"\b|\b".join(members) + r"\b", flags=re.IGNORECASE
@@ -141,7 +141,7 @@ class say:
                 print(nickColor(message))
                 msg.reply("Printed that to console")
             irc_c.PRIVMSG(cmd.args['root'][0], message)
-            if not cmd.args['root'][0] == msg.channel:
+            if not cmd.args['root'][0] == msg.raw_channel:
                 msg.reply("Saying that to {}".format(cmd.args['root'][0]))
 
     @staticmethod
