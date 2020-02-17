@@ -204,10 +204,11 @@ class gib:
         if msg.raw_channel is not None:
             sentence = members.sub(cls.obfuscate, sentence)
         # match any unmatched pairs
-        sentence = gib.bracketify(sentence, r"\"\b", r"\b[.!?]*\"")
-        sentence = gib.bracketify(sentence, r"\(", r"\)")
-        sentence = gib.bracketify(sentence, r"\[", r"\}")
-        sentence = gib.bracketify(sentence, r"\{", r"\}")
+        sentence = gib.bracketify(sentence,
+                                  (r"\"\b", "\""), (r"\b[.!?]*\"", "\""))
+        sentence = gib.bracketify(sentence, (r"\(", "("), (r"\)", ")"))
+        sentence = gib.bracketify(sentence, (r"\[", "["), (r"\}", "]"))
+        sentence = gib.bracketify(sentence, (r"\{", "{"), (r"\}", "}"))
 
         cmd.command = cmd.command.lower()
         if "oo" in cmd.command:
