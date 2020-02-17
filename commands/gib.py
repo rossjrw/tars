@@ -221,8 +221,7 @@ class gib:
 
     @staticmethod
     def bracketify(string, opening, closing):
-        """Return a bool indicating that the string is missing an opening
-        bracket.
+        """Return the given string with balanced brackets.
 
         Both `opening` and `closing` should be a tuple. The first element
         should be what bracket is being searched for as a regex string. The
@@ -233,14 +232,11 @@ class gib:
         closing_find, closing_bracket = closing
         depths = [0] * len(string)
         for match in re.finditer(opening_find, string):
-            print(match)
             for index in range(match.span()[1], len(depths)):
                 depths[index] += 1
         for match in re.finditer(closing_find, string):
-            print(match)
             for index in range(match.span()[0], len(depths)):
                 depths[index] += -1
-        print("{} -> {}".format(string, depths))
         string = opening_bracket * -min(depths) + string
         string += closing_bracket * depths[-1]
         return string

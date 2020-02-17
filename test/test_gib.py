@@ -14,4 +14,26 @@ def test_bracketify():
     assert qubr('aaa" "bbb"') == '"aaa" "bbb"'
     assert qubr('aaa" bbb') == '"aaa" bbb'
     assert qubr('aaa "bbb') == 'aaa "bbb"'
-    # TODO punctuation
+    assert qubr('"aaa "bbb') == '"aaa "bbb""'
+    assert qubr('aaa!') == 'aaa!'
+    assert qubr('"aaa!"') == '"aaa!"'
+    assert qubr('"aaa! bbb!"') == '"aaa! bbb!"'
+    assert qubr('"aaa!') == '"aaa!"'
+    assert qubr('aaa!"') == '"aaa!"'
+    assert qubr('"aaa!!!" "bbb!') == '"aaa!!!" "bbb!"'
+    assert qubr('aaa!!" "bbb!!"') == '"aaa!!" "bbb!!"'
+    assert qubr('aaa!!!" bbb') == '"aaa!!!" bbb'
+    assert qubr('aaa "!bbb') == 'aaa "!bbb'
+    pabr = partial(gib.bracketify,
+                   opening=(r"\(", "("),
+                   closing=(r"\)", ")"))
+    assert pabr('aaa') == 'aaa'
+    assert pabr('(aaa)') == '(aaa)'
+    assert pabr('(aaa bbb)') == '(aaa bbb)'
+    assert pabr('(aaa') == '(aaa)'
+    assert pabr('aaa)') == '(aaa)'
+    assert pabr('(aaa) (bbb') == '(aaa) (bbb)'
+    assert pabr('aaa) (bbb)') == '(aaa) (bbb)'
+    assert pabr('aaa) bbb') == '(aaa) bbb'
+    assert pabr('aaa (bbb') == 'aaa (bbb)'
+    assert pabr('aa((((aa') == 'aa((((aa))))'
