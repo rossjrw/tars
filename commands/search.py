@@ -440,7 +440,7 @@ class search:
         orders = {
             'random': lambda page: random(),
             'recent': lambda page: -page['date_posted'],
-            'fuzzy': lambda page: -sum([fuzz.token_set_ratio(s, page['title'])
+            'fuzzy': lambda page: -sum([fuzz.ratio(s, page['title'])
                                         for s in search_term]),
             # 'recommend': None,
         }
