@@ -402,7 +402,7 @@ class search:
                 len(pages),
                 " · ".join(["\x02{}\x0F {}".format(i + 1, p['title'])
                             for i, p in enumerate(pages[:10])])))
-            DB.set_showmore_list(msg.raw_channel, page_ids)
+            DB.set_showmore_list(msg.raw_channel, [p['id'] for p in pages])
             return
         if len(pages) == 0:
             # check if there's no args other than --verbose
