@@ -14,6 +14,7 @@ from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
 from fuzzywuzzy import fuzz
 from googleapiclient.discovery import build
+from commands.showmore import showmore
 from helpers.defer import defer
 from helpers.api import google_api_key, cse_key
 from helpers.error import CommandError, isint
@@ -399,9 +400,7 @@ class search:
             return
         if len(pages) > 3:
             msg.reply("{} results (use ..sm to choose): {}".format(
-                len(pages),
-                " · ".join(["\x02{}\x0F {}".format(i + 1, p['title'])
-                            for i, p in enumerate(pages[:10])])))
+                len(pages), showmore.parse_multiple_titles(pages)))
             DB.set_showmore_list(msg.raw_channel, [p['id'] for p in pages])
             return
         if len(pages) == 0:
@@ -425,31 +424,7 @@ class search:
                 msg.reply("No matches found.")
             return
         for page in pages:
-            msg.reply(search.parse_title(page))
-
-    @staticmethod
-    def parse_title(page):
-        """Makes a pretty string containing page info."""
-        page_is_scp = any(
-            ['scp' in page['tags'],
-             re.search(r"^scp-[0-9]{3,}", page['url'])])
-        title_preview = "\x02{}\x0F"
-        if page_is_scp:
-            if page['scp_num']:
-                title_preview = title_preview.format(page['scp_num'].upper())
-                if page['title']:
-                    title_preview += ": {}".format(page['title'])
-            else:
-                title_preview = title_preview.format(page['title'].upper())
-        else:
-            title_preview = title_preview.format(page['title'])
-        return "{} · {} · {} · {} · {}".format(
-            title_preview,
-            "by " + " & ".join(page['authors']),
-            ("+" if page['rating'] >= 0 else "") + str(page['rating']),
-            pd.from_timestamp(page['date_posted']).diff_for_humans(),
-            "http://www.scp-wiki.net/" + page['fullname'],
-        )
+            msg.reply(showmore.parse_title(page))
 
     @staticmethod
     def order(pages, search_term=None,
