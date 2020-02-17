@@ -39,13 +39,11 @@ class propagate:
             tales = SCPWiki.select({'tags_all':['tale']})
             pprint(tales)
             propagate.get_wiki_data_for(tales, reply=msg.reply)
-            return
         elif 'all' in cmd:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
             msg.reply("Propagating all pages...")
             propagate.get_all_pages(reply=msg.reply)
-            return
         elif 'metadata' in cmd:
             meta_urls = ['attribution-metadata',
                          'scp-series',
@@ -61,9 +59,9 @@ class propagate:
                 propagate.get_metadata(url, reply=msg.reply)
         elif len(cmd.args['root']) > 0:
             propagate.get_wiki_data_for(cmd.args['root'], reply=msg.reply)
-            return
         else:
             raise CommandError("Bad command")
+        msg.reply("Done!")
 
     @classmethod
     def get_all_pages(cls, **kwargs):
@@ -74,7 +72,6 @@ class propagate:
         pages = SCPWiki.select({'categories': ["_default"]})
         reply("{} pages to propagate".format(len(pages)))
         propagate.get_wiki_data_for(pages, reply=reply)
-        reply("Done!")
 
     @classmethod
     def get_wiki_data_for(cls, urls, **kwargs):
@@ -92,7 +89,6 @@ class propagate:
                     # TODO use list from above
                     continue # skip for now
                     propagate.get_metadata(url, reply=reply)
-        reply("Done!")
         DB.commit()
 
     @classmethod
