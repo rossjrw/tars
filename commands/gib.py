@@ -27,7 +27,7 @@ class gib:
     channels = []
     model = None
     size = 3
-    ATTEMPT_LIMIT = 5
+    ATTEMPT_LIMIT = 20
     nocache = False
     @classmethod
     def command(cls, irc_c, msg, cmd):
