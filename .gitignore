@@ -13,3 +13,4 @@ pylintrc
 *.so
 *.c
 build/
+.cache
