@@ -14,3 +14,4 @@ pylintrc
 *.c
 build/
 .cache
+Pipfile.lock
