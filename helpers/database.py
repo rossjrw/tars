@@ -389,6 +389,8 @@ class SqliteDriver:
                            if s.startswith("-")]
             if len(senders_out) == 0:
                 senders_out.append("Secretary_Helen")
+            senders_out = [s for s in senders_out
+                           if s not in senders_in]
             if len(senders_in):
                 q = q.where(messages.sender.isin(senders_in))
             if len(senders_out):
