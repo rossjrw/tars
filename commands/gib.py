@@ -150,6 +150,13 @@ class gib:
                 raise CommandError("When using the regex filter, you must "
                                    "specify a regex")
             patterns = cmd['regex']
+            for pattern in patterns:
+                try:
+                    re.compile(pattern)
+                except re.error as e:
+                    raise CommandError("'{}' isn't a valid regular "
+                                       "expression: {}"
+                                       .format(pattern, e))
         else:
             patterns = []
         if 'me' in cmd:
