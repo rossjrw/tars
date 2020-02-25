@@ -205,11 +205,8 @@ class gib:
         if match:
             sentence = match.group(2).strip()
         # second: modify any words that match the names of channel members
-        members = DB.get_channel_members(msg.raw_channel) + ["ops"]
-        members = re.compile(r"\b" + r"\b|\b".join(members) + r"\b",
-                             flags=re.IGNORECASE)
-        if msg.raw_channel is not None:
-            sentence = members.sub(cls.obfuscate, sentence)
+        sentence = gib.obfuscate(
+            sentence, DB.get_channel_members(msg.raw_channel) + ["ops"])
         # match any unmatched pairs
         sentence = gib.bracketify(sentence,
                                   (r"\"\b", "\""), (r"\b[.!?]*\"", "\""))
@@ -299,8 +296,21 @@ class gib:
         else:
             return MarkovFromList(messages, well_formed=False, state_size=size)
 
+    @staticmethod
+    def obfuscate(sentence, nicks):
+        """Removes pings from a sentence. """
+        # Trim names like "Nickname|Away"
+        nicks = [nick.split("|")[0] for nick in nicks]
+        nicks = re.compile(r"\b" + r"\b|\b".join(nicks) + r"\b",
+                           flags=re.IGNORECASE)
+        # If the channel is None (PM), then the only ping is "ops"
+        # If this were not the case, then the nicks regex would be an empty
+        # string, which would match and therefore obfuscate all words
+        return nicks.sub(gib.obfuscate_word, sentence)
+
     @classmethod
-    def obfuscate(cls, match):
+    def obfuscate_word(cls, match):
+        """Obfuscates a single word to remove a ping."""
         word = list(match.group(0))
         for index,letter in enumerate(word):
             if letter in "aeiouAEIOU":
@@ -308,7 +318,7 @@ class gib:
                 break
         else:
             word.insert(2, "*")
-        return ''.join(word)
+        return "".join(word)
 
     @classmethod
     def roulette(cls, roulette_type):
