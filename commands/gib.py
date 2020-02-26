@@ -206,6 +206,8 @@ class gib:
         # match any unmatched pairs
         sentence = gib.bracketify(sentence,
                                   (r"\"\b", "\""), (r"\b[.!?]*\"", "\""))
+        sentence = gib.bracketify(sentence,
+                                  (r"`\b", "`"), (r"\b[.!?]*`", "`"))
         sentence = gib.bracketify(sentence, (r"\(", "("), (r"\)", ")"))
         sentence = gib.bracketify(sentence, (r"\[", "["), (r"\}", "]"))
         sentence = gib.bracketify(sentence, (r"\{", "{"), (r"\}", "}"))
