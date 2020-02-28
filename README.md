@@ -15,22 +15,32 @@ in the documentation are not yet present.
 Development is currently focused on the core implementation, particularly the
 internal database.
 
+## Installation
+
+TARS uses [Pipenv](https://github.com/pypa/pipenv) for environment management.
+
+```shell
+git clone https://github.com/rossjrw/tars
+cd tars
+pipenv install --dev
+```
+
 ## Usage
 
-Extact anywhere then
-
-```
-python3 -m venv env
-source env/bin/activate
-pip3 install -r requirements.txt --no-cache-dir
+```shell
+pipenv shell
 python3 bot.py [tars.conf]
+```
+or
+```shell
+pipenv run python3 bot.py [tars.conf]
 ```
 
 All modules are from PyPI except:
 - pyaib, which is forked here: https://github.com/rossjrw/pyaib
 - re2, which is forked here: https://github.com/andreasvc/pyre2
 
-re2 will not be installed from requirements.txt as it has a specific install
+re2 will not be installed from Pipfile as it has a specific install
 process detailed in its README. TARS will operate fine without re2 but will be
 vulnerable to catastrophic backtracking regular expression attacks.
 
@@ -48,6 +58,14 @@ provided, it will default to `tars.conf`.
 
 TARS will use the nick provided in the config file and NickServ password as
 defined by the key `irc_password` in `keys.secret.txt`.
+
+## Testing
+
+```shell
+pipenv run pytest
+```
+Testing is... uh... a little spotty. Tests pass but the suite is not exactly
+comprehensive.
 
 ## Adding commands
 

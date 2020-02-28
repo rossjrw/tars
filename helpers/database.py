@@ -11,16 +11,14 @@ Provides functions for manipulating the database.
 
 import sqlite3
 import random
-from pprint import pprint
-from helpers.parse import nickColor
 import pandas
 import pendulum as pd
-from pypika import MySQLQuery, Table, Field, Order
+from pypika import MySQLQuery, Table, Order
 from pypika.terms import ValueWrapper
 from pypika.functions import Max, Length
-from pprint import pprint
-from helpers.config import CONFIG
 from pyaib.irc import Message
+from helpers.config import CONFIG
+from helpers.error import nonelist, MyFaultError
 try:
     import re2 as re
 except ImportError:
@@ -60,10 +58,12 @@ def norm(thing):
 
 def _regexp(expr, item):
     """For evaluating db strings against a given regex."""
+    if item is None: return False
     return re.search(expr, item, re.IGNORECASE) is not None
 
 def _glob(expr, item):
     """For evaluating db strings against a given string."""
+    if item is None: return False
     return expr.lower() in item.lower()
 
 # mark this file as the driver instead of pyaib.dbd.sqlite
@@ -156,6 +156,8 @@ class SqliteDriver:
                 user_id INTEGER NOT NULL
                     REFERENCES users(id),
                 user_mode CHARACTER(1),
+                date_checked INTEGER NOT NULL
+                    DEFAULT (CAST(STRFTIME('%s','now') AS INT)),
                 UNIQUE(channel_id, user_id)
             );
             CREATE TABLE IF NOT EXISTS user_aliases (
@@ -179,18 +181,18 @@ class SqliteDriver:
                     COLLATE NOCASE,
                 category TEXT NOT NULL
                     DEFAULT '_default',
-                title TEXT NOT NULL,
+                title TEXT,
                 scp_num TEXT,
                 parent TEXT,
                 rating INTEGER NOT NULL,
                 ups INTEGER,
                 downs INTEGER,
-                date_posted TEXT NOT NULL,
+                date_posted INTEGER NOT NULL,
                 is_promoted BOOLEAN NOT NULL
                     CHECK (is_promoted IN (0,1))
                     DEFAULT 0,
-                date_checked TEXT NOT NULL
-                    DEFAULT CURRENT_TIMESTAMP,
+                date_checked INTEGER NOT NULL
+                    DEFAULT (CAST(STRFTIME('%s','now') AS INT)),
                 UNIQUE(url)
             );
             CREATE TABLE IF NOT EXISTS articles_tags (
@@ -211,10 +213,11 @@ class SqliteDriver:
                 UNIQUE(article_id, author, metadata)
             );
             CREATE TABLE IF NOT EXISTS showmore_list (
+                id INTEGER PRIMARY KEY,
                 channel_id INTEGER NOT NULL
                     REFERENCES channels(id),
-                id INTEGER NOT NULL,
-                article_id INTEGER NOT NULL,
+                article_id INTEGER NOT NULL
+                    REFERENCES articles(id),
                 UNIQUE(channel_id, id)
             );
             CREATE TABLE IF NOT EXISTS messages (
@@ -324,11 +327,14 @@ class SqliteDriver:
             # fail silently so that users can't see what channels exist
             print("The table {} does not exist.".format(table))
 
-    def print_selection(self, query):
+    def print_selection(self, query, string=False):
         """Pretty print a selection"""
         try:
             df = pandas.read_sql_query(query, self.conn)
-            print(df)
+            if string:
+                print(df.to_string())
+            else:
+                print(df)
         except pandas.io.sql.DatabaseError as e:
             # fail silently
             dbprint("There was a problem with the selection statement.", True)
@@ -376,12 +382,23 @@ class SqliteDriver:
         q = q.where(messages.ignore == 0)
         # if user is not None: TODO
         #     q = q.where(messages.sender == user)
-        if senders is not None and senders is not [None]:
-            q = q.where(messages.sender.isin(senders))
-        if patterns is not None and patterns is not [None]:
+        if not nonelist(senders):
+            senders_in = [s.lstrip("+") for s in senders
+                          if not s.startswith("-")]
+            senders_out = [s.lstrip("-") for s in senders
+                           if s.startswith("-")]
+            if len(senders_out) == 0:
+                senders_out.append("Secretary_Helen")
+            senders_out = [s for s in senders_out
+                           if s not in senders_in]
+            if len(senders_in):
+                q = q.where(messages.sender.isin(senders_in))
+            if len(senders_out):
+                q = q.where(messages.sender.notin(senders_out))
+        if not nonelist(patterns):
             for pattern in patterns:
                 q = q.where(messages.message.regex(pattern))
-        if contains is not None and contains is not [None]:
+        if not nonelist(contains):
             for contain in contains:
                 q = q.where(messages.message.like(contain))
         if minlength is not None:
@@ -630,10 +647,14 @@ class SqliteDriver:
             raise Exception("More than one ID for alias {}".format(alias))
 
     def sort_names(self, channel, names):
-        """Sort the results of a NAMES query"""
+        """Sort the results of a NAMES query.
+
+        str channel: The channel name whose NAMES we recieved
+        list names: [{'nick': str, 'mode': str in +%@&~}]
+        """
         # should already have channel row + table set up.
         if not self._check_exists(channel, 'channel'):
-            dbprint('{} does not exist, creating'.format(channel), True)
+            dbprint("{} does not exist, creating".format(channel), True)
             self.join_channel(channel)
         # names is a list of objects {nick, mode}
         # 1. add new users and user_aliases
@@ -649,7 +670,9 @@ class SqliteDriver:
         # need to delete old NAMES data for this channel
         # (may want to waive this in the future for single user changes)
         c.execute('''
-            DELETE FROM channels_users WHERE channel_id=?
+            DELETE FROM channels_users
+            WHERE channel_id=?
+            AND date_checked < CAST(STRFTIME('%s','now') AS INT) - 60
                   ''', (channel, ))
         # then add new NAMES data
         for name in names:
@@ -929,7 +952,7 @@ class SqliteDriver:
         """Logs a message in the db.
         inp should be either a message object or equivalent dict"""
         if isinstance(msg, Message):
-            msg = {'channel': msg.channel,
+            msg = {'channel': msg.raw_channel,
                    'sender': msg.sender,
                    'kind': msg.kind,
                    'message': msg.message,
@@ -1020,15 +1043,13 @@ class SqliteDriver:
         article_data = {
             'url': article['url'],
             'category': article['category'],
-            'title': ('[ACCESS DENIED]' if 'scp' in article['tags']
-                      else article['title']),
-            'scp_num': (None if 'scp' not in article['tags']
-                        else article['title']),
+            'title': article['title'],
+            'scp_num': None,
             'parent': article['parent_fullname'],
             'rating': article['rating'],
             'ups': article['ups'],
             'downs': article['downs'],
-            'date_posted': pd.parse(article['created_at']).to_datetime_string()}
+            'date_posted': pd.parse(article['created_at']).int_timestamp}
         c.execute('''
             SELECT id FROM articles WHERE url=?
                   ''', (article['url'], ))
@@ -1074,6 +1095,43 @@ class SqliteDriver:
         if commit:
             self.conn.commit()
 
+    def add_article_title(self, url, num, title, commit=True):
+        """Update the meta title for an SCP"""
+        c = self.conn.cursor()
+        # for most articles: title is full, scp-num is null
+        # for scps: scp-num is fill, title is to be filled
+        # possibly TODO throw if scp doesn't exist
+        # title is allowed to be None
+        c.execute('''
+            UPDATE articles
+            SET title=?, scp_num=?
+            WHERE url=?
+                  ''', (title, num, url))
+        if commit:
+            self.conn.commit()
+
+    def set_authors(self, url, authors, commit=True):
+        """Set the authors for a given article."""
+        c = self.conn.cursor()
+        c.execute('''
+            SELECT id FROM articles WHERE url=?
+                  ''', (url,))
+        page_id = c.fetchone()
+        if page_id is None:
+            raise ValueError("page {} doesn't exist".format(url))
+        page_id = page_id['id']
+        c.execute('''
+            DELETE FROM articles_authors
+            WHERE article_id=?
+                  ''', (page_id,))
+        c.executemany('''
+            INSERT INTO articles_authors (article_id, author)
+            VALUES ( ? , ? )
+                      ''' , ((page_id, author) for author in authors))
+        if commit:
+            self.conn.commit()
+
+
     def get_article_info(self, id):
         """Gets info about an article"""
         page = {'id': id, 'tags': [], 'authors': []}
@@ -1104,25 +1162,26 @@ class SqliteDriver:
             page['authors'].append(row['author'])
         return page
 
-    def get_articles(self, searches, selection):
+    def get_articles(self, searches):
         """Get a list of articles that match the criteria.
         searches must be a LIST consisting of DICTS.
         Each dict must contain the following:
             * 'term' - the search term as a string, MinMax or inc/exc list.
             * 'type' - the type of search:
-                * None, regex, tags, author, rating, date, category, parent
+                * None, regex, tags, author, rating, date, category, parent,
+                  url
         selection must be a DICT containing the following:
             * 'ignorepromoted' - defaults to False
             * 'order' - the order of the output list:
                 * None, random, recommend, recent
             * 'limit' - a limit on the list returned
             * 'offset' - how many articles to offset
-        Returns a list of articles. Use get_article_info for more detail on
+        Returns a list of article IDs. Use get_article_info for more detail on
         each."""
         # loop through searches and query the database, I guess
         # start with the least intensive process, to most intensive:
-        keyorder = {'rating': 0, 'parent': 1, 'category': 2, 'date': 3,
-                    'author': 4, 'tags': 5, None: 6, 'regex': 7}
+        keyorder = {'url': 0, 'rating': 0, 'parent': 1, 'category': 2,
+                    'date': 3, 'author': 4, 'tags': 5, None: 6, 'regex': 7}
         searches.sort(key=lambda x: keyorder[x['type']])
         # begin query
         art = Table('articles')
@@ -1144,9 +1203,11 @@ class SqliteDriver:
                     q = q.where(art.category.isin(search['term']['include']))
             elif search['type'] == 'date':
                 if search['term']['max'] is not None:
-                    q = q.where(art.date_posted <= search['term']['max'])
+                    timestamp = search['term']['max'].int_timestamp
+                    q = q.where(art.date_posted <= timestamp)
                 if search['term']['min'] is not None:
-                    q = q.where(art.date_posted >= search['term']['min'])
+                    timestamp = search['term']['min'].int_timestamp
+                    q = q.where(art.date_posted >= timestamp)
             elif search['type'] == 'author':
                 # yay for triple-nested queries!
                 meta_q = MySQLQuery.from_(art_au).select(Max(art_au.metadata)) \
@@ -1165,19 +1226,58 @@ class SqliteDriver:
                     q = q.where(ValueWrapper(tag).isin(tag_q))
                 for tag in search['term']['exclude']:
                     q = q.where(ValueWrapper(tag).notin(tag_q))
-            elif search['type'] == None:
+            elif search['type'] is None:
                 q = q.where(
                     (art.title.like(search['term']))
-                    | (art.scp_num == search['term'])
+                    | (art.scp_num == search['term'].lower())
+                    | (art.scp_num == "scp-{}".format(search['term']))
                 )
             elif search['type'] == 'regex':
                 q = q.where(art.title.regex(search['term']))
+            elif search['type'] == 'url':
+                q = q.where(art.url == search['term'])
+            else:
+                raise TypeError("Unknown search: {}/{}".format(
+                    search['type'], search['term']))
         # query complete
-        # make the query sqlite-compatible
-        # like --> "glob" which is a custom function
-        q = str(q).replace(" LIKE "," GLOB ").replace(" REGEX "," REGEXP ")
+        # insert custom functions
+        q = str(q).replace(" LIKE ", " GLOB ")
+        q = str(q).replace(" REGEX ", " REGEXP ")
         c = self.conn.cursor()
+        print(str(q))
         c.execute(str(q))
-        return c.fetchall()
+        return [row['id'] for row in c.fetchall()]
+
+    def set_showmore_list(self, channel_name, page_ids):
+        c = self.conn.cursor()
+        assert channel_name.startswith('#')
+        c.execute('''
+            SELECT id FROM channels
+            WHERE channel_name=?
+                  ''', (channel_name,))
+        channel_id = c.fetchone()['id']
+        assert channel_id is not None
+        c.execute('''
+            DELETE FROM showmore_list
+            WHERE channel_id=?
+                  ''', (channel_id,))
+        c.executemany('''
+            INSERT INTO showmore_list (channel_id, article_id)
+            VALUES ( ? , ? )
+                      ''', ((channel_id, p_id) for p_id in page_ids))
+        self.conn.commit()
+
+    def get_showmore_list(self, channel_name):
+        """Get the showmore list for the channel. Returns list of article
+        IDs."""
+        c = self.conn.cursor()
+        assert channel_name.startswith('#')
+        c.execute('''
+            SELECT article_id FROM showmore_list
+            WHERE channel_id=(
+                SELECT id FROM channels
+                WHERE channel_name=?)
+                  ''', (channel_name,))
+        return [row['article_id'] for row in c.fetchall()]
 
 DB = SqliteDriver()

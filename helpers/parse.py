@@ -26,12 +26,22 @@ class HelpFormatter(argparse.HelpFormatter):
     def _get_default_metavar_for_optional(self, action):
         return action.dest
 
-class ParsedCommand:
-    def __init__(self, irc_c, message):
+def parseprint(message):
+    #print("[\x1b[1;32mParser\x1b[0m] " + str(message))
+    pass
+
+def parse_commands(irc_c, message):
+    """Takes a message object and returns a list of parsed commands."""
+    submessages = [m.strip() for m in message.message.split("&&")]
+    return [ParsedCommand(irc_c, message, m) for m in submessages]
+
+class ParsedCommand():
+    """Object representing a single command"""
+    def __init__(self, irc_c, msg, message_text):
         # Check that the message is a string
-        self.sender = message.sender
-        self.channel = message.channel
-        message = message.message
+        self.sender = msg.sender
+        self.channel = msg.raw_channel
+        message = message_text
         self.raw = str(message)
         self.ping = None # identity of the ping
         self.unping = None # raw command without ping

@@ -4,11 +4,25 @@ Logs all input and output for recordkeeping purposes.
 """
 
 import time
-from pyaib.plugins import observe, plugin_class
+from pyaib.plugins import plugin_class
+from pyaib.components import observe
+from pyaib.signals import emit_signal, await_signal
 from helpers import parse
 from pprint import pprint
 from helpers.database import DB
 from helpers.config import CONFIG
+
+def gimmick(message):
+    """Detect if a message is the result of a gib gimmick."""
+    if message is None:
+        return False
+    if message.lower().count("oob") > 3:
+        return True
+    if message.lower().count("ob") > 4:
+        return True
+    if message.isupper():
+        return True
+    return False
 
 @plugin_class('log')
 class Log:
@@ -22,7 +36,7 @@ class Log:
     @observe('IRC_MSG_PRIVMSG','IRC_MSG_NICK',
              'IRC_MSG_JOIN','IRC_MSG_PART','IRC_MSG_QUIT')
     def log(self, irc_c, msg):
-        chname = "private" if msg.channel is None else msg.channel
+        chname = "private" if msg.raw_channel is None else msg.raw_channel
         if msg.kind == 'PRIVMSG':
             print("[{}] {} <{}> {}".format(
                 time.strftime("%H:%M:%S"),
@@ -41,7 +55,8 @@ class Log:
                 "joined" if msg.kind == 'JOIN' else "left",
                 parse.nickColor(chname)))
         try:
-            DB.log_message(msg)
+            if not gimmick(msg.message):
+                DB.log_message(msg)
         except:
             irc_c.RAW("PRIVMSG #tars A logging error has occurred.")
             raise

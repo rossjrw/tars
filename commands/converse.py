@@ -68,11 +68,17 @@ class converse:
         match = re.search(r"(?:^|\s)/?r/(\S*)", message, re.IGNORECASE)
         if match:
             msg.reply("https://www.reddit.com/r/{}".format(match.group(1)))
+            return
         # custom section
         if (msg.sender == "Jazstar" and
             "slime" in msg.message and
-            "XilasCrowe" in DB.get_channel_members(msg.channel)):
+            "XilasCrowe" in DB.get_channel_members(msg.raw_channel)):
             msg.reply("Oy xilas I heard you like slime!")
+            return
+
+        # after all attempts, must indicate failure if pinged
+        if cmd.pinged:
+            return 1
 
 def strip(string):
     """Strips all non-alphanumeric characters."""

@@ -27,6 +27,7 @@ COMMANDS = {
               "reboot": {"reboot"},
               "debug": {"debug"},
               "update": {"update"},
+              "helenhere": {"checkhelen","helenhere"},
              },
     "refactor": {"refactor": {"refactor"},
                 },
@@ -61,9 +62,11 @@ COMMANDS = {
             },
     "analytic": {"analyse_wiki": {"analyse_wiki"},
                 },
-    "gib": {"gib": {"gib"},
+    "gib": {"gib": {"gibber","gib","big","goob","boog","gob","bog"},
            },
     "nick": {"alias": {"alias"},
+            },
+    "shortest": {"shortest": {"shortest"}
                 },
 }
 

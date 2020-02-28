@@ -7,9 +7,9 @@ Whenever we gets a NAMES response from the server, save that info to the db.
 # Would you consider adding this name to your list of alises by
 # typing `.alias newname`?
 
-from pyaib.plugins import observe, plugin_class
 import re
-from pprint import pprint
+from pyaib.plugins import observe, plugin_class
+from pyaib.signals import emit_signal
 from helpers.parse import nickColor
 from helpers.database import DB
 from helpers.defer import defer
@@ -29,12 +29,12 @@ class Names:
     def record_names(self, irc_c, msg):
         # msg.args is a string
         # "TARS = #channel :name1 name2 name3 name4"
-        names = re.split(r"\s:?", msg.args.strip())
-        names = names[2:]
-        channel = names.pop(0)
-        names = [{'nick': name} for name in names]
+        nicks = re.split(r"\s:?", msg.args.strip())
+        nicks = nicks[2:]
+        channel = nicks.pop(0)
+        names = [{'nick': name} for name in nicks]
         # chatstaff names start with a punctuation
-        for key,name in enumerate(names):
+        for key, name in enumerate(names):
             if name['nick'][0] in '+%@&~':
                 names[key] = {
                     'nick': name['nick'][1:],
@@ -46,12 +46,16 @@ class Names:
                     'mode': None
                 }
         # just need to log these names to the db now
-        nameprint("Updating NAMES for {}".format(nickColor(channel)))
+        nameprint("Updating NAMES for {}: {}".format(
+            nickColor(channel),
+            ", ".join(nickColor(nick) for nick in sorted(nicks))))
         try:
             DB.sort_names(channel, names)
         except Exception as e:
             irc_c.RAW("PRIVMSG #tars NAMES error: " + str(e))
             raise
+        # broadcast this info to whatever needs it
+        emit_signal(irc_c, 'NAMES_RESPONSE', data=channel)
 
     @observe('IRC_MSG_NICK') # someone changes their name
     def change_name(self, irc_c, msg):
@@ -66,7 +70,7 @@ class Names:
     @observe('IRC_MSG_JOIN')
     def join_names(self, irc_c, msg):
         # make sure the names are always up to date
-        defer.get_users(irc_c, msg.channel)
+        defer.get_users(irc_c, msg.raw_channel)
 
     @observe('IRC_MSG_PART')
     def part_names(self, irc_c, msg):

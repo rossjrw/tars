@@ -1,13 +1,17 @@
 *.db
+*.db.*
 *.db-journal
 __pycache__
 *.secret.*
 *.vim
 *.sw*
 env
+.venv
 .vscode
 pylintrc
 *.csv
 *.so
 *.c
 build/
+.cache
+Pipfile.lock

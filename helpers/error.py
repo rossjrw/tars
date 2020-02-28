@@ -26,3 +26,11 @@ def isint(i):
         return True
     except ValueError:
         return False
+
+def nonelist(l):
+    """Checks if something is a NoneList"""
+    print(l)
+    return l is None \
+            or not isinstance(l, list) \
+            or len(l) == 0 \
+            or all(i is None for i in l)

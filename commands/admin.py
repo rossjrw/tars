@@ -15,6 +15,14 @@ from helpers.database import DB
 from helpers.defer import defer
 from helpers.parse import nickColor
 
+class helenhere:
+    """Checks if Helen is in the room"""
+    @staticmethod
+    def command(irc_c, msg, cmd):
+        if defer.check(cmd, 'Secretary_Helen'):
+            msg.reply("Yep, I can see Helen.")
+        else:
+            msg.reply("Nope, I can't see Helen.")
 
 class kill:
     """Kills the bot"""
@@ -123,17 +131,14 @@ class say:
             say.issue_raw(irc_c, msg, cmd)
         else:
             message = " ".join(cmd.args['root'][1:])
-            if 'obfuscate' in cmd and msg.channel is not None:
-                members = DB.get_aliases(None) + ["ops"]
-                members = re.compile(
-                    r"\b" + r"\b|\b".join(members) + r"\b", flags=re.IGNORECASE
-                )
-                message = members.sub(gib.obfuscate, message)
+            if 'obfuscate' in cmd and msg.raw_channel is not None:
+                message = gib.obfuscate(
+                    message, DB.get_aliases(None) + ["ops"])
             if 'colour' in cmd:
                 print(nickColor(message))
                 msg.reply("Printed that to console")
             irc_c.PRIVMSG(cmd.args['root'][0], message)
-            if not cmd.args['root'][0] == msg.channel:
+            if not cmd.args['root'][0] == msg.raw_channel:
                 msg.reply("Saying that to {}".format(cmd.args['root'][0]))
 
     @staticmethod
