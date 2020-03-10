@@ -299,8 +299,8 @@ class gib:
     @staticmethod
     def obfuscate(sentence, nicks):
         """Removes pings from a sentence. """
-        # Trim names like "Nickname|Away"
-        nicks = [nick.split("|")[0] for nick in nicks]
+        # Escape regex-active characters
+        nicks = [re.escape(nick) for nick in nicks]
         nicks = re.compile(r"\b" + r"\b|\b".join(nicks) + r"\b",
                            flags=re.IGNORECASE)
         # If the channel is None (PM), then the only ping is "ops"
