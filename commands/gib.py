@@ -330,7 +330,8 @@ class gib:
             raise MyFaultError("I didn't find any URLs in the "
                                "selection criteria.")
         # then reduce strings containing urls to urls
-        urls = [re.search(_URL_PATT, message).group(0) for message in messages]
+        urls = [re.search(_URL_PATT, message, re.IGNORECASE).group(0)
+                for message in messages]
         # make urls unique
         urls = list(set(urls))
         # then filter by either images or videos
