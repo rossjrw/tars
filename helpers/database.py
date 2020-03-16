@@ -1013,6 +1013,23 @@ class SqliteDriver:
                   ''', (user, msg['nick']))
         self.conn.commit()
 
+    def get_messages_from_user(self, nick, channel=None):
+        c = self.conn.cursor()
+        assert channel.startswith('#')
+        c.execute('''
+            SELECT * FROM messages
+            WHERE channel_id=(
+                SELECT id FROM channels
+                WHERE channel_name=?)
+            AND sender IN (
+                SELECT alias FROM user_aliases
+                WHERE user_id=(
+                    SELECT user_id FROM user_aliases
+                    WHERE alias=?))
+            ORDER BY timestamp
+                  ''', (channel, nick))
+        return c.fetchall()
+
     def add_article(self, article, commit=True):
         """Adds an article and its data to the db.
         article should be a dict as the response from API.get_meta.

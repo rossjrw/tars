@@ -6,6 +6,9 @@ Database Query commands for checking the database.
 import string
 from pprint import pprint
 from datetime import datetime
+
+import pendulum as pd
+
 from helpers.error import CommandError
 from helpers.parse import nickColor
 from helpers.database import DB
@@ -97,3 +100,31 @@ class query:
             except:
                 msg.reply("There was a problem with the selection")
                 raise
+
+class seen:
+    @staticmethod
+    def command(irc_c, msg, cmd):
+        cmd.expandargs(["first f"])
+        if 'first' in cmd: # have to account for .seen -f name
+            cmd.args['root'].extend(cmd.args['first'])
+        if len(cmd.args['root']) < 1:
+            raise CommandError("Specify a user and I'll tell you when I last "
+                               "saw them")
+        nick = cmd.args['root'][0]
+        messages = DB.get_messages_from_user(nick, msg.raw_channel)
+        if 'first' in cmd:
+            message = messages[0]
+            response = "I first saw {} {} saying: {}"
+        else:
+            if nick == msg.sender:
+                msg.reply("I can see you right now, {}.".format(msg.sender))
+                return
+            message = messages[-1]
+            response = "I last saw {} {} saying: {}"
+        response = response.format(
+            nick if nick == message['sender']
+            else "{} as {}".format(nick, message['sender']),
+            pd.from_timestamp(message['timestamp']).diff_for_humans(),
+            message['message'])
+        msg.reply(response)
+
