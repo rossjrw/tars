@@ -105,6 +105,8 @@ class query:
 class seen:
     @staticmethod
     def command(irc_c, msg, cmd):
+        if defer.check(cmd, 'Secretary_Helen'):
+            return
         cmd.expandargs(["first f",
                         "count c"])
         # have to account for .seen -f name
