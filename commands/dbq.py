@@ -107,8 +107,11 @@ class seen:
     def command(irc_c, msg, cmd):
         cmd.expandargs(["first f",
                         "count c"])
-        if 'first' in cmd: # have to account for .seen -f name
+        # have to account for .seen -f name
+        if 'first' in cmd:
             cmd.args['root'].extend(cmd.args['first'])
+        if 'count' in cmd:
+            cmd.args['root'].extend(cmd.args['count'])
         if len(cmd.args['root']) < 1:
             raise CommandError("Specify a user and I'll tell you when I last "
                                "saw them")
