@@ -1017,7 +1017,8 @@ class SqliteDriver:
         assert channel.startswith('#')
         c.execute('''
             SELECT * FROM messages
-            WHERE channel_id=(
+            WHERE kind='PRIVMSG'
+            AND channel_id=(
                 SELECT id FROM channels
                 WHERE channel_name=?)
             AND sender IN (
