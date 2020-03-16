@@ -10,7 +10,7 @@ from datetime import datetime
 import pendulum as pd
 
 from commands.gib import gib
-from helpers.error import CommandError
+from helpers.error import CommandError, MyFaultError
 from helpers.parse import nickColor
 from helpers.database import DB
 from helpers.defer import defer
@@ -119,6 +119,9 @@ class seen:
                                "saw them")
         nick = cmd.args['root'][0]
         messages = DB.get_messages_from_user(nick, msg.raw_channel)
+        if len(messages) == 0:
+            raise MyFaultError("I've never seen {} in this channel."
+                               .format(nick))
         if 'count' in cmd:
             msg.reply("I've seen {} {} times in this channel."
                       .format(nick, len(messages)))
