@@ -105,7 +105,8 @@ class query:
 class seen:
     @staticmethod
     def command(irc_c, msg, cmd):
-        cmd.expandargs(["first f"])
+        cmd.expandargs(["first f",
+                        "count c"])
         if 'first' in cmd: # have to account for .seen -f name
             cmd.args['root'].extend(cmd.args['first'])
         if len(cmd.args['root']) < 1:
@@ -113,6 +114,10 @@ class seen:
                                "saw them")
         nick = cmd.args['root'][0]
         messages = DB.get_messages_from_user(nick, msg.raw_channel)
+        if 'count' in cmd:
+            msg.reply("I've seen {} {} times in this channel."
+                      .format(nick, len(messages)))
+            return
         if 'first' in cmd:
             message = messages[0]
             response = "I first saw {} {} saying: {}"
