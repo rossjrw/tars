@@ -14,6 +14,7 @@ from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
 from fuzzywuzzy import fuzz
 from googleapiclient.discovery import build
+from commands.gib import gib
 from commands.showmore import showmore
 from helpers.defer import defer
 from helpers.api import google_api_key, cse_key
@@ -424,7 +425,8 @@ class search:
                 msg.reply("No matches found.")
             return
         for page in pages:
-            msg.reply(showmore.parse_title(page))
+            msg.reply(gib.obfuscate(showmore.parse_title(page),
+                                    DB.get_channel_memebers(msg.raw_channel)))
 
     @staticmethod
     def order(pages, search_term=None,
