@@ -9,6 +9,7 @@ from datetime import datetime
 
 import pendulum as pd
 
+from commands.gib import gib
 from helpers.error import CommandError
 from helpers.parse import nickColor
 from helpers.database import DB
@@ -125,6 +126,7 @@ class seen:
             nick if nick == message['sender']
             else "{} as {}".format(nick, message['sender']),
             pd.from_timestamp(message['timestamp']).diff_for_humans(),
-            message['message'])
+            gib.obfuscate(message['message'],
+                          DB.get_channel_members(msg.raw_channel) + ["ops"]))
         msg.reply(response)
 
