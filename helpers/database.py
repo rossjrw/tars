@@ -753,8 +753,7 @@ class SqliteDriver:
             SELECT user_id FROM user_aliases
             WHERE user_id=? AND alias=? AND weight=?
                   ''', (user, alias, weight))
-        combo_exists = bool(c.lastrowid)
-        print("Combo exists: {}".format(combo_exists))
+        combo_exists = len(c.fetchall())
         # things to do:
             # 1. detect if the user-alias combo already exists
             # if it does, mark as most recento
@@ -783,7 +782,7 @@ class SqliteDriver:
             SELECT user_id FROM user_aliases
             WHERE user_id=? AND alias=?
                   ''', (user, alias))
-        combo_exists = bool(c.lastrowid)
+        combo_exists = len(c.fetchall())
         # things to do:
             # scrap the alias
         c.execute('''
