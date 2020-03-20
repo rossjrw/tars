@@ -426,7 +426,7 @@ class search:
             return
         for page in pages:
             msg.reply(gib.obfuscate(showmore.parse_title(page),
-                                    DB.get_channel_memebers(msg.raw_channel)))
+                                    DB.get_channel_members(msg.raw_channel)))
 
     @staticmethod
     def order(pages, search_term=None,
