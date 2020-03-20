@@ -140,6 +140,6 @@ class seen:
             else "{} as {}".format(nick, message['sender']),
             pd.from_timestamp(message['timestamp']).diff_for_humans(),
             gib.obfuscate(message['message'],
-                          DB.get_channel_members(msg.raw_channel) + ["ops"]))
+                          DB.get_channel_members(msg.raw_channel)))
         msg.reply(response)
 

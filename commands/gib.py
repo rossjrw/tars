@@ -206,7 +206,7 @@ class gib:
             sentence = match.group(2).strip()
         # second: modify any words that match the names of channel members
         sentence = gib.obfuscate(
-            sentence, DB.get_channel_members(msg.raw_channel) + ["ops"])
+            sentence, DB.get_channel_members(msg.raw_channel))
         # match any unmatched pairs
         sentence = gib.bracketify(sentence,
                                   (r"\"\b", "\""), (r"\b[.!?]*\"", "\""))
@@ -301,6 +301,8 @@ class gib:
         """Removes pings from a sentence. """
         # Escape regex-active characters
         nicks = [re.escape(nick) for nick in nicks]
+        # Always obfuscate "ops", no matter what
+        nicks.append("ops")
         nicks = re.compile(r"\b" + r"\b|\b".join(nicks) + r"\b",
                            flags=re.IGNORECASE)
         # If the channel is None (PM), then the only ping is "ops"
