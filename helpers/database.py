@@ -557,8 +557,13 @@ class SqliteDriver:
                     return None, type
         return id, type
 
-    def get_occupants(self, channel, convert_to_nicks=False):
-        """Get a list of current occupants of a channel."""
+    def get_occupants(self, channel,
+                      convert_to_nicks=False, levels=False):
+        """Get a list of current occupants of a channel.
+
+        `levels`: bool; return channel operator levels as well. Result will be
+        a list of tuples.
+        """
         if channel[0] != '#':
             raise ValueError("Channel name must start with #.")
         c = self.conn.cursor()
@@ -570,17 +575,17 @@ class SqliteDriver:
         assert id is not None, "Channel {} does not exist.".format(channel)
         # get the occupants
         c.execute('''
-            SELECT user_id FROM channels_users WHERE channel_id=?
+            SELECT user_id,user_mode FROM channels_users WHERE channel_id=?
                   ''', (id, ))
-        users = c.fetchall()
+        users = [(r['user_id'], r['user_mode']) for r in c.fetchall()]
         dbprint("get_occupants: users is {}".format(",".join(map(str,users))))
         assert len(users) > 0, "There are no users in {}.".format(channel)
         if convert_to_nicks:
-            users = [user['user_id'] for user in users]
-            users = [self.get_current_nick(id) for id in users]
+            users = [self.get_current_nick(id) for id, mode in users]
+        if levels:
+            return users
         else:
-            users = [user['user_id'] for user in users]
-        return users
+            return [u[0] for u in users]
 
     def get_current_nick(self, id):
         """Gets the current nick of a user."""
