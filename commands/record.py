@@ -2,15 +2,16 @@
 
 For recording and uploading message transcripts.
 """
-import string
-from pprint import pprint
 from datetime import datetime
-from helpers.error import CommandError
-from helpers.parse import nickColor
+import string
+
+from pyaib.signals import await_signal
+
+from helpers.api import Topia
 from helpers.database import DB
 from helpers.defer import defer
-from helpers.api import Topia
-from pyaib.signals import await_signal
+from helpers.error import CommandError, MyFaultError
+from helpers.parse import nickColor
 
 IS_RECORDING = False
 
@@ -18,10 +19,28 @@ class pingall:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         """Ping everyone in the channel"""
+        cmd.expandargs(["message msg m", # message to be PM'd
+                        "target t", # channel op level target
+                        "channel c", # channel to get names from
+                        "help h",
+                       ])
+
+        # TODO remove this check in the argparse refactor
+        if len(cmd.args['root']) > 0 or 'help' in cmd:
+            raise CommandError("Usage: ..pingall [--target level] [--message "
+                               "message]. If -m is not set, ping will happen "
+                               "in this channel. If -m is set, message will "
+                               "be sent to users in PM.")
+
+        # TODO extend this to channel operator
         if not defer.controller(cmd):
             raise CommandError("You're not authorised to do that")
+
         cmd.expandargs(["channel c"])
-        if "channel" in cmd:
+        if 'channel' in cmd:
+            if not defer.controller(cmd):
+                raise MyFaultError("You're not authorised to extract the "
+                                   "nicks of another channel")
             channel = cmd['channel'][0]
         else:
             channel = msg.raw_channel
@@ -35,11 +54,12 @@ class pingall:
             # response to success/failure is the same, so doesn't matter
             pass
         finally:
-            members = DB.get_occupants(channel, True)
+            members = DB.get_occupants(channel, True, levels=True)
         if len(cmd.args['root']) == 0:
             # no message
             msg.reply("{}: ping!".format(", ".join(members)))
-        else:
+        if 'message' in cmd:
+            message = " ".join(cmd.args['message'])
             for member in members:
                 irc_c.PRIVMSG(member, "{} (from {} in {})".format(
                     " ".join(cmd.args['root']),
