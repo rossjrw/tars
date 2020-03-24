@@ -602,7 +602,7 @@ class SqliteDriver:
                 SELECT alias FROM user_aliases
                 WHERE user_id=?
                       ''', (id, ))
-            name = random.choice(norm(c.fechall()))
+            name = random.choice(norm(c.fetchall()))
             return "??{}".format(name)
 
     def get_all_channels(self):
