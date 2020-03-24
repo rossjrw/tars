@@ -44,6 +44,14 @@ class pingall:
             channel = cmd['channel'][0]
         else:
             channel = msg.raw_channel
+        if 'target' in cmd:
+            if len(cmd['target']) != 1:
+                raise CommandError("Specify a target as a channel user mode "
+                                   "symbol: one of +, %, @, &, ~")
+            if not cmd['target'][0] in '+%@&~' and len(cmd['target'][0]) == 1:
+                raise CommandError("When using the --target/-t argument, the "
+                                   "target must be a channel user mode: one "
+                                   "of +, %, @, &, ~")
         # Issue a fresh NAMES request and await the response
         defer.get_users(irc_c, channel)
         try:
@@ -55,9 +63,13 @@ class pingall:
             pass
         finally:
             members = DB.get_occupants(channel, True, levels=True)
-        if len(cmd.args['root']) == 0:
-            # no message
-            msg.reply("{}: ping!".format(", ".join(members)))
+        if 'target' in cmd:
+            modes = '+%@&~'
+            members = [nick for nick, mode in members
+                       if mode is not None
+                       and modes.find(mode) >= modes.find(cmd['target'][0])]
+        else:
+            members = [nick for nick, mode in members]
         if 'message' in cmd:
             message = " ".join(cmd.args['message'])
             for member in members:
@@ -65,6 +77,9 @@ class pingall:
                     " ".join(cmd.args['root']),
                     msg.sender,
                     msg.raw_channel))
+            msg.reply("Message sent to selected users.")
+        else:
+            msg.reply("{}: ping!".format(", ".join(members)))
 
 class record:
     settings = []
