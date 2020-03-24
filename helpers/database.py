@@ -581,7 +581,7 @@ class SqliteDriver:
         dbprint("get_occupants: users is {}".format(",".join(map(str,users))))
         assert len(users) > 0, "There are no users in {}.".format(channel)
         if convert_to_nicks:
-            users = [self.get_current_nick(id) for id, mode in users]
+            users = [(self.get_current_nick(id), mode) for id, mode in users]
         if levels:
             return users
         else:
