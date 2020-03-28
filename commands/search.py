@@ -89,17 +89,43 @@ class Search(Command):
          Also supports ranges of dates with two dots e.g. ``2018..2019``.
          Ranges are always inclusive, and you can mix relative dates and
          absolute dates."""],
-        [str, '+', "--category", "--cat", "-y"],
-        [str, None, "--parent", "-p"],
-        [bool, 0, "--summary", "--summarise", "-u"],
-        [bool, 0, "--random", "--rand", "--ran", "-d"],
-        [bool, 0, "--recommend", "--rec", "-m"],
-        [bool, 0, "--newest", "--new", "-n"],
-        [bool, 0, "--verbose", "-v"],
-        [str, None, "--order", "-o"],
-        [int, None, "--limit", "-l"],
-        [int, None, "--offset", "-f"],
-        ['hidden', bool, 0, "--ignorepromoted"]
+        [str, '+', "--category", "--cat", "-y",
+         """Filter pages by Wikidot category.
+
+         By default, all categories are searched. If you include this argument
+         but don't specify any categories, TARS will only search
+         "_default"."""],
+        [str, None, "--parent", "-p",
+         """Filter pages by their parent page's slug.
+
+         The parent page's slug must be given exactly (e.g. ``-p
+         antimemetics-division-hub``). The entire parent tree will be checked -
+         the page will be found even if it's a great-grandchild of the
+         **--parent**."""],
+        [bool, 0, "--summary", "--summarise", "-u",
+         """Summarise search results.
+
+         Instead of providing a link to a single article, TARS will
+         summarise all articles that match the search criteria."""],
+        [bool, 0, "--random", "--rand", "--ran", "-d",
+         """If your search matches more than one article, return a random
+         one."""],
+        [bool, 0, "--recommend", "--rec", "-m",
+         """If your search matches more than one article, return the one that
+         most needs attention."""],
+        [bool, 0, "--newest", "--new", "-n",
+         """If your search matches more than one article, return the newest
+         one."""],
+        [str, None, "--order", "-o",
+         """Returns the results in a certain order."""],
+        [int, None, "--offset", "-f",
+         """Remove this many results from the top of the list."""],
+        [int, None, "--limit", "-l",
+         """Limit the number of results."""],
+        [bool, 0, "--verbose", "-v",
+         """State the provided search criteria that TARS thinks you want."""],
+        ['hidden', bool, 0, "--ignorepromoted",
+         """Ignore articles that have been promoted."""],
     ]
     @classmethod
     def command(cls, irc_c, msg, cmd):
