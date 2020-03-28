@@ -8,25 +8,99 @@ Commands:
 """
 
 from random import random
-from pprint import pprint
-import pendulum as pd
+
+from commands._command import Command
+from commands.gib import gib
+from commands.showmore import showmore
+
 from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
 from fuzzywuzzy import fuzz
 from googleapiclient.discovery import build
-from commands.gib import gib
-from commands.showmore import showmore
+import pendulum as pd
+
 from helpers.defer import defer
 from helpers.api import google_api_key, cse_key
 from helpers.error import CommandError, isint
 from helpers.database import DB
+
 try:
     import re2 as re
 except ImportError:
     print("re2 failed to load, falling back to re")
     import re
 
-class search:
+class Search(Command):
+    """Searches the wiki for pages.
+
+    Provides URLs and basic info for the page(s) that match your search
+    criteria. Searching is never case-sensitive."""
+    command_name = "search"
+    arguments = [
+        [str, '*', "title",
+         """Search for pages whose title contains all of these words.
+
+         Words are space-separated. Like all commands, anything wrapped in
+         quotemarks (``"``) will be treated as a single word. If you leave
+         **title** empty, then it will match all pages, and you'll need to
+         specify more criteria. If you actually need to search for quotemarks,
+         escape them with a backslash - e.g. ``.s \\"The
+         Administrator\\"``."""],
+        [str, '*', "--regex", "-x",
+         """Filter pages by a regular expression.
+
+         You may use more than one regex in a single search, still delimited by
+         a space. If you want to include a literal space in the regex, you
+         should either wrap the whole regex in quotes or use ``\\s``
+         instead."""],
+        [str, '+', "--tags", "--tag", "--tagged", "-t",
+         """Filter pages by tags.
+
+         The matched pages must have all the tags that you specified, unless
+         that tag starts with ``-``, in which case they must not have that
+         tag."""],
+        [str, '+', "--author", "--au", "--by", "-a",
+         """Filter pages by exact author name.
+
+         The matched pages must have all the authors that you specified, unless
+         that author starts with ``-``, in which case they must not have that
+         author."""],
+        [str, '+', "--rating", "-r",
+         """Filter pages by rating.
+
+         Prefix the number with any of ``<``, ``>``, ``=``. Default is ``>``.
+         Can also specify a range of ratings with two dots, e.g. ``20..50``.
+         Ranges are always inclusive."""],
+        [str, '+', "--created", "--date", "-c",
+         """Filter pages by date of creation. Accepts both absolute and
+         relative dates.
+
+         Absolute dates must be in ISO-8601 format
+         (YYYY-MM-DD, YYYY-MM or YYYY). Relative dates must be a number
+         followed by a letter to specify how many units of time ago; valid
+         units are ``s m h d w M y``. These units are not case-sensitive,
+         **except for m/M!** Use ``m`` for minutes and ``M`` for Months.
+
+         Can use the same prefixes as **rating** (``>`` = "older than",
+         ``<`` = "younger than", ``=`` = exact match). ``=`` is the default
+         prefix if not specified, though this is pretty much guaranteed to
+         never match a relative date.
+
+         Also supports ranges of dates with two dots e.g. ``2018..2019``.
+         Ranges are always inclusive, and you can mix relative dates and
+         absolute dates."""],
+        [str, '+', "--category", "--cat", "-y"],
+        [str, None, "--parent", "-p"],
+        [bool, 0, "--summary", "--summarise", "-u"],
+        [bool, 0, "--random", "--rand", "--ran", "-d"],
+        [bool, 0, "--recommend", "--rec", "-m"],
+        [bool, 0, "--newest", "--new", "-n"],
+        [bool, 0, "--verbose", "-v"],
+        [str, None, "--order", "-o"],
+        [int, None, "--limit", "-l"],
+        [int, None, "--offset", "-f"],
+        ['hidden', bool, 0, "--ignorepromoted"]
+    ]
     @classmethod
     def command(cls, irc_c, msg, cmd):
         # Check that we are actually able to do this
@@ -35,16 +109,6 @@ class search:
             return
         # Parse the command itself
         cmd.expandargs(
-            # """Search the wiki for pages.
-
-            # Usage:
-            # search [<title>...] [--tags <tag>...] [--author <author>...]
-            # [--rating <rating>...] [--created <date>...] [--category <category>...]
-            # [--parent <parent>] [--regex <regex>...] [--summary] [--random]
-            # [--recommend] [--newest] [--order <order>] [--limit <limit>]
-            # [--offset <offset>] [--verbose] [--ignorepromoted]
-
-            # Options:
             # --tags --tag --tagged -t  Filter by tags.
             # --author --au -a          Filter by authors.
             # --rating -r               Filter by rating.
@@ -63,23 +127,6 @@ class search:
             # --ignorepromoted          Ignore promoted articles.
             # """
             ["search",
-             ['default', str, '*', "--title"],
-             [str, '+', "--tags", "--tag", "--tagged", "-t"],
-             [str, '+', "--author", "--au", "--by", "-a"],
-             [str, '+', "--rating", "-r"],
-             [str, '+', "--created", "--date", "-c"],
-             [str, '+', "--category", "--cat", "-y"],
-             [str, None, "--parent", "-p"],
-             [str, '*', "--regex", "-x"],
-             [bool, 0, "--summary", "--summarise", "-u"],
-             [bool, 0, "--random", "--rand", "--ran", "-d"],
-             [bool, 0, "--recommend", "--rec", "-m"],
-             [bool, 0, "--newest", "--new", "-n"],
-             [bool, 0, "--verbose", "-v"],
-             [str, None, "--order", "-o"],
-             [int, None, "--limit", "-l"],
-             [int, None, "--offset", "-f"],
-             ['hidden', bool, 0, "--ignorepromoted"]]
         )
         # check to see if there are any arguments
         if len(cmd.args) == 1 and len(cmd.args['root']) == 0:
@@ -412,7 +459,6 @@ class search:
             if verbose.endswith("; "):
                 verbose = verbose[:-2]
             msg.reply(verbose)
-            pprint(searches)
 
         page_ids = DB.get_articles(searches)
         pages = [DB.get_article_info(p_id) for p_id in page_ids]
@@ -437,7 +483,6 @@ class search:
                 if url is None:
                     msg.reply("No matches found.")
                     return
-                #pprint.pprint(url)
                 if url['title'].endswith(" - SCP Foundation"):
                     url['title'] = url['title'][:-17]
                 msg.reply(
