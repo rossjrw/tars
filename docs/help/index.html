@@ -95,36 +95,36 @@
     <h3 id="tableofcontents">Table of Contents</h3>
     <ul>
         <li>
-            <a href="#noncommand">Features</a>
+            noncommand_
             <ul>
-                <li><a href="#scpmatch">SCP-matching</a></li>
-                <li><a href="#chevronning">Chevronning</a></li>
-                <li><a href="#jl">Joining/Leaving</a></li>
-                <li><a href="#deferral">Deferral</a></li>
+                <li>scpmatch_</li>
+                <li>chevronning_</li>
+                <li>jl_</li>
+                <li>deferral_</li>
             </ul>
         </li>
         <li>
-            <a href="#general">General Commands</a>
+            general_
             <ul>
-                <li><a href="#help">Help</a></li>
-                <li><a href="#search">Search</a></li>
-                <li><a href="#lastcreated">Last Created</a></li>
-                <li><a href="#regexsearch">Regex Search</a></li>
-                <li><a href="#showmore">Show More</a></li>
-                <li><a href="#au">Author Page</a></li>
-                <li><a href="#alias">Alias</a></li>
-                <li><a href="#seen">Seen</a></li>
-                <li><a href="#gib">Gib</a></li>
+                <li>help_</li>
+                <li>search_</li>
+                <li>lastcreated_</li>
+                <li>regexsearch_</li>
+                <li>showmore_</li>
+                <li>au_</li>
+                <li>alias_</li>
+                <li>seen_</li>
+                <li>gib_</li>
             </ul>
         </li>
         <li>
-            <a href="#staffonly">Staff-Only Commands</a>
+            staffonly_
             <ul>
-                <li><a href="#promote">Promote</a></li>
+                <li>promote_</li>
             </ul>
         </li>
-        <li><a href="#controller">Controller-only Commands</a></li>
-        <li><a href="#gimmick">Gimmick Commands</a></li>
+        <li>controller_</li>
+        <li>gimmick_</li>
     </ul>
 </nav>
 
@@ -172,8 +172,8 @@
         and all the other bots will only try to parse it if all the bots above them in the hierarchy are not present.</p>
     <p>jarvis is at the top of the hierarchy. Secretary_Helen is next. TARS is right at the bottom.</p>
     <p>If jarvis or Secretary_Helen are in the channel, TARS will ignore any commands that they would usually pick up on. Look for <span class="jarvis">J</span> and/or <span class="helen">H</span> after the command name to see whether or not this is the case for each command.</p>
-    <p>However, if either of those bots fails the request (e.g. not finding anything in a <a href="#search">**``.search``**</a>) then TARS will automatically try as well. (If TARS also fails to find anything, it won't say anything.)</p>
-    <p>To force TARS to parse a command, either ping it at the start of the message, or prefix the command with two dots, e.g. <a href="#search">**``..search``**</a>. TARS will respond regardless of other bots in the channel (be warned that other bots may respond to any URLs that TARS sends!)</p>
+    <p>However, if either of those bots fails the request (e.g. not finding anything in a search_) then TARS will automatically try as well. (If TARS also fails to find anything, it won't say anything.)</p>
+    <p>To force TARS to parse a command, either ping it at the start of the message, or prefix the command with two dots, e.g. search_. TARS will respond regardless of other bots in the channel (be warned that other bots may respond to any URLs that TARS sends!)</p>
     <p>If your command includes any TARS-specific syntax, then TARS will answer it anyway (in private messages), even if another bot gets there first.</p>
 
     <h1 id="generalcommands">General Commands</h1>
@@ -187,10 +187,10 @@
     <ul>
         <li>**[title]**<br>
           Search for pages whose title contains all of these words. Words are space-separated. If neither **-f** nor **-x** are present, anything wrapped in quotemarks (``"``) will be treated as a single word. If you leave **title** empty, then it will match all pages, and you'll need to specify more criteria.
-          If you actually need to search for quotemarks, escape them with a backslash - e.g. ``.s \"The Administrator\"``.
+          If you actually need to search for quotemarks, escape them with a backslash - e.g. ``.s \\"The Administrator\\"``.
         </li>
         <li>**--regex, -x [regex]**<br>
-            Filter pages by a regular expression. You may use more than one regex in a single search, still delimited by a space. If you want to include a literal space in the regex, you should either wrap the whole regex in quotes or use ``\s`` instead.
+            Filter pages by a regular expression. You may use more than one regex in a single search, still delimited by a space. If you want to include a literal space in the regex, you should either wrap the whole regex in quotes or use ``\\s`` instead.
         </li>
         <li>**--tags, --tagged, --tag, -t [tags]**<br>
             Filter pages by tags. ``+scp`` means pages tagged scp. ``-scp`` means pages not tagged scp. If you don't put either ``+`` or ``-``, TARS will assume you meant to add a ``+``.
@@ -244,9 +244,9 @@
     <p>Example: ``TARS: search -t +scp +meta -r &gt;100 -c 2014`` - *matches pages tagged both "scp" and "meta", with a rating of more than 100, posted in 2014.*</p>
     <p>Example: ``.s Insurgency --rating 20..80 --created 2018-06..2018`` - *matches pages that contain the word "Insurgency" in the title, which have a rating of between 20 and 80, and were created between June 1st 2018 and the end of 2018.*</p>
     <p>Example: ``.s Unexplained Location -f -c 20d..40W3d --random`` - *matches pages whose name is exactly "Unexplained Location" created between 20 days and [40 weeks + 3 days] ago, and returns a random one.*</p>
-    <p>Example: ``.s -x ^SCP-\d*2$ -m`` - *matches articles that start with "SCP-" followed by any amount of numbers so long as that number ends in a 2, and returns the one that most needs extra attention.*</p>
-    <p>If TARS finds more than one article that matches your criteria (and if you didn't specify **--random**, **--summary** or **--recommend**), it will provide a list of matches and ask if you meant any of them. To pick your article from the list, see the <a href="#showmore">**``showmore``**</a> command.</p>
-    <p><a href="#regexsearch">**``.regexsearch``**</a>, <a href="#tags">**``.tags``**</a>, <a href="#random">**``.random``**</a> and <a href="#lastcreated">**``.lastcreated``**</a> are aliases of this command.</p>
+    <p>Example: ``.s -x ^SCP-\\d*2$ -m`` - *matches articles that start with "SCP-" followed by any amount of numbers so long as that number ends in a 2, and returns the one that most needs extra attention.*</p>
+    <p>If TARS finds more than one article that matches your criteria (and if you didn't specify **--random**, **--summary** or **--recommend**), it will provide a list of matches and ask if you meant any of them. To pick your article from the list, see the showmore_ command.</p>
+    <p>regexsearch_ are aliases of this command.</p>
 
     <h2 id="lastcreated">.lastcreated, .lc, .l, .recent <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p>TARS will generate a list of the 3 most recently created pages.</p>
@@ -256,31 +256,31 @@
             The number of pages to show. Default is 3, max is 10.
         </li>
         <li>**extra arguments**<br>
-            You can use any of the arguments in <a href="#search">**``.search``**</a> for additional filtering before showing the results. This command is equivalent to ``.s --order recent --limit 3``.
+            You can use any of the arguments in search_ for additional filtering before showing the results. This command is equivalent to ``.s --order recent --limit 3``.
         </li>
     </ul>
     <p>Example: ``.lc -a Croquembouche`` - *shows the last 3 articles posted by Croquembouche.*</p>
 
     <h2 id="regexsearch">.regexsearch, .regexsea, .rsea, .rs</h2>
-    <p>Exactly the same as <a href="#search">**``search``**</a>, except your search terms are parsed as regular expressions. Not case-sensitive.</p>
+    <p>Exactly the same as search_, except your search terms are parsed as regular expressions. Not case-sensitive.</p>
     <p>Example: ``.rs ^SCP- -t -scp`` - *searches for articles starting with "SCP-" but that are not tagged 'scp'.*</p>
     <p>Example: ``.rs ^((?!the).)*$`` - *searches for articles that don't contain 'the'.*</p>
     
     <h2 id="showmore">.showmore, .sm <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p>When TARS presents you with a list of articles to pick from, use this command to pick which one you want to see.</p>
     <p>Example: ``.sm 2`` - *pick the 2nd article from the list.*</p>
-    <p>Anyone can <a href="#sm">**``.sm``**</a> one of TARS' lists, even if they didn't send the command that created it.</p>
-    <p>You can always <a href="#sm">**``.sm``**</a> the last list that TARS created in a given channel, even if TARS has been offline. When a new list is created in a channel, it will overwrite the old list.</p>
+    <p>Anyone can sm_ one of TARS' lists, even if they didn't send the command that created it.</p>
+    <p>You can always sm_ the last list that TARS created in a given channel, even if TARS has been offline. When a new list is created in a channel, it will overwrite the old list.</p>
     <p>Over time, TARS will learn which articles are picked more often than others, and will move those to the top of the list.</p>
     <p>Use ``.sm`` or ``.sm 0`` to see the whole list.</p>
 
     <h2 id="authorpage">.authorpage, .author, .au <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p>``.au [username]``</p>
-    <p>Fetches the author page for a given user. You must specify their Wikidot name exactly, although if you name an IRC user, TARS will check its list of aliases (see <a href="#alias">**``.alias``**</a>) as well. If you don't specify anyone, TARS will try to find your author page instead (and it'll check your aliases, too).</p>
+    <p>Fetches the author page for a given user. You must specify their Wikidot name exactly, although if you name an IRC user, TARS will check its list of aliases (see alias_) as well. If you don't specify anyone, TARS will try to find your author page instead (and it'll check your aliases, too).</p>
 
     <h2 id="alias">.alias</h2>
     <p>``.alias [name] [--add names] [--remove names] [--list]``</p>
-    <p>Add an alternate name(s) for yourself into TARS' database. These names are used for <a href="#authorpage">**``.authorpage``**</a>, <a href="#seen">**``.seen``**</a> and <a href="#gib">**``.gib``**</a>.</p>
+    <p>Add an alternate name(s) for yourself into TARS' database. These names are used for authorpage_.</p>
     <ul>
         <li>**name**<br>
             An IRC name. You can only **--add** or **--remove** aliases from this name if it's your current IRC nick (or if it's already one of your aliases), but you can **--list** anyone's aliases. If you don't include this argument, TARS will assume that you mean your current IRC nick.
@@ -325,7 +325,7 @@
     <p>``.gib [--channel #channel] [--user user(s)] [--size size reduce]
       [--roulette mode] [--regex regex(es)] [--me] [--no-cache]``</p>
     <p>TARS will take all of the messages in the channel and employ an extremely sophisticated machine-learning algorithm backed by over $8 billion in research funding to contribute to the conversation.</p>
-    <p>Additionally, any pings (i.e. username mentions) that are produced in the output will be censored to avoid annoying anyone not present in the conversation. To add a nick to the list of pings to search, see <a href="#alias">**``.alias``**</a>.</p>
+    <p>Additionally, any pings (i.e. username mentions) that are produced in the output will be censored to avoid annoying anyone not present in the conversation. To add a nick to the list of pings to search, see alias_.</p>
     <ul>
         <li>**--channel, --ch, -c**<br>
             The channel to search. Both you and TARS must be in the channel at the time. Defaults to the current channel.
@@ -380,8 +380,8 @@
             Instagram will always be true (if you don't specify an image, you won't be able to post to Instagram).
         </li>
     </ul>
-    <p>The <a href="#promote">**``.promote``**</a> command can only be used by an **operator** or higher in #site42, the Internet Outreach channel.</p>
-    <p>Once you've called <a href="#promote">**``.promote``**</a>, TARS will message you privately. This private conversation will not be logged and the bot owner will not have access to these message. TARS will take you through a series of simple questions to confirm that you do actually want to post things to the social media accounts.</p>
+    <p>The promote_ command can only be used by an **operator** or higher in #site42, the Internet Outreach channel.</p>
+    <p>Once you've called promote_, TARS will message you privately. This private conversation will not be logged and the bot owner will not have access to these message. TARS will take you through a series of simple questions to confirm that you do actually want to post things to the social media accounts.</p>
     <p>TARS will ask you for passwords and/or API keys to the accounts. These are necessary in order for TARS to post. At the end of the session, you'll be asked whether or not you want to keep the passwords saved. If you do, it'll make things faster next
         time by keeping the passwords in an encrypted file. If you don't, the passwords will be purged.</p>
     <p>At any point during the session, type "ABORT" to cancel everything.</p>
@@ -466,7 +466,7 @@
     
     <p>The following commands are just simple gimmicks or aliases. You can request gimmick commands if you want.</p>
     <ul>
-        <li class="jarvis">**.random, .ran, .r:** Same as <a href="#search">**``.search``**</a> except with **--random** enabled.</li>
+        <li class="jarvis">**.random, .ran, .r:** Same as search_ except with **--random** enabled.</li>
         <li>**.hugtars, .hug:** Hugs!</li>
         <li>**.reptile, .rep:** rawr xD</li>
         <li>**.passcode:** Hints for newbies for finding the passcode.</li>
