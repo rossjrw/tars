@@ -576,7 +576,7 @@ class DateRange:
         self.input = input_date
         self.min = None
         self.max = None
-        self.compare = None
+        self.compare = "="
         # possible values:
         # 1. absolute date
         # 2. relative date
@@ -639,12 +639,26 @@ class DateRange:
         if self.date_is_absolute():
             # the date is absolute
             # minimise the date
-            self.min = pd.datetime(*self.date.lower_strict()[:6])
-            self.min = self.min.set(hour=0, minute=0, second=0)
+            minimum = pd.datetime(*self.date.lower_strict()[:6])
+            minimum = minimum.set(hour=0, minute=0, second=0)
             # maximise the date
-            self.max = pd.datetime(*self.date.upper_strict()[:6])
-            self.max = self.max.set(hour=23, minute=59, second=59)
-            pass
+            maximum = pd.datetime(*self.date.upper_strict()[:6])
+            maximum = maximum.set(hour=23, minute=59, second=59)
+            if self.compare == "<":
+                self.max = minimum
+            elif self.compare == "<=":
+                self.max = maximum
+            elif self.compare == ">":
+                self.min = maximum
+            elif self.compare == ">=":
+                self.min = minimum
+            elif self.compare == "=":
+                # = means between maximum and minimum
+                self.min = minimum
+                self.max = maximum
+            else:
+                raise CommandError("Unknown operator in absolute date "
+                                   "comparison ({})".format(self.compare))
         elif re.match(r"([0-9]+[A-Za-z])+$", self.input):
             # the date is relative
             sel = [i for i in re.split(r"([0-9]+)", self.input) if i]
@@ -673,17 +687,15 @@ class DateRange:
             )
             if self.compare in ["<", "<="]:
                 self.min = self.date
-            elif self.compare in [">", ">="] or self.compare is None:
+            elif self.compare in [">", ">="]:
                 self.max = self.date
             elif self.compare == "=":
                 self.max = self.date
                 self.min = self.date
                 # possible broken - may match to the second
             else:
-                raise CommandError(
-                    "Unknown operator in relative date "
-                    "comparison ({})".format(self.compare)
-                )
+                raise CommandError("Unknown operator in relative date "
+                                   "comparison ({})".format(self.compare))
         else:
             raise CommandError(
                 "'{}' isn't a valid absolute or relative date "
