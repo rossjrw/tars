@@ -3,32 +3,37 @@
 Provides functions for parsing and formatting stuff into other stuff.
 """
 
+import argparse
 import re
 import shlex
-import argparse
+
 from helpers.config import CONFIG
 from helpers.error import CommandError, ArgumentMessage
 
 class ArgumentParser(argparse.ArgumentParser):
+    """A new argparser that has all the custom stuff TARS needs."""
     def error(self, message):
         raise ArgumentMessage(message)
     def exit(self, status=0, message=None):
-        if message: raise ArgumentMessage(message)
+        if message is not None:
+            raise ArgumentMessage(message)
+
 class HelpFormatter(argparse.HelpFormatter):
+    """A new --help formatter."""
+    # TODO will this affect the documentation?
     def _format_args(self, action, default_metavar):
+        """Add an ellipsis to arguments that accept an unlimited number of
+        arguments (all of them) instead of repeating the arg name over and
+        over"""
         get_metavar = self._metavar_formatter(action, default_metavar)
         if action.nargs is argparse.ZERO_OR_MORE:
             return "[{}...]".format(get_metavar(1)[0])
-        elif action.nargs is argparse.ONE_OR_MORE:
+        if action.nargs is argparse.ONE_OR_MORE:
             return "{}...".format(get_metavar(1)[0])
-        else:
-            return super()._format_args(action, default_metavar)
+        return super()._format_args(action, default_metavar)
+
     def _get_default_metavar_for_optional(self, action):
         return action.dest
-
-def parseprint(message):
-    #print("[\x1b[1;32mParser\x1b[0m] " + str(message))
-    pass
 
 def parse_commands(irc_c, message):
     """Takes a message object and returns a list of parsed commands."""
@@ -48,7 +53,7 @@ class ParsedCommand():
         self.pinged = False # was the ping TARS?
         self.command = None # base command
         self.message = None # varies
-        self.args = {} # command arguments as dict w/ subargs as list
+        self.args = {} # argparse Namespace object
         self.force = False # . or .. ?
         self.context = irc_c
 
