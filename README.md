@@ -88,14 +88,13 @@ alias, or it won't be able to be called.
 ## Commands
 
 Command objects (`cmd`) are parsed by argparse. Arguments are accessible from
-`cmd.args`, after `cmd.expandargs()` has been called.
+`cmd.args` as a Namespace object or by accessing `cmd` like a dict.
 
-`cmd.expandargs()` should be called at the start of command execution, and will
-execute argparse. `expandargs` takes a list of lists, which define each
-argument of the command. Each list should look like the following:
+Each command class must have class vars `command_name` as a string and
+`arguments` as a list. Each list should look like the following:
 
 ```python
-[type, nargs, "--long", "--altlong", ... , "-s"]
+[type, nargs, "--long", "--altlong", ... , "-s", docstring]
 ```
 
 *type* should be the type of the argument, either `str`, `int`, `float` or
@@ -105,6 +104,10 @@ argument of the command. Each list should look like the following:
 argparse.
 
 The remainder of the argument are the possible flag names.
+
+*docstring* is a string representing the argument's documentation. The
+first line of this docstring is what will appear when the user asks for help
+from the command line (aka IRC).
 
 Additionally, a further item can be added to the start of the list: either
 `"default"` or `"hidden"`. *default* will prepend that argument to the input
