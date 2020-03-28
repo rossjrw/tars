@@ -10,31 +10,6 @@ import shlex
 from helpers.config import CONFIG
 from helpers.error import CommandError, ArgumentMessage
 
-class ArgumentParser(argparse.ArgumentParser):
-    """A new argparser that has all the custom stuff TARS needs."""
-    def error(self, message):
-        raise ArgumentMessage(message)
-    def exit(self, status=0, message=None):
-        if message is not None:
-            raise ArgumentMessage(message)
-
-class HelpFormatter(argparse.HelpFormatter):
-    """A new --help formatter."""
-    # TODO will this affect the documentation?
-    def _format_args(self, action, default_metavar):
-        """Add an ellipsis to arguments that accept an unlimited number of
-        arguments (all of them) instead of repeating the arg name over and
-        over"""
-        get_metavar = self._metavar_formatter(action, default_metavar)
-        if action.nargs is argparse.ZERO_OR_MORE:
-            return "[{}...]".format(get_metavar(1)[0])
-        if action.nargs is argparse.ONE_OR_MORE:
-            return "{}...".format(get_metavar(1)[0])
-        return super()._format_args(action, default_metavar)
-
-    def _get_default_metavar_for_optional(self, action):
-        return action.dest
-
 def parse_commands(irc_c, message):
     """Takes a message object and returns a list of parsed commands."""
     submessages = [m.strip() for m in message.message.split("&&")]
@@ -136,23 +111,7 @@ class ParsedCommand():
         # Regardless of input make the nargs * and then manually validate
         # afterwards with more verbose error messages
         # TODO TODO TODO
-        for arg in arglist:
-            kwargs = {}
-            if arg[0] is 'default':
-                arg.pop(0)
-                self.message = " ".join([arg[-1], self.message])
-            if arg[0] is 'hidden':
-                kwargs['help'] = argparse.SUPPRESS
-                arg.pop(0)
-            if arg[0] is bool:
-                assert arg[1] == 0
-                kwargs['default'] = False
-                kwargs['action'] = 'store_true'
-            else:
-                kwargs['type'] = arg[0]
-                # temporarily assume any number of args is ok
-                kwargs['nargs'] = '*'
-            parser.add_argument(*arg[2:], **kwargs)
+        # XXX old parser woz ere
         # remove apostrophes because they'll fuck with shlex
         self.message = self.message.replace("'", "<<APOS>>")
         self.message = self.message.replace('\\"', "<<QUOT>>") # explicit \"
