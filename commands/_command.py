@@ -1,10 +1,12 @@
 """
 _command.py
 
-Provides the base _Command class that all commands inherit from.
+Provides the base Command class that all commands inherit from.
 """
 
-class _Command:
+class Command:
+    command_name = None
+    arguments = []
     def __new__(cls):
         # TODO expandargs
         pass
