@@ -54,6 +54,7 @@ COMMANDS = {
     "converse": {"converse": {"converse"},
                 },
     "dbq": {"query": {"query","dbq"},
+            "seen": {"seen","lastseen"},
            },
     "record": {"record": {"record"},
                "pingall": {"pingall"},

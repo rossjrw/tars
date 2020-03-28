@@ -43,7 +43,7 @@ def bad_command(**kwargs):
 
 def isGreeting(message):
     greetings = [
-        "hello", "hi", "howdy", "yo"
+        "hello", "hi", "howdy", "yo",
     ]
     return 0
 
@@ -73,12 +73,14 @@ def acronym_gen():
         "I stand for robot rights.", # ROUNDERHOUSE
         "!Top !And !Rear !Suggested",
         "!Tales !Are !Real !Shit",
+        "!Tales !Are !Real !Shitty", # aismallard
         "!TARS' !Ass? !Real !Soft.",
         "It's just SRAT but backwards.",
         "!Tummy & !Ass !Rubs, !Sergeant",
         "!Thanks, !Anderson !Robotics. !Sweet.",
         "!Trying !Acronyms !Repeatedly? !Super!",
         "!Tried !Adding !Rounderhouse - !Sorry!",
+        "!That's !A !Rounderhouse, !Sweety", # aismallard
         "!That's !A !Regretful !Sentence",
         "!These !Are !Really !Something.",
         "!TARS !Acronym !Repeating !Successfully",
@@ -86,6 +88,8 @@ def acronym_gen():
         "!T!A!R!SPWTCOTTTADC",
         "!Total !Anal !Relapse !Surgery",
         "!Two !Anuses !Rigorously !Spread", # plaidypus
+        "!Three !Anuses !Rigorously !Spread", # aismallard
+        "!Twenty !Anuses !Rigorously !Spread", # aismallard
         "!The !Angry !Rash !Spreads", # bluesoul
         "!Talking !Animals? *!Rawr* *!Snuggles*", # LordofLaugh
         "!Tortoises !Are !Robustly !Slow", # LordOdin

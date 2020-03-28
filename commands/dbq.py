@@ -6,7 +6,11 @@ Database Query commands for checking the database.
 import string
 from pprint import pprint
 from datetime import datetime
-from helpers.error import CommandError
+
+import pendulum as pd
+
+from commands.gib import gib
+from helpers.error import CommandError, MyFaultError
 from helpers.parse import nickColor
 from helpers.database import DB
 from helpers.defer import defer
@@ -97,3 +101,45 @@ class query:
             except:
                 msg.reply("There was a problem with the selection")
                 raise
+
+class seen:
+    @staticmethod
+    def command(irc_c, msg, cmd):
+        if defer.check(cmd, 'Secretary_Helen'):
+            return
+        cmd.expandargs(["first f",
+                        "count c"])
+        # have to account for .seen -f name
+        if 'first' in cmd:
+            cmd.args['root'].extend(cmd.args['first'])
+        if 'count' in cmd:
+            cmd.args['root'].extend(cmd.args['count'])
+        if len(cmd.args['root']) < 1:
+            raise CommandError("Specify a user and I'll tell you when I last "
+                               "saw them")
+        nick = cmd.args['root'][0]
+        messages = DB.get_messages_from_user(nick, msg.raw_channel)
+        if len(messages) == 0:
+            raise MyFaultError("I've never seen {} in this channel."
+                               .format(nick))
+        if 'count' in cmd:
+            msg.reply("I've seen {} {} times in this channel."
+                      .format(nick, len(messages)))
+            return
+        if 'first' in cmd:
+            message = messages[0]
+            response = "I first saw {} {} saying: {}"
+        else:
+            if nick == msg.sender:
+                msg.reply("I can see you right now, {}.".format(msg.sender))
+                return
+            message = messages[-1]
+            response = "I last saw {} {} saying: {}"
+        response = response.format(
+            nick if nick == message['sender']
+            else "{} as {}".format(nick, message['sender']),
+            pd.from_timestamp(message['timestamp']).diff_for_humans(),
+            gib.obfuscate(message['message'],
+                          DB.get_channel_members(msg.raw_channel)))
+        msg.reply(response)
+

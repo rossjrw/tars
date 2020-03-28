@@ -557,8 +557,13 @@ class SqliteDriver:
                     return None, type
         return id, type
 
-    def get_occupants(self, channel, convert_to_nicks=False):
-        """Get a list of current occupants of a channel."""
+    def get_occupants(self, channel,
+                      convert_to_nicks=False, levels=False):
+        """Get a list of current occupants of a channel.
+
+        `levels`: bool; return channel operator levels as well. Result will be
+        a list of tuples.
+        """
         if channel[0] != '#':
             raise ValueError("Channel name must start with #.")
         c = self.conn.cursor()
@@ -570,17 +575,17 @@ class SqliteDriver:
         assert id is not None, "Channel {} does not exist.".format(channel)
         # get the occupants
         c.execute('''
-            SELECT user_id FROM channels_users WHERE channel_id=?
+            SELECT user_id,user_mode FROM channels_users WHERE channel_id=?
                   ''', (id, ))
-        users = c.fetchall()
+        users = [(r['user_id'], r['user_mode']) for r in c.fetchall()]
         dbprint("get_occupants: users is {}".format(",".join(map(str,users))))
         assert len(users) > 0, "There are no users in {}.".format(channel)
         if convert_to_nicks:
-            users = [user['user_id'] for user in users]
-            users = [self.get_current_nick(id) for id in users]
+            users = [(self.get_current_nick(id), mode) for id, mode in users]
+        if levels:
+            return users
         else:
-            users = [user['user_id'] for user in users]
-        return users
+            return [u[0] for u in users]
 
     def get_current_nick(self, id):
         """Gets the current nick of a user."""
@@ -597,7 +602,7 @@ class SqliteDriver:
                 SELECT alias FROM user_aliases
                 WHERE user_id=?
                       ''', (id, ))
-            name = random.choice(norm(c.fechall()))
+            name = random.choice(norm(c.fetchall()))
             return "??{}".format(name)
 
     def get_all_channels(self):
@@ -753,8 +758,7 @@ class SqliteDriver:
             SELECT user_id FROM user_aliases
             WHERE user_id=? AND alias=? AND weight=?
                   ''', (user, alias, weight))
-        combo_exists = bool(c.lastrowid)
-        print("Combo exists: {}".format(combo_exists))
+        combo_exists = len(c.fetchall())
         # things to do:
             # 1. detect if the user-alias combo already exists
             # if it does, mark as most recento
@@ -783,7 +787,7 @@ class SqliteDriver:
             SELECT user_id FROM user_aliases
             WHERE user_id=? AND alias=?
                   ''', (user, alias))
-        combo_exists = bool(c.lastrowid)
+        combo_exists = len(c.fetchall())
         # things to do:
             # scrap the alias
         c.execute('''
@@ -1012,6 +1016,24 @@ class SqliteDriver:
             WHERE type='irc' AND user_id=? AND alias=?
                   ''', (user, msg['nick']))
         self.conn.commit()
+
+    def get_messages_from_user(self, nick, channel=None):
+        c = self.conn.cursor()
+        assert channel.startswith('#')
+        c.execute('''
+            SELECT * FROM messages
+            WHERE kind='PRIVMSG'
+            AND channel_id=(
+                SELECT id FROM channels
+                WHERE channel_name=?)
+            AND sender IN (
+                SELECT alias FROM user_aliases
+                WHERE user_id=(
+                    SELECT user_id FROM user_aliases
+                    WHERE alias=?))
+            ORDER BY timestamp
+                  ''', (channel, nick))
+        return c.fetchall()
 
     def add_article(self, article, commit=True):
         """Adds an article and its data to the db.

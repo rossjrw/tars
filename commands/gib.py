@@ -206,7 +206,7 @@ class gib:
             sentence = match.group(2).strip()
         # second: modify any words that match the names of channel members
         sentence = gib.obfuscate(
-            sentence, DB.get_channel_members(msg.raw_channel) + ["ops"])
+            sentence, DB.get_channel_members(msg.raw_channel))
         # match any unmatched pairs
         sentence = gib.bracketify(sentence,
                                   (r"\"\b", "\""), (r"\b[.!?]*\"", "\""))
@@ -299,8 +299,10 @@ class gib:
     @staticmethod
     def obfuscate(sentence, nicks):
         """Removes pings from a sentence. """
-        # Trim names like "Nickname|Away"
-        nicks = [nick.split("|")[0] for nick in nicks]
+        # Escape regex-active characters
+        nicks = [re.escape(nick) for nick in nicks]
+        # Always obfuscate "ops", no matter what
+        nicks.append("ops")
         nicks = re.compile(r"\b" + r"\b|\b".join(nicks) + r"\b",
                            flags=re.IGNORECASE)
         # If the channel is None (PM), then the only ping is "ops"
@@ -330,7 +332,8 @@ class gib:
             raise MyFaultError("I didn't find any URLs in the "
                                "selection criteria.")
         # then reduce strings containing urls to urls
-        urls = [re.search(_URL_PATT, message).group(0) for message in messages]
+        urls = [re.search(_URL_PATT, message, re.IGNORECASE).group(0)
+                for message in messages]
         # make urls unique
         urls = list(set(urls))
         # then filter by either images or videos
