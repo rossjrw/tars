@@ -5,9 +5,9 @@ Plugin that parses messages into commands and then does stuff
 
 from importlib import reload
 
-import commands
-
 from pyaib.plugins import observe, plugin_class
+
+import commands
 
 from helpers import parse
 from helpers.config import CONFIG
@@ -18,10 +18,10 @@ def try_command(irc_c, msg, cmd, command_name=None):
     if command_name is None:
         command_name = cmd.command
     try:
-        # Call the command from the right file in commands/
-        # getattr instead of commands[cmd] bc module subscriptability
+        # commands are kept in the commands/ module.
         command_class = getattr(commands.COMMANDS, command_name)
-        command_class.command(irc_c, msg, cmd)
+        command = command_class(cmd)
+        command.execute(irc_c, msg)
         return 0
     except CommandNotExistError:
         if cmd.ping:
