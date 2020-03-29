@@ -111,3 +111,7 @@ class Command:
     def __getitem__(self, arg):
         """Retrieves argument value via getitem operator"""
         return getattr(self.args, arg)
+
+    def __len__(self):
+        """Get the number of arguments given to this command"""
+        return len(vars(self.args))

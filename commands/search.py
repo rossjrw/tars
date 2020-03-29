@@ -132,7 +132,7 @@ class Search(Command):
 
     def execute(self, irc_c, msg, cmd):
         # check to see if there are any arguments
-        if len(cmd.args) == 1 and len(self['title']) == 0:
+        if len(self) == 1 and len(self['title']) == 0:
             raise CommandError("Must specify at least one search term")
         # Set the return mode of the output
         selection = {
