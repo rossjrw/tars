@@ -88,7 +88,7 @@ class Command:
             # Other types are self-sufficient
             # 3. Handle the flags
             assert all([" " not in f for f in arg['flags']])
-            assert all([isinstance(f, str) not in f for f in arg['flags']])
+            assert all([isinstance(f, str) for f in arg['flags']])
             # 4. Handle the docstring
             if 'help' not in arg:
                 raise ValueError("arg must have help string")
