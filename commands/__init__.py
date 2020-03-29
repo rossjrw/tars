@@ -10,6 +10,8 @@ COMMANDS = {
 }
 """
 
+from ._command import Command
+
 COMMANDS = {
     "search": {"Search": {"search","sea","s","??"},
                "Regexsearch": {"regexsearch","rsearch","rsea","rs"},

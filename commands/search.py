@@ -9,7 +9,7 @@ Commands:
 
 from random import random
 
-from commands._command import Command
+from commands import Command
 from commands.gib import gib
 from commands.showmore import showmore
 
