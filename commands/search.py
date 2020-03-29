@@ -142,13 +142,13 @@ class Search(Command):
             'limit': self['limit'],
             'offset': self['offset'],
         }
-        if 'random' in self:
+        if self['random']:
             selection['order'] = 'random'
             selection['limit'] = 1
-        if 'recommend' in self:
+        if self['recommend']:
             selection['order'] = 'recommend'
             selection['limit'] = 1
-        if 'newest' in self:
+        if self['newest']:
             selection['order'] = 'recent'
             selection['limit'] = 1
         # What are we searching for?
@@ -278,11 +278,10 @@ class Search(Command):
             categories['include'].append(category)
         searches.append({'term': categories, 'type': 'category'})
         # Set parent page
-        parents = None
-        parents = self['parent'][0]
+        parents = self['parent']
         searches.append({'term': parents, 'type': 'parent'})
         # FINAL BIT - summarise commands
-        if 'verbose' in self:
+        if self['verbose']:
             verbose = "Searching for articles "
             if len(strings) > 0:
                 verbose += (
@@ -362,7 +361,7 @@ class Search(Command):
 
         page_ids = DB.get_articles(searches)
         pages = [DB.get_article_info(p_id) for p_id in page_ids]
-        pages = search.order(pages, search_term=strings, **selection)
+        pages = Search.order(pages, search_term=strings, **selection)
 
         if len(pages) >= 50:
             msg.reply("{} results found - you're going to have to be more "
@@ -375,7 +374,7 @@ class Search(Command):
             return
         if len(pages) == 0:
             # check if there's no args other than --verbose
-            if set(self.args).issubset({'root', 'verbose'}):
+            if len(self['title']) > 0:
                 # google only takes 10 args
                 url = google_search(
                     '"' + '" "'.join(self['title'][:10]) + '"', num=1
@@ -429,14 +428,14 @@ class regexsearch:
     def execute(cls, irc_c, msg, cmd):
         self['regex'] = self['title']
         self['title'] = []
-        search.command(irc_c, msg, cmd)
+        Search.command(irc_c, msg, cmd)
 
 class tags:
     @classmethod
     def execute(cls, irc_c, msg, cmd):
         self['tags'] = self['title']
         self['title'] = []
-        search.command(irc_c, msg, cmd)
+        Search.command(irc_c, msg, cmd)
 
 class lastcreated:
     @classmethod
@@ -450,10 +449,10 @@ class lastcreated:
         # to make the query faster, if there's no other arguments, limit date
         # the minimum args are root, order, limit and optionally verbose
         # must expandargs to convert v to verbose
-        search.expandargs(cmd)
-        if set(self.args).issubset({'root', 'order', 'limit', 'verbose'}):
+        Search.expandargs(cmd)
+        if self.no_more_than(['root', 'order', 'limit', 'verbose']):
             self['created'] = ["<3d"]
-        search.command(irc_c, msg, cmd)
+        Search.command(irc_c, msg, cmd)
 
 class MinMax:
     """Stores a minimum int and a maximum int representing a range of values,
