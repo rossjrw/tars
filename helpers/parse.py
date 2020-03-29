@@ -17,82 +17,65 @@ def parse_commands(irc_c, message):
 
 class ParsedCommand():
     """Object representing a single command"""
-    def __init__(self, irc_c, msg, message_text):
-        # Check that the message is a string
-        self.sender = msg.sender
-        self.channel = msg.raw_channel
-        message = message_text
-        self.raw = str(message)
-        self.ping = None # identity of the ping
-        self.unping = None # raw command without ping
-        self.pinged = False # was the ping TARS?
-        self.command = None # base command
-        self.message = None # varies
+    def __init__(self, irc_c, msg, message):
+        """msg is the pyaib message object
+        message is the text of the message"""
+        self.sender = msg.sender # nick of issuing user
+        self.channel = msg.raw_channel # channel to which message was sent
+        self.raw = str(message) # the original message
+        self.ping = False # was the bot pinged?
+        self.command = None # if command, then the command name
+        self.message = None # message text excluding ping and command name
         self.args = {} # argparse Namespace object
-        self.force = False # . or .. ?
+        self.force = False # whether to bypass defer
         self.context = irc_c
 
         # Was someone pinged?
-        pattern = r"^([A-Za-z0-9\\\[\]\^_-{\|}]+)[,:]+\s*(.*)$"
-        match = re.search(pattern, self.raw)
+        pattern = re.compile(r"""
+            ^                          # Start of message
+            ([A-Z0-9\\\[\]\^_-{\|}]+)  # Ping, including allowed chars
+            [,:]+                      # Colon or comma to denote ping
+            \s*                        # Whitespace between ping and message
+            (.*)                       # Message body
+            $                          # End of message
+        """, (re.IGNORECASE, re.VERBOSE))
+        match = pattern.search(self.raw)
         if match:
             # Remove ping from the message
             self.message = match.group(2).strip()
-            self.unping = self.message
-            self.ping = match.group(1).strip()
+            ping = match.group(1).strip()
+            if ping.lower() == CONFIG.nick.lower():
+                self.ping = True
         else:
+            # nobody was pinged
             self.message = self.raw
-            self.unping = self.message
-
-        if isinstance(self.ping, str):
-            if self.ping.upper() == CONFIG.nick:
-                self.pinged = True
 
         # What was the command?
-        # Check for regular commands (including chevron)
-        if self.pinged:
-            pattern = (r"^(?P<signal>[!\.]{0,2})"
-                       r"(?P<cmd>[^!,\.\?\s]+)"
-                       r"(?P<rest>.*)$")
+        pattern = r"""
+            ^                  # Start of command
+            (?P<signal>        # Punctuation to denote command (signal)
+                [!\.]{{{},2}}  # Amount of required signal depends on ping
+            )                  # End signal group
+            (?P<cmd>           # Command name
+                [^!\.\s]+      # Any character but not signal or whitespace
+            )                  # End command name group
+            (?P<rest>.*)       # Rest of the command (arguments)
+            $"""
+        if self.ping:
+            # If the bot was pinged, do not require a signal
+            pattern = pattern.format(0)
         else:
-            # Force the command to be marked if we weren't pinged
-            pattern = (r"^(?P<signal>[!\.]{1,2})"
-                       r"(?P<cmd>[^!,\.\?\s]+)"
-                       r"(?P<rest>.*)$")
-        match = re.search(pattern, self.message)
-        if self.ping is not None and not self.pinged:
-            # someone was pinged, but not us
-            pass
-        elif match:
+            # If the bot was not pinged, require a signal
+            pattern = pattern.format(1)
+        pattern = re.compile(pattern, re.VERBOSE)
+        match = pattern.search(self.message)
+        if match:
             # Remove command from the message
             self.command = match.group('cmd').strip().lower()
-            # save the signal strength
-            self.force = len(match.group('signal')) == 2
-            try:
-                self.message = match.group('rest').strip()
-            except IndexError:
-                self.message = ""
-            # if >1 punctuation used, override bot detection later
+            self.message = match.group('rest').strip()
+            # if >1 punctuation used, override defer
             if len(match.group('signal')) > 1:
                 self.force = True
-        else:
-            # No command - work out what to do here
-            pass
-
-        # arguments will be added via expandargs
-
-        # TODO reimplement chevron
-        # if self.command is not None:
-        #     # detect a chevron command
-        #     pattern = r"^(\^+)$"
-        #     match = re.match(pattern, self.command)
-        #     if match:
-        #         chevs = str(len(self.command))
-        #         self.command = "chevron"
-        #         if 'root' in self.args:
-        #             self.args['root'].insert(0, chevs)
-        #         else:
-        #             self.args['root'] = [chevs]
 
     def __contains__(self, arg):
         """Allows cmd.hasarg via the `in` operator"""
