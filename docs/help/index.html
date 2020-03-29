@@ -184,69 +184,12 @@
     <h2 id="search">.search, .sea, .s <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p>Searches the wiki for pages, and provides URLs and basic info about the page that matches your search criteria. Searching is never case-sensitive.</p>
     <p>``.search [title] [--regex regex] [--tags tags] [--author author] [--rating rating] [--created created] [--parent parent] [--fullname] [--summary] [--select type number offset]``</p>
-    <ul>
-        <li>**[title]**<br>
-          Search for pages whose title contains all of these words. Words are space-separated. If neither **-f** nor **-x** are present, anything wrapped in quotemarks (``"``) will be treated as a single word. If you leave **title** empty, then it will match all pages, and you'll need to specify more criteria.
-          If you actually need to search for quotemarks, escape them with a backslash - e.g. ``.s \\"The Administrator\\"``.
-        </li>
-        <li>**--regex, -x [regex]**<br>
-            Filter pages by a regular expression. You may use more than one regex in a single search, still delimited by a space. If you want to include a literal space in the regex, you should either wrap the whole regex in quotes or use ``\\s`` instead.
-        </li>
-        <li>**--tags, --tagged, --tag, -t [tags]**<br>
-            Filter pages by tags. ``+scp`` means pages tagged scp. ``-scp`` means pages not tagged scp. If you don't put either ``+`` or ``-``, TARS will assume you meant to add a ``+``.
-        </li>
-        <li>**--author, --au, -a [authors]**<br>
-            Filter pages by exact author name. You can use ``+`` and ``-`` to include/exclude authors. Pages must have at least one specified author, but must have all authors that have ``+``.
-        </li>
-        <li>**--rating, -r [rating|ratingrange]**<br>
-            Filter pages by a rating number. Prefix the number with any of ``&gt;``, ``&lt;``, ``=``. Default is ``&gt;``. Can also specify a range of ratings with two dots, e.g. ``20..50``. Ranges are always inclusive.
-        </li>
-        <li>**--created, --date, -c [date|daterange]**<br>
-            Filter pages by date of creation. Rewrite dates are ignored. Absolute dates must be in ISO-8601 format (YYYY-MM-DD, YYYY-MM or YYYY). Relative dates must be a number followed by a letter to specify how many units of time ago; valid units are ``s m h d w M y``. These units are not case-sensitive, **except for m/M!** Use ``m`` for minutes and ``M`` for Months.<br>
-            Can use the same prefixes as **rating** (``&gt;`` = "older than", ``&lt;`` = "younger than", ``=`` = exact match), and also supports ranges of dates with two dots e.g. ``2018..2019``. Ranges are always inclusive, and you can mix relative dates and absolute dates. Don't worry about which order to put them in.
-            'Exact match' is the default match for absolute dates, as they are always approximate. 'Older than' is the default match for relative dates, as they are alwyas precise, and an exact match is unlikely to match any articles.
-        </li>
-        <li>**--category, --cat, -y [category]**<br>
-            Exactly the same as **--tags**, except for Wikidot categories instead.<br>
-            If you don't include this argument, TARS will search all categories. If you include this argument but don't specify any categories, TARS will only search "_default".
-        </li>
-        <li>**--parent, -p [url]**<br>
-            Filter pages by their parent page. The parent page's URL must be given exactly (e.g. ``-p antimemetics-division-hub``). TARS will check the entire parent tree - the page will be found even if it's a great-grandchild of the **--parent**.
-        </li>
-        <li>**--summary, --summarise, -u**<br>
-            Instead of providing a link to a single article, TARS will summarise all articles that match the search criteria.
-        </li>
-        <li>**--random, --rand, --ran, -d**<br>
-            If your search matches more than one article, TARS will return a random one from the list. Equivalent to ``--order random --limit 1``.
-        </li>
-        <li>**--recommend, --rec, -m**<br>
-            If your search matches more than one article, TARS will determine and return which of those articles most needs extra attention. Equivalent to ``--order recommend --limit 1``.
-        </li>
-        <li>**--newest, --new, -n**<br>
-            If your search matches more than one article, TARS will return the most recent one. Equivalent to ``--order recent --limit 1``.
-        </li>
-        <li>**--order, -o [order]**<br>
-            What order should the results be returned in? ``random`` selects randomly from the list, ``recommend`` selects based on vote numbers and article age, ``recent`` selects the newest ones. Default: ``none``.
-        </li>
-        <li>**--limit, -l [number]**<br>
-            The number of results will be limited to this number. The rest will be cut off and forgotten.
-        </li>
-        <li>**--offset, -f [number]**<br>
-            This number of results will be removed from the top of the list.
-        </li>
-        <li>**--verbose, -v**<br>
-            TARS will explicity state exactly what search criteria it thinks you want. Probably not useful for anything other than debugging.
-        </li>
-        <li>**--ignorepromoted**<br>
-            Ignore articles that have already been promoted. TODO remove this from documentation
-        </li>
-    </ul>
     <p>Example: ``TARS: search -t +scp +meta -r &gt;100 -c 2014`` - *matches pages tagged both "scp" and "meta", with a rating of more than 100, posted in 2014.*</p>
     <p>Example: ``.s Insurgency --rating 20..80 --created 2018-06..2018`` - *matches pages that contain the word "Insurgency" in the title, which have a rating of between 20 and 80, and were created between June 1st 2018 and the end of 2018.*</p>
     <p>Example: ``.s Unexplained Location -f -c 20d..40W3d --random`` - *matches pages whose name is exactly "Unexplained Location" created between 20 days and [40 weeks + 3 days] ago, and returns a random one.*</p>
     <p>Example: ``.s -x ^SCP-\\d*2$ -m`` - *matches articles that start with "SCP-" followed by any amount of numbers so long as that number ends in a 2, and returns the one that most needs extra attention.*</p>
     <p>If TARS finds more than one article that matches your criteria (and if you didn't specify **--random**, **--summary** or **--recommend**), it will provide a list of matches and ask if you meant any of them. To pick your article from the list, see the showmore_ command.</p>
-    <p>regexsearch_ are aliases of this command.</p>
+    <p>regexsearch_, tags_, random_ and lastcreated_ are aliases of this command.</p>
 
     <h2 id="lastcreated">.lastcreated, .lc, .l, .recent <div class="jarvis">J</div><div class="helen">H</div></h2>
     <p>TARS will generate a list of the 3 most recently created pages.</p>
@@ -280,7 +223,7 @@
 
     <h2 id="alias">.alias</h2>
     <p>``.alias [name] [--add names] [--remove names] [--list]``</p>
-    <p>Add an alternate name(s) for yourself into TARS' database. These names are used for authorpage_.</p>
+    <p>Add an alternate name(s) for yourself into TARS' database. These names are used for authorpage_, seen_ and gib_.</p>
     <ul>
         <li>**name**<br>
             An IRC name. You can only **--add** or **--remove** aliases from this name if it's your current IRC nick (or if it's already one of your aliases), but you can **--list** anyone's aliases. If you don't include this argument, TARS will assume that you mean your current IRC nick.
