@@ -98,8 +98,6 @@ class Command:
                 raise ValueError("arg must have help string")
             # 5. Handle the nargs
             if 'nargs' in arg:
-                if arg['nargs'] is None:
-                    raise TypeError("nargs=None is not allowed")
                 if arg['nargs'] in ['*', '+']:
                     # default to empty list instead of None
                     arg['default'] = []
