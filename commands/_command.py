@@ -85,6 +85,7 @@ class Command:
                 arg['nargs'] = 0
                 arg['default'] = False
                 arg['action'] = 'store_true'
+                del arg['type']
             # Other types are self-sufficient
             # 3. Handle the flags
             flags = arg.pop('flags')
