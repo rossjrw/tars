@@ -130,31 +130,6 @@ class Search(Command):
     ]
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        # Check that we are actually able to do this
-        # (might have to move to end for defer check)
-        if (defer.check(cmd, 'jarvis', 'Secretary_Helen')):
-            return
-        # Parse the command itself
-        cmd.expandargs(
-            # --tags --tag --tagged -t  Filter by tags.
-            # --author --au -a          Filter by authors.
-            # --rating -r               Filter by rating.
-            # --created --date -c       Filter by date.
-            # --category --cat -y       Filter by category.
-            # --parent -p               Filter by parent fullname.
-            # --regex -x                Filter by regex match.
-            # --summary --summarise -u  Return a summary of results.
-            # --random --rand --ran -d  Return a random result.
-            # --recommend --rec -m      Return a recommended result.
-            # --newest --new -n         Return the newest result.
-            # --verbose -v              Print search criteria.
-            # --order -o                Order the results.
-            # --limit -l                Limit the number of results.
-            # --offset -f               Skip results from the start of the list.
-            # --ignorepromoted          Ignore promoted articles.
-            # """
-            ["search",
-        )
         # check to see if there are any arguments
         if len(cmd.args) == 1 and len(cmd.args['root']) == 0:
             raise CommandError("Must specify at least one search term")
