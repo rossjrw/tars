@@ -3,10 +3,14 @@
 For propagating the database with wiki data.
 """
 
-import re
-from pprint import pprint
 from collections import defaultdict
+from pprint import pprint
+import re
+
+from commands import Command
+
 from bs4 import BeautifulSoup
+
 from helpers.api import SCPWiki
 from helpers.error import CommandError
 from helpers.parse import nickColor
@@ -22,29 +26,41 @@ def chunks(array, length):
     for i in range(0, len(array), length):
         yield array[i:i + length]
 
-class propagate:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
+class Propagate(Command):
+    command_name = 'prop'
+    arguments = [
+        dict(flags=['--sample'], type=bool,
+             help="""Propagate a sample set of articles."""),
+        dict(flags=['--tales'], type=bool,
+             help="""Propagate all tales on the wiki."""),
+        dict(flags=['--all'], type=bool,
+             help="""Propagate all pages on the wiki."""),
+        dict(flags=['--metadata'], type=bool,
+             help="""Propagate information from metadata pages."""),
+        dict(flags=['manual'], type=str, nargs='*',
+             help="""List of page slugs to propagate manually."""),
+    ]
+    def execute(self, irc_c, msg, cmd):
         # arg 1 should be a url name
-        if 'sample' in cmd:
+        if self['sample']:
             samples = ['scp-173', 'scp-1111', 'scp-3939', 'cone', 'scp-series',
                        'listpages-magic-and-you', 'scp-4205', 'omega-k',
                        'component:ar-theme', 'fragment:scp-3939-64']
             msg.reply("Adding sample data...")
-            propagate.get_wiki_data_for(samples, reply=msg.reply)
-        elif 'tales' in cmd:
+            Propagate.get_wiki_data_for(samples, reply=msg.reply)
+        elif self['tales']:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
             msg.reply("Fetching all tales... this will take a few minutes.")
-            tales = SCPWiki.select({'tags_all':['tale']})
+            tales = SCPWiki.select({'tags_all': ['tale']})
             pprint(tales)
-            propagate.get_wiki_data_for(tales, reply=msg.reply)
-        elif 'all' in cmd:
+            Propagate.get_wiki_data_for(tales, reply=msg.reply)
+        elif self['all']:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
             msg.reply("Propagating all pages...")
-            propagate.get_all_pages(reply=msg.reply)
-        elif 'metadata' in cmd:
+            Propagate.get_all_pages(reply=msg.reply)
+        elif self['metadata']:
             meta_urls = ['attribution-metadata',
                          'scp-series',
                          'scp-series-2',
@@ -56,9 +72,9 @@ class propagate:
             # XXX TODO replace with getting pages tagged "metadata"
             msg.reply("Propagating metadata...")
             for url in meta_urls:
-                propagate.get_metadata(url, reply=msg.reply)
-        elif len(cmd.args['root']) > 0:
-            propagate.get_wiki_data_for(cmd.args['root'], reply=msg.reply)
+                Propagate.get_metadata(url, reply=msg.reply)
+        elif len(self['manual']) > 0:
+            Propagate.get_wiki_data_for(self['manual'], reply=msg.reply)
         else:
             raise CommandError("Bad command")
         msg.reply("Done!")
@@ -71,7 +87,7 @@ class propagate:
         # 2.5. put that data in the db
         pages = SCPWiki.select({'categories': ["_default"]})
         reply("{} pages to propagate".format(len(pages)))
-        propagate.get_wiki_data_for(pages, reply=reply)
+        Propagate.get_wiki_data_for(pages, reply=reply)
 
     @classmethod
     def get_wiki_data_for(cls, urls, **kwargs):
@@ -88,7 +104,7 @@ class propagate:
                 if 'metadata' in article['tags']:
                     # TODO use list from above
                     continue # skip for now
-                    propagate.get_metadata(url, reply=reply)
+                    Propagate.get_metadata(url, reply=reply)
         DB.commit()
 
     @classmethod
@@ -102,9 +118,9 @@ class propagate:
         page = SCPWiki.get_page({'page': url})
         soup = BeautifulSoup(page['html'], "html.parser")
         if url == 'attribution-metadata':
-            return propagate.get_attribution_metadata(url, soup, **kwargs)
+            return Propagate.get_attribution_metadata(url, soup, **kwargs)
         else:
-            return propagate.get_series_metadata(url, soup, **kwargs)
+            return Propagate.get_series_metadata(url, soup, **kwargs)
 
 
     @staticmethod
