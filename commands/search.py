@@ -37,95 +37,96 @@ class Search(Command):
     criteria. Searching is never case-sensitive."""
     command_name = "search"
     arguments = [
-        dict(flags=["title"], type=str, nargs='*',
-         help="""Search for pages whose title contains all of these words.
+        dict(flags=['title'], type=str, nargs='*',
+             help="""Search for pages whose title contains all of these words.
 
-         Words are space-separated. Like all commands, anything wrapped in
-         quotemarks (``"``) will be treated as a single word. If you leave
-         **title** empty, then it will match all pages, and you'll need to
-         specify more criteria. If you actually need to search for quotemarks,
-         escape them with a backslash - e.g. ``.s \\"The
-         Administrator\\"``."""),
-        dict(flags=["--regex", "-x"], type=str, nargs='*',
-         help="""Filter pages by a regular expression.
+             Words are space-separated. Like all commands, anything wrapped in
+             quotemarks (``'``) will be treated as a single word. If you leave
+             **title** empty, then it will match all pages, and you'll need to
+             specify more criteria. If you actually need to search for
+             quotemarks, escape them with a backslash - e.g. ``.s \\'The
+             Administrator\\'``."""),
+        dict(flags=['--regex', '-x'], type=str, nargs='*',
+             help="""Filter pages by a regular expression.
 
-         You may use more than one regex in a single search, still delimited by
-         a space. If you want to include a literal space in the regex, you
-         should either wrap the whole regex in quotes or use ``\\s``
-         instead."""),
-        dict(flags=["--tags", "--tag", "--tagged", "-t"], type=str, nargs='+',
-         help="""Filter pages by tags.
+             You may use more than one regex in a single search, still
+             delimited by a space. If you want to include a literal space in
+             the regex, you should either wrap the whole regex in quotes or use
+             ``\\s`` instead."""),
+        dict(flags=['--tags', '--tag', '--tagged', '-t'], type=str, nargs='+',
+             help="""Filter pages by tags.
 
-         The matched pages must have all the tags that you specified, unless
-         that tag starts with ``-``, in which case they must not have that
-         tag."""),
-        dict(flags=["--author", "--au", "--by", "-a"], type=str, nargs='+',
-         help="""Filter pages by exact author name.
+             The matched pages must have all the tags that you specified,
+             unless that tag starts with ``-``, in which case they must not
+             have that tag."""),
+        dict(flags=['--author', '--au', '--by', '-a'], type=str, nargs='+',
+             help="""Filter pages by exact author name.
 
-         The matched pages must have all the authors that you specified, unless
-         that author starts with ``-``, in which case they must not have that
-         author."""),
-        dict(flags=["--rating", "-r"], type=str, nargs='+',
-         help="""Filter pages by rating.
+             The matched pages must have all the authors that you specified,
+             unless that author starts with ``-``, in which case they must not
+             have that author."""),
+        dict(flags=['--rating', '-r'], type=str, nargs='+',
+             help="""Filter pages by rating.
 
-         Prefix the number with any of ``<``, ``>``, ``=``. Default is ``>``.
-         Can also specify a range of ratings with two dots, e.g. ``20..50``.
-         Ranges are always inclusive."""),
-        dict(flags=["--created", "--date", "-c"], type=str, nargs='+',
-         help="""Filter pages by date of creation. Accepts both absolute and
-         relative dates.
+             Prefix the number with any of ``<``, ``>``, ``=``. Default is
+             ``>``. Can also specify a range of ratings with two dots, e.g.
+             ``20..50``. Ranges are always inclusive."""),
+        dict(flags=['--created', '--date', '-c'], type=str, nargs='+',
+             help="""Filter pages by date of creation. Accepts both absolute
+             and relative dates.
 
-         Absolute dates must be in ISO-8601 format
-         (YYYY-MM-DD, YYYY-MM or YYYY). Relative dates must be a number
-         followed by a letter to specify how many units of time ago; valid
-         units are ``s m h d w M y``. These units are not case-sensitive,
-         **except for m/M!** Use ``m`` for minutes and ``M`` for Months.
+             Absolute dates must be in ISO-8601 format (YYYY-MM-DD, YYYY-MM or
+             YYYY). Relative dates must be a number followed by a letter to
+             specify how many units of time ago; valid units are ``s m h d w M
+             y``. These units are not case-sensitive, **except for m/M!** Use
+             ``m`` for minutes and ``M`` for Months.
 
-         Can use the same prefixes as **rating** (``>`` = "older than",
-         ``<`` = "younger than", ``=`` = exact match). ``=`` is the default
-         prefix if not specified, though this is pretty much guaranteed to
-         never match a relative date.
+             Can use the same prefixes as **rating** (``>`` = 'older than',
+             ``<`` = 'younger than', ``=`` = exact match). ``=`` is the default
+             prefix if not specified, though this is pretty much guaranteed to
+             never match a relative date.
 
-         Also supports ranges of dates with two dots e.g. ``2018..2019``.
-         Ranges are always inclusive, and you can mix relative dates and
-         absolute dates."""),
-        dict(flags=["--category", "--cat", "-y"], type=str, nargs='+',
-         help="""Filter pages by Wikidot category.
+             Also supports ranges of dates with two dots e.g. ``2018..2019``.
+             Ranges are always inclusive, and you can mix relative dates and
+             absolute dates."""),
+        dict(flags=['--category', '--cat', '-y'], type=str, nargs='+',
+             help="""Filter pages by Wikidot category.
 
-         By default, all categories are searched. If you include this argument
-         but don't specify any categories, TARS will only search
-         "_default"."""),
-        dict(flags=["--parent", "-p"], type=str, nargs=None,
-         help="""Filter pages by their parent page's slug.
+             By default, all categories are searched. If you include this
+             argument but don't specify any categories, TARS will only search
+             '_default'."""),
+        dict(flags=['--parent', '-p'], type=str, nargs=None,
+             help="""Filter pages by their parent page's slug.
 
-         The parent page's slug must be given exactly (e.g. ``-p
-         antimemetics-division-hub``). The entire parent tree will be checked -
-         the page will be found even if it's a great-grandchild of the
-         **--parent**."""),
-        dict(flags=["--summary", "--summarise", "-u"], type=bool,
-         help="""Summarise search results.
+             The parent page's slug must be given exactly (e.g. ``-p
+             antimemetics-division-hub``). The entire parent tree will be
+             checked - the page will be found even if it's a great-grandchild
+             of the **--parent**."""),
+        dict(flags=['--summary', '--summarise', '-u'], type=bool,
+             help="""Summarise search results.
 
-         Instead of providing a link to a single article, TARS will
-         summarise all articles that match the search criteria."""),
-        dict(flags=["--random", "--rand", "--ran", "-d"], type=bool,
-         help="""If your search matches more than one article, return a
-         random one."""),
-        dict(flags=["--recommend", "--rec", "-m"], type=bool,
-         help="""If your search matches more than one article, return the
-         one that most needs attention."""),
-        dict(flags=["--newest", "--new", "-n"], type=bool,
-         help="""If your search matches more than one article, return the
-         newest one."""),
-        dict(flags=["--order", "-o"], type=str, nargs=None,
-         help="""Returns the results in a certain order."""),
-        dict(flags=["--offset", "-f"], type=int, nargs=None,
-         help="""Remove this many results from the top of the list."""),
-        dict(flags=["--limit", "-l"], type=int, nargs=None,
-         help="""Limit the number of results."""),
-        dict(flags=["--verbose", "-v"], type=bool,
-         help="""State the search criteria that TARS thinks you want."""),
-        dict(flags=["--ignorepromoted"], type=bool, mode='hidden',
-         help="""Ignore articles that have been promoted."""),
+             Instead of providing a link to a single article, TARS will
+             summarise all articles that match the search criteria."""),
+        dict(flags=['--random', '--rand', '--ran', '-d'], type=bool,
+             help="""If your search matches more than one article, return a
+             random one."""),
+        dict(flags=['--recommend', '--rec', '-m'], type=bool,
+             help="""If your search matches more than one article, return the
+             one that most needs attention."""),
+        dict(flags=['--newest', '--new', '-n'], type=bool,
+             help="""If your search matches more than one article, return the
+             newest one."""),
+        dict(flags=['--order', '-o'], type=str, nargs=None,
+             choices=['random','recommend','recent','none','fuzzy'],
+             help="""Returns the results in a certain order."""),
+        dict(flags=['--offset', '-f'], type=int, nargs=None,
+             help="""Remove this many results from the top of the list."""),
+        dict(flags=['--limit', '-l'], type=int, nargs=None,
+             help="""Limit the number of results."""),
+        dict(flags=['--verbose', '-v'], type=bool,
+             help="""State the search criteria that TARS thinks you want."""),
+        dict(flags=['--ignorepromoted'], type=bool, mode='hidden',
+             help="""Ignore articles that have been promoted."""),
     ]
     @classmethod
     def command(cls, irc_c, msg, cmd):
