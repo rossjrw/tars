@@ -82,10 +82,10 @@ class Command:
             if arg['type'] is bool:
                 if 'nargs' in arg and arg['nargs'] != 0:
                     raise ValueError("bool args must be 0 or not present")
-                arg['nargs'] = 0
                 arg['default'] = False
                 arg['action'] = 'store_true'
-                del arg['type']
+                arg.pop('type')
+                arg.pop('nargs', None)
             # Other types are self-sufficient
             # 3. Handle the flags
             flags = arg.pop('flags')
