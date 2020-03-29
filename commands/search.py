@@ -279,7 +279,8 @@ class Search(Command):
         searches.append({'term': categories, 'type': 'category'})
         # Set parent page
         parents = self['parent']
-        searches.append({'term': parents, 'type': 'parent'})
+        if parents is not None:
+            searches.append({'term': parents, 'type': 'parent'})
         # FINAL BIT - summarise commands
         if self['verbose']:
             verbose = "Searching for articles "

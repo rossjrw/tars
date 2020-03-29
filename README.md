@@ -115,8 +115,9 @@ Each argument dict uses the same keys as argparse - that is, `type`, `nargs`, `h
 Other considerations:
 
 * `nargs` must be either 0 or not present if the `type` is `bool`.
-* `nargs=None` is not allowed. Unless the type is bool, nargs must be set. Use
-  1 instead.
+* Most `nargs` values will result in a list being created, except for
+  `nargs=None`, which expects a single value and returns it directly.
+* The default value for `nargs` of `*` and `+` is an empty list.
 * The first line of `help` will appear on command line (IRC) help. The rest
   will appear in documentation.
 
