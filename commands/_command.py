@@ -5,7 +5,9 @@ Provides the base Command class that all commands inherit from.
 """
 
 import argparse
-from helpers.error import ArgumentMessage
+import shlex
+
+from helpers.error import ArgumentMessage, CommandError
 
 class ArgumentParser(argparse.ArgumentParser):
     """A new argparser that has all the custom stuff TARS needs."""
@@ -30,19 +32,42 @@ class HelpFormatter(argparse.HelpFormatter):
 
     def _get_default_metavar_for_optional(self, action):
         """Change the default metavar for optional arguments to the long name
-        of that argument""" # instead of what?
+        of that argument instead of its uppercase"""
         return action.dest
 
 class Command:
     command_name = None
     arguments = []
     defers_to = []
-    def __init__(self):
-        pass
+
+    def __init__(self, message):
+        self.args = None
+        # This method is called for all commands when they are instantiated.
+        # Commands must not define their own __init__.
+        # message is a string representing the message arguments.
+        # self.args will become the parsed Namespace object.
+        parser = self.get_parser()
+        message = message.replace("'", "<<APOS>>")
+        message = message.replace('\\"', "<<QUOT>>") # explicit \"
+        try:
+            message = shlex.split(message, posix=False)
+            # posix=False does not remove quotes
+            message = [m.strip('"') for m in message]
+        except ValueError:
+            # raised if shlex detects fucked up quotemarks
+            # message = message.split()
+            raise CommandError("Unmatched quotemark. Use \\\" to escape a "
+                               "literal quotemark.")
+        message = [w.replace("<<APOS>>", "'") for w in message]
+        message = [w.replace("<<QUOT>>", '"') for w in message]
+        try:
+            self.args = parser.parse_args(message)
+        except ArgumentMessage as e:
+            raise CommandError(str(e))
 
     def get_parser(self):
         """Returns the argument parser for this command."""
-        parser = ArgumentParser(prog=".{}".format(type(self).command_name),
+        parser = ArgumentParser(prog=type(self).command_name,
                                 formatter_class=HelpFormatter)
         # arguments is a list of dicts
         # flags[], type, nargs, mode, help, choices
@@ -74,3 +99,11 @@ class Command:
                             nargs=argparse.REMAINDER,
                             help=argparse.SUPPRESS)
         return parser
+
+    def __contains__(self, arg):
+        """Checks for argument presence via `in` operator"""
+        return arg in self.args
+
+    def __getitem__(self, arg):
+        """Retrieves argument value via getitem operator"""
+        return getattr(self.args, arg)
