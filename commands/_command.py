@@ -87,12 +87,13 @@ class Command:
                 arg['action'] = 'store_true'
             # Other types are self-sufficient
             # 3. Handle the flags
-            assert all([" " not in f for f in arg['flags']])
-            assert all([isinstance(f, str) for f in arg['flags']])
+            flags = arg.pop('flags')
+            assert all([" " not in f for f in flags])
+            assert all([isinstance(f, str) for f in flags])
             # 4. Handle the docstring
             if 'help' not in arg:
                 raise ValueError("arg must have help string")
-            parser.add_argument(*arg['flags'], **arg)
+            parser.add_argument(*flags, **arg)
         # Add a hidden argument that takes the remainder of the command
         # these will be later added to the root argument
         parser.add_argument("_REMAINDER_",
