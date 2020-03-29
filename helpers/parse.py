@@ -26,7 +26,6 @@ class ParsedCommand():
         self.ping = False # was the bot pinged?
         self.command = None # if command, then the command name
         self.message = None # message text excluding ping and command name
-        self.args = {} # argparse Namespace object
         self.force = False # whether to bypass defer
         self.context = irc_c
 
