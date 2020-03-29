@@ -96,6 +96,11 @@ class Command:
             # 4. Handle the docstring
             if 'help' not in arg:
                 raise ValueError("arg must have help string")
+            # 5. Handle the nargs
+            if 'nargs' in arg:
+                if arg['nargs'] in ['*', '+']:
+                    # default to empty list instead of None
+                    arg['default'] = []
             parser.add_argument(*flags, **arg)
         # Add a hidden argument that takes the remainder of the command
         # these will be later added to the root argument
