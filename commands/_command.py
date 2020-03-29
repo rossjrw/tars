@@ -74,10 +74,11 @@ class Command:
         for arg in type(self).arguments:
             # 1. Handle the mode, if present
             if 'mode' in arg:
-                if arg['mode'] == 'hidden':
+                mode = arg.pop('mode')
+                if mode == 'hidden':
                     arg['help'] = argparse.SUPPRESS
                 else:
-                    raise ValueError("Unknown mode: {}".format(arg['mode']))
+                    raise ValueError("Unknown mode: {}".format(mode))
             # 2. Handle the type
             if arg['type'] is bool:
                 if 'nargs' in arg and arg['nargs'] != 0:
