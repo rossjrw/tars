@@ -137,7 +137,7 @@ class Search(Command):
             raise CommandError("Must specify at least one search term")
         # Set the return mode of the output
         selection = {
-            'ignorepromoted': 'ignorepromoted' in self,
+            'ignorepromoted': self['ignorepromoted'],
             'order': self['order'],
             'limit': self['limit'],
             'offset': self['offset'],
