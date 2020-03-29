@@ -5,6 +5,7 @@ Provides the base Command class that all commands inherit from.
 """
 
 import argparse
+import copy
 import shlex
 
 from helpers.error import ArgumentMessage, CommandError
@@ -71,7 +72,7 @@ class Command:
                                 formatter_class=HelpFormatter)
         # arguments is a list of dicts
         # flags[], type, nargs, mode, help, choices
-        for arg in type(self).arguments:
+        for arg in copy.deepcopy(type(self).arguments):
             # 1. Handle the mode, if present
             if 'mode' in arg:
                 mode = arg.pop('mode')
