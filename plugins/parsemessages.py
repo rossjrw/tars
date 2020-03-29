@@ -3,10 +3,14 @@
 Plugin that parses messages into commands and then does stuff
 """
 
-import commands
 from importlib import reload
+
+import commands
+
 from pyaib.plugins import observe, plugin_class
+
 from helpers import parse
+from helpers.config import CONFIG
 from helpers.error import CommandError, CommandNotExistError, MyFaultError
 
 def try_command(irc_c, msg, cmd, command_name=None):
@@ -23,25 +27,24 @@ def try_command(irc_c, msg, cmd, command_name=None):
         if cmd.ping:
             # there are .converse strings for pinged
             return try_command('converse', irc_c, msg, cmd)
-        elif msg.raw_channel is None:
+        if msg.raw_channel is None:
             # should be only in pm
             msg.reply("I don't know what '{}' means.".format(command_name))
             return 1
-    except CommandError as exc:
-        msg.reply("\x02Invalid command:\x0F {}".format(str(exc)))
+    except CommandError as e:
+        msg.reply("\x02Invalid command:\x0F {}".format(str(e)))
         return 1
-    except MyFaultError as exc:
-        msg.reply("\x02Sorry!\x0F {}".format(str(exc)))
+    except MyFaultError as e:
+        msg.reply("\x02Sorry!\x0F {}".format(str(e)))
         return 1
-    except Exception as exc:
-        if msg.raw_channel != '#tars':
-            msg.reply(("An unexpected error has occurred. "
-                       "I've already reported it — you don't need to "
-                       "do anything."))
+    except Exception as e:
+        if msg.raw_channel != CONFIG.channels.home:
+            msg.reply("An unexpected error has occurred. "
+                      "I've already reported it — you don't need to "
+                      "do anything.")
         # need to log the error somewhere - why not #tars?
-        irc_c.PRIVMSG("#tars", ("\x02Error report:\x0F {} "
-                                "issued `{}` → `{}`"
-                                .format(msg.sender, msg.message, exc)))
+        irc_c.PRIVMSG("#tars", "\x02Error report:\x0F {} issued `{}` → `{}`"
+                               .format(msg.sender, msg.message, e))
         raise
 
 def execute_commands(irc_c, msg, cmds, command_name=None):
@@ -77,9 +80,7 @@ class ParseMessages():
     def __init__(self, irc_c, config):
         print("Parse plugin loaded!")
 
-# TODO: if plugins are just object instances, then we should be able to
-# wipe em and remake em to .reload
-    @observe("IRC_MSG_PRIVMSG")
+    @observe('IRC_MSG_PRIVMSG')
     def handle_message(self, irc_c, msg):
         cmds = parse.parse_commands(irc_c, msg)
         execute_commands(irc_c, msg, cmds)
