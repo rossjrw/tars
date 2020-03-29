@@ -46,7 +46,7 @@ class Search(Command):
              specify more criteria. If you actually need to search for
              quotemarks, escape them with a backslash - e.g. ``.s \\'The
              Administrator\\'``."""),
-        dict(flags=['--regex', '-x'], type=str, nargs='*',
+        dict(flags=['--regex', '-x'], type=str, nargs='+',
              help="""Filter pages by a regular expression.
 
              You may use more than one regex in a single search, still
@@ -121,6 +121,7 @@ class Search(Command):
              default='fuzzy',
              help="""Returns the results in a certain order."""),
         dict(flags=['--offset', '-f'], type=int, nargs=None,
+             default=0,
              help="""Remove this many results from the top of the list."""),
         dict(flags=['--limit', '-l'], type=int, nargs=None,
              help="""Limit the number of results."""),
@@ -137,57 +138,10 @@ class Search(Command):
         # Set the return mode of the output
         selection = {
             'ignorepromoted': 'ignorepromoted' in self,
-            'order': 'fuzzy',
-            'limit': None,
-            'offset': 0
+            'order': self['order'],
+            'limit': self['limit'],
+            'offset': self['offset'],
         }
-        # order, limit, offset
-        if 'order' in self:
-            if len(self['order']) != 1:
-                raise CommandError("When using the order argument "
-                                   "(--order/-o), exactly one order type must "
-                                   "be specified")
-            if self['order'][0] in ['recent', 'recommend', 'random', 'fuzzy', 'none']:
-                if self['order'] == 'none':
-                    selection['order'] = None
-                else:
-                    selection['order'] = self['order']
-            else:
-                raise CommandError("Selection return order ('{}') must be "
-                                   "one of: recent, recommend, random, "
-                                   "fuzzy, none".format(self['order'][0]))
-        if 'limit' in self:
-            if len(self['limit']) != 1:
-                raise CommandError("When using the limit argument "
-                                   "(--limit/-l), exactly one limit must "
-                                   "be specified")
-            if isint(self['limit'][0]):
-                if int(self['limit'][0]) > 0:
-                    selection['limit'] = int(self['limit'][0])
-                elif int(self['limit'][0]) == 0:
-                    selection['limit'] = None
-                else:
-                    raise CommandError("When using the limit argument "
-                                       "(--limit/-l), the limit must be at "
-                                       "least 0")
-            else:
-                raise CommandError("When using the limit argument "
-                                   "(--limit/-l), the limit must be an integer")
-        if 'offset' in self:
-            if len(self['offset']) != 1:
-                raise CommandError("When using the offset argument "
-                                   "(--offset/-f), exactly one offset must "
-                                   "be specified")
-            if isint(self['offset'][0]):
-                if int(self['offset'][0]) >= 0:
-                    selection['offset'] = int(self['offset'][0])
-                else:
-                    raise CommandError("When using the offset argument "
-                                       "(--offset/-f), the offset must be at "
-                                       "least 0")
-            else:
-                raise CommandError("When using the offset argument "
-                                   "(--offset/-f), the offset must be an integer")
         if 'random' in self:
             selection['order'] = 'random'
             selection['limit'] = 1
@@ -205,181 +159,128 @@ class Search(Command):
             searches.extend([{'term': s, 'type': None} for s in strings])
         # Add any regexes
         regexes = []
-        if 'regex' in self:
-            if len(self['regex']) == 0:
+        for regex in self['regex']:
+            try:
+                re.compile(regex)
+            except re.error as e:
                 raise CommandError(
-                    "When using the regular expression filter "
-                    "(--regex/-x), at least one regex must "
-                    "be specified"
+                    "'{}' isn't a valid regular expression: {}"
+                    .format(regex, e)
                 )
-            for regex in self['regex']:
-                try:
-                    re.compile(regex)
-                except re.error as e:
-                    raise CommandError(
-                        "'{}' isn't a valid regular expression: {}"
-                        .format(regex, e)
-                    )
-                regexes.append(regex)
-                # don't append the compiled - SQL doesn't like that
-            searches.extend([{'term': r, 'type': 'regex'} for r in regexes])
+            regexes.append(regex)
+            # don't append compiled regex - SQL doesn't like that
+        searches.extend([{'term': r, 'type': 'regex'} for r in regexes])
         # Set the tags
         tags = {'include': [], 'exclude': []}
-        if 'tags' in self:
-            if len(self['tags']) == 0:
-                raise CommandError(
-                    "When using the tag filter (--tag/-t), at "
-                    "least one tag must be specified"
-                )
-            for tag in self['tags']:
-                if tag[0] == "-":
-                    tags['exclude'].append(tag[1:])
-                    continue
-                if tag[0] == "+":
-                    tags['include'].append(tag[1:])
-                    continue
-                tags['include'].append(tag)
-            searches.append({'term': tags, 'type': 'tags'})
+        for tag in self['tags']:
+            if tag[0] == "-":
+                tags['exclude'].append(tag[1:])
+                continue
+            if tag[0] == "+":
+                tags['include'].append(tag[1:])
+                continue
+            tags['include'].append(tag)
+        searches.append({'term': tags, 'type': 'tags'})
         # Set the author
         authors = {'include': [], 'exclude': []}
-        if 'author' in self:
-            if len(self['author']) == 0:
-                raise CommandError(
-                    "When using the author filter "
-                    "(--author/-a), at least one author must "
-                    "be specified"
-                )
-            for author in self['author']:
-                if author[0] == "-":
-                    authors['exclude'].append(author[1:])
-                    continue
-                if author[0] == "+":
-                    authors['include'].append(author[1:])
-                    continue
-                authors['include'].append(author)
-            searches.append({'term': authors, 'type': 'author'})
+        for author in self['author']:
+            if author[0] == "-":
+                authors['exclude'].append(author[1:])
+                continue
+            if author[0] == "+":
+                authors['include'].append(author[1:])
+                continue
+            authors['include'].append(author)
+        searches.append({'term': authors, 'type': 'author'})
         # Set the rating
         # Cases to account for: modifiers, range, combination
         ratings = MinMax()
-        if 'rating' in self:
-            if len(self['rating']) == 0:
-                raise CommandError(
-                    "When using the rating filter "
-                    "(--rating/-r), at least one rating must "
-                    "be specified"
-                )
-            for rating in self['rating']:
-                if ".." in rating:
-                    rating = rating.split("..")
-                    if len(rating) > 2:
-                        raise CommandError("Too many ratings in range")
+        for rating in self['rating']:
+            if ".." in rating:
+                rating = rating.split("..")
+                if len(rating) > 2:
+                    raise CommandError("Too many ratings in range")
+                try:
+                    rating = [int(x) for x in rating]
+                except ValueError:
+                    raise CommandError("Ratings in a range must be ints")
+                try:
+                    ratings >= min(rating)
+                    ratings <= max(rating)
+                except MinMaxError as e:
+                    raise CommandError(str(e).format("rating"))
+            elif rating[0] in [">", "<", "="]:
+                pattern = r"^(?P<comp>[<>=]{1,2})(?P<value>[0-9]+)"
+                match = re.search(pattern, rating)
+                if match:
                     try:
-                        rating = [int(x) for x in rating]
+                        rating = int(match.group('value'))
                     except ValueError:
-                        raise CommandError(
-                            "Ratings in a range must be plain numbers"
-                        )
-                    try:
-                        ratings >= min(rating)
-                        ratings <= max(rating)
-                    except MinMaxError as e:
-                        raise CommandError(str(e).format("rating"))
-                elif rating[0] in [">", "<", "="]:
-                    pattern = r"^(?P<comp>[<>=]{1,2})(?P<value>[0-9]+)"
-                    match = re.search(pattern, rating)
-                    if match:
-                        try:
-                            rating = int(match.group('value'))
-                        except ValueError:
-                            raise CommandError("Invalid rating comparison")
-                        comp = match.group('comp')
-                        try:
-                            if comp == ">=":
-                                ratings >= rating
-                            elif comp == "<=":
-                                ratings <= rating
-                            elif comp == "<":
-                                ratings < rating
-                            elif comp == ">":
-                                ratings > rating
-                            elif comp == "=":
-                                ratings >= rating
-                                ratings <= rating
-                            else:
-                                raise CommandError(
-                                    "Unknown operator in rating comparison"
-                                )
-                        except MinMaxError as e:
-                            raise CommandError(str(e).format("rating"))
-                    else:
                         raise CommandError("Invalid rating comparison")
-                else:
+                    comp = match.group('comp')
                     try:
-                        rating = int(rating)
-                    except ValueError:
-                        raise CommandError(
-                            "Rating must be a range, comparison, or number"
-                        )
-                    # Assume =, assign both
-                    try:
-                        ratings >= rating
-                        ratings <= rating
+                        if comp == ">=":
+                            ratings >= rating
+                        elif comp == "<=":
+                            ratings <= rating
+                        elif comp == "<":
+                            ratings < rating
+                        elif comp == ">":
+                            ratings > rating
+                        elif comp == "=":
+                            ratings >= rating
+                            ratings <= rating
+                        else:
+                            raise CommandError("Unknown rating comparison")
                     except MinMaxError as e:
                         raise CommandError(str(e).format("rating"))
-            searches.append({'term': ratings, 'type': 'rating'})
+                else:
+                    raise CommandError("Invalid rating comparison")
+            else:
+                try:
+                    rating = int(rating)
+                except ValueError:
+                    raise CommandError("Rating must be a range, comparison, "
+                                       "or number")
+                # Assume =, assign both
+                try:
+                    ratings >= rating
+                    ratings <= rating
+                except MinMaxError as e:
+                    raise CommandError(str(e).format("rating"))
+        searches.append({'term': ratings, 'type': 'rating'})
         # Set created date
         # Cases to handle: absolute, relative, range (which can be both)
         createds = MinMax()
-        if 'created' in self:
-            if len(self['created']) == 0:
-                raise CommandError(
-                    "When using the date of creation filter "
-                    "(--created/-c), at least one date must "
-                    "be specified"
-                )
-            created = self['created']
-            # created is a list of date selectors - ranges, abs and rels
-            # but ALL dates are ranges!
-            created = [DateRange(c) for c in created]
-            # created is now a list of DateRanges with min and max
-            try:
-                for selector in created:
-                    if selector.max is not None:
-                        createds <= selector.max
-                    if selector.min is not None:
-                        createds >= selector.min
-            except MinMaxError as e:
-                raise CommandError(str(e).format("date"))
-            searches.append({'term': createds, 'type': 'date'})
+        created = self['created']
+        # created is a list of date selectors - ranges, abs and rels
+        # but ALL dates are ranges!
+        created = [DateRange(c) for c in created]
+        # created is now a list of DateRanges with min and max
+        try:
+            for selector in created:
+                if selector.max is not None:
+                    createds <= selector.max
+                if selector.min is not None:
+                    createds >= selector.min
+        except MinMaxError as e:
+            raise CommandError(str(e).format("date"))
+        searches.append({'term': createds, 'type': 'date'})
         # Set category
         categories = {'include': [], 'exclude': []}
-        if 'category' in self:
-            if len(self['category']) == 0:
-                raise CommandError(
-                    "When using the category filter "
-                    "(--category/-y), at least one category "
-                    "must be specified"
-                )
-            for category in self['category']:
-                if category[0] == "-":
-                    categories['exclude'].append(category[1:])
-                    continue
-                if category[0] == "+":
-                    categories['include'].append(category[1:])
-                    continue
-                categories['include'].append(category)
-            searches.append({'term': categories, 'type': 'category'})
+        for category in self['category']:
+            if category[0] == "-":
+                categories['exclude'].append(category[1:])
+                continue
+            if category[0] == "+":
+                categories['include'].append(category[1:])
+                continue
+            categories['include'].append(category)
+        searches.append({'term': categories, 'type': 'category'})
         # Set parent page
         parents = None
-        if 'parent' in self:
-            if len(self['parent']) != 1:
-                raise CommandError(
-                    "When using the parent page filter "
-                    "(--parent/-p), exactly one parent URL "
-                    "must be specified"
-                )
-            parents = self['parent'][0]
-            searches.append({'term': parents, 'type': 'parent'})
+        parents = self['parent'][0]
+        searches.append({'term': parents, 'type': 'parent'})
         # FINAL BIT - summarise commands
         if 'verbose' in self:
             verbose = "Searching for articles "
@@ -474,7 +375,7 @@ class Search(Command):
             return
         if len(pages) == 0:
             # check if there's no args other than --verbose
-            if set(cmd.args).issubset({'root', 'verbose'}):
+            if set(self.args).issubset({'root', 'verbose'}):
                 # google only takes 10 args
                 url = google_search(
                     '"' + '" "'.join(self['title'][:10]) + '"', num=1
@@ -550,7 +451,7 @@ class lastcreated:
         # the minimum args are root, order, limit and optionally verbose
         # must expandargs to convert v to verbose
         search.expandargs(cmd)
-        if set(cmd.args).issubset({'root', 'order', 'limit', 'verbose'}):
+        if set(self.args).issubset({'root', 'order', 'limit', 'verbose'}):
             self['created'] = ["<3d"]
         search.command(irc_c, msg, cmd)
 
