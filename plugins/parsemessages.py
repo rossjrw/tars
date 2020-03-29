@@ -62,10 +62,6 @@ def execute_commands(irc_c, msg, cmds, command_name=None):
             else:
                 msg.reply("Reload successful.")
             continue
-        # indiciate quotemark parse error
-        if cmd.quote_error:
-            msg.reply(("I wasn't able to correctly parse your quotemarks, "
-                       "so I have interpreted them literally."))
         # assume converse if no command specified
         if not cmd.command:
             command_name = 'converse'
