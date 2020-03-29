@@ -87,33 +87,6 @@ alias, or it won't be able to be called.
 
 ## Commands
 
-Command objects (`cmd`) are parsed by argparse. Arguments are accessible from
-`cmd.args` as a Namespace object or by accessing `cmd` like a dict.
-
-Each command class must have class vars `command_name` as a string and
-`arguments` as a list. Each list should look like the following:
-
-```python
-[type, nargs, "--long", "--altlong", ... , "-s", docstring]
-```
-
-*type* should be the type of the argument, either `str`, `int`, `float` or
-`bool`. If `bool`, then *nargs* must be `0`.
-
-*nargs* is the number of arguments to be expected, in the same syntax as
-argparse.
-
-The remainder of the argument are the possible flag names.
-
-*docstring* is a string representing the argument's documentation. The
-first line of this docstring is what will appear when the user asks for help
-from the command line (aka IRC).
-
-Additionally, a further item can be added to the start of the list: either
-`"default"` or `"hidden"`. *default* will prepend that argument to the input
-string, making the first argument that option (its *nargs* mut be `'*'`).
-*hidden* will hide an option from the help.
-
 A few other important pieces of information:
 
 * `msg` - [pyaib's message object](https://github.com/facebook/pyaib/wiki/Plugin-Writing#message-object)
@@ -121,6 +94,31 @@ A few other important pieces of information:
   function in helpers/database.py
 * `from helpers.config import CONFIG` then `CONFIG.xxx` to access property xxx
   of the configuration file
+
+## Parsing commands
+
+Command objects (`cmd`) are parsed by argparse. Arguments are accessible from
+`cmd.args` as a Namespace object or by accessing `cmd` like a dict.
+
+Each command class must have class vars `command_name` as a string, `defers_to`
+as a list of strings representing which bots the command defers to, and
+`arguments` as a list of dicts.
+
+Each argument dict uses the same keys as argparse - that is, `type`, `nargs`, `help`, optionally `choices` etc. - and a couple more:
+
+* `flags` is a list of the argument's flags. At least one of these should not
+  start with `--`, but this is not enforced, and just means that the command
+  will not have a root argument.
+* `mode` can be `'hidden'`, meaning that the argument will not appear in help
+  or in the documentation.
+
+Other considerations:
+
+* `nargs` must be either 0 or not present if the `type` is `bool`.
+* `nargs=None` is not allowed. Unless the type is bool, nargs must be set. Use
+  1 instead.
+* The first line of `help` will appear on command line (IRC) help. The rest
+  will appear in documentation.
 
 ## Database Structure
 
