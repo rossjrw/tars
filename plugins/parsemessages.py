@@ -20,8 +20,8 @@ def try_command(irc_c, msg, cmd, command_name=None):
     try:
         # commands are kept in the commands/ module.
         command_class = getattr(commands.COMMANDS, command_name)
-        command = command_class(cmd)
-        command.execute(irc_c, msg)
+        command = command_class(cmd.message)
+        command.execute(irc_c, msg, cmd)
         return 0
     except CommandNotExistError:
         if cmd.ping:
