@@ -37,7 +37,7 @@ class ParsedCommand():
             \s*                        # Whitespace between ping and message
             (.*)                       # Message body
             $                          # End of message
-        """, (re.IGNORECASE, re.VERBOSE))
+        """, re.IGNORECASE | re.VERBOSE)
         match = pattern.search(self.raw)
         if match:
             # Remove ping from the message
