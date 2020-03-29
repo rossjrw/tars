@@ -130,7 +130,7 @@ class Search(Command):
              help="""Ignore articles that have been promoted."""),
     ]
 
-    def command(self, irc_c, msg, cmd):
+    def execute(self, irc_c, msg, cmd):
         # check to see if there are any arguments
         if len(cmd.args) == 1 and len(cmd.args['root']) == 0:
             raise CommandError("Must specify at least one search term")
@@ -529,21 +529,21 @@ class Search(Command):
 
 class regexsearch:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         cmd.args['regex'] = cmd.args['root']
         cmd.args['root'] = []
         search.command(irc_c, msg, cmd)
 
 class tags:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         cmd.args['tags'] = cmd.args['root']
         cmd.args['root'] = []
         search.command(irc_c, msg, cmd)
 
 class lastcreated:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         cmd.args['order'] = ['recent']
         if len(cmd.args['root']) > 0:
             cmd.args['limit'] = cmd.args['root']

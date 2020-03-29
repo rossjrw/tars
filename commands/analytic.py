@@ -21,7 +21,7 @@ from helpers.defer import defer
 class analyse_wiki:
     """For compiling data of the file contents of a sandbox"""
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         if not defer.controller(cmd):
             raise CommandError("I'm afriad I can't let you do that.")
             return

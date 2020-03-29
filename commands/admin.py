@@ -18,7 +18,7 @@ from helpers.parse import nickColor
 class helenhere:
     """Checks if Helen is in the room"""
     @staticmethod
-    def command(irc_c, msg, cmd):
+    def execute(irc_c, msg, cmd):
         if defer.check(cmd, 'Secretary_Helen'):
             msg.reply("Yep, I can see Helen.")
         else:
@@ -27,7 +27,7 @@ class helenhere:
 class kill:
     """Kills the bot"""
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         if not defer.controller(cmd):
             raise CommandError("I'm afriad I can't let you do that.")
             return
@@ -42,7 +42,7 @@ class join:
     """Joins a channel"""
     # Note that the INVITE event is in plugins/parsemessages.py
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         if (defer.check(cmd, 'jarvis', 'Secretary_Helen')):
             return
         if len(cmd.args['root']) > 0 and cmd.args['root'][0][0] == '#':
@@ -58,7 +58,7 @@ class join:
 class leave:
     """Leaves the channel"""
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         cmd.expandargs(["message m"])
         if (defer.check(cmd, 'jarvis', 'Secretary_Helen')):
             return
@@ -76,14 +76,14 @@ class leave:
 
 class reload:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         # do nothing - this is handled by parsemessage
         pass
 
 
 class reboot:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         if (defer.check(cmd, 'jarvis', 'Secretary_Helen')):
             return
         # reboot the bot completely
@@ -97,7 +97,7 @@ class reboot:
 
 class update:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         """Update from github"""
         if (defer.check(cmd, 'jarvis', 'Secretary_Helen')):
             return
@@ -117,7 +117,7 @@ class update:
 class say:
     """Make TARS say something"""
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         cmd.expandargs(["obfuscate o", "colour color c"])
         if not defer.controller(cmd):
             raise CommandError("I'm afriad I can't let you do that.")
@@ -156,7 +156,7 @@ class say:
 class config:
     """Provide a link to the config page"""
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         msg.reply("http://scp-sandbox-3.wikidot.com/collab:tars")
         # TODO update this to final page (or src from .conf?)
 
@@ -164,6 +164,6 @@ class config:
 class debug:
     """Random debug command, replaceable"""
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         # msg.reply(", ".join("%s: %s" % item for item in vars(msg).items()))
         msg.reply(SCPWiki.get_page_id(['scp-3939']))

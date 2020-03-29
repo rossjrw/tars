@@ -12,7 +12,7 @@ from helpers.error import CommandError, MyFaultError
 class shortest:
     """Get the shortest unique search term for a page"""
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         if len(cmd.args['root']) < 1:
             raise CommandError("Specify a page's URL whose shortest search "
                                "term you want to find.")

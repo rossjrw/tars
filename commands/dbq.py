@@ -17,7 +17,7 @@ from helpers.defer import defer
 
 class query:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         cmd.expandargs(["table tables t",
                         "user users u"])
         # No argument given - show the db structure
@@ -104,7 +104,7 @@ class query:
 
 class seen:
     @staticmethod
-    def command(irc_c, msg, cmd):
+    def execute(irc_c, msg, cmd):
         if defer.check(cmd, 'Secretary_Helen'):
             return
         cmd.expandargs(["first f",

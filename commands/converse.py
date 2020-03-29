@@ -18,7 +18,7 @@ from helpers.config import CONFIG
 
 class converse:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         # Recieves text in msg.message
         message = cmd.message
         # pinged section, for specifics

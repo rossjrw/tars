@@ -11,14 +11,14 @@ import platform, distro
 
 class help:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         if(defer.check(cmd, 'jarvis', 'Secretary_Helen')): return
         msg.reply("Command documentation: https://git.io/TARS.help. Start a "
                   "command with .. to force me to respond.")
 
 class status:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         msg.reply("{} · made by Croquembouche · Python {} · {} · alive for {}".format(
             acronym(),
             platform.python_version(),
@@ -29,7 +29,7 @@ class status:
 class github:
     """Provide links to the github"""
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         if len(cmd.args['root']) > 0:
             if cmd.args['root'][0].startswith('i'):
                 msg.reply("https://github.com/rossjrw/tars/issues")
@@ -41,7 +41,7 @@ class github:
 class user:
     """Provide link to a user's Wikidot page"""
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         if(defer.check(cmd, 'Secretary_Helen')): return
         if len(cmd.args['root']) > 0:
             msg.reply("http://www.wikidot.com/user:info/{}"
@@ -52,7 +52,7 @@ class user:
 class tag:
     """Provide a link to a tag's page"""
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         if len(cmd.args['root']) == 1:
             msg.reply("http://www.scp-wiki.net/system:page-tags/tag/{}"
                       .format(cmd.args['root'][0]))

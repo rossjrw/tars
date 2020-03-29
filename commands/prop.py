@@ -24,7 +24,7 @@ def chunks(array, length):
 
 class propagate:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         # arg 1 should be a url name
         if 'sample' in cmd:
             samples = ['scp-173', 'scp-1111', 'scp-3939', 'cone', 'scp-series',

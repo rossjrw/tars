@@ -12,7 +12,7 @@ from helpers.error import CommandError, MyFaultError, isint
 
 class showmore:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         if(defer.check(cmd, 'jarvis', 'Secretary_Helen')): return
         if len(cmd.args['root']) > 1 or not all(map(isint, cmd.args['root'])):
             raise CommandError("Specify the number of the article you want "

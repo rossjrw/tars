@@ -16,7 +16,7 @@ from helpers.defer import defer
 class refactor:
     has_refactored = False
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         if not defer.controller(cmd):
             raise CommandError("I'm afriad I can't let you do that.")
             return

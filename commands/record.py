@@ -17,7 +17,7 @@ IS_RECORDING = False
 
 class pingall:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         """Ping everyone in the channel"""
         cmd.expandargs(["message msg m", # message to be PM'd
                         "target t", # channel op level target
@@ -91,7 +91,7 @@ class record:
         # start_id: the ID of the 1st message in the recording
         # hide: hide channel name at output?
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         """Record and broadcast messages"""
         if not defer.controller(cmd):
             raise CommandError("You're not authorised to do that")

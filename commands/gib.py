@@ -30,7 +30,7 @@ class gib:
     ATTEMPT_LIMIT = 20
     nocache = False
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         if(defer.check(cmd, 'jarvis')): return
         cmd.expandargs(["no-cache n",
                         "user u author a",

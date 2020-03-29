@@ -10,7 +10,7 @@ from helpers.config import CONFIG
 
 class alias:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         cmd.expandargs(["add a",
                         "remove r",
                         "list l"])

@@ -3,7 +3,7 @@ from helpers.database import DB
 
 class chevron:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         try:
             skip = int(cmd.args['root'][0])
         except ValueError:

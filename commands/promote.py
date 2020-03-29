@@ -9,5 +9,5 @@ from tomlkit import dumps
 class promote:
     """Base command, reliant on config"""
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         pass

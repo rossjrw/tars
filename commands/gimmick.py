@@ -10,21 +10,21 @@ import requests
 
 class idea:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         msg.reply("{} · {}".format(
             "http://bit.ly/scp-gen",
             requests.get("https://scp-generator.herokuapp.com/newscp").text))
 
 class hug:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         if msg.sender == "Jazstar": msg.reply("Not in front of the children!")
         elif msg.sender == "ROUNDERHOUSE": msg.reply("No thank you.")
         else: msg.reply("*hugs*")
 
 class reptile:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         repeat = 31 if msg.sender == "CuteGirl" else 2
         output = ""
         for _ in range(0,repeat):
@@ -33,7 +33,7 @@ class reptile:
 
 class fish:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         repeat = 2
         output = ""
         for _ in range(0,repeat):
@@ -42,7 +42,7 @@ class fish:
 
 class bear:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         repeat = 2
         output = ""
         for _ in range(0,repeat):
@@ -51,7 +51,7 @@ class bear:
 
 class cat:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         repeat = 2
         output = ""
         for _ in range(0,repeat):
@@ -64,7 +64,7 @@ class cat:
 
 class narcissism:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         if cmd.command == "rounderhouse":
             msg.reply(emojize(":red_circle::house:"))
         if cmd.command == "jazstar":
@@ -74,10 +74,10 @@ class narcissism:
 
 class password:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         msg.reply("look harder fuckwit")
 
 class fiction:
     @classmethod
-    def command(cls, irc_c, msg, cmd):
+    def execute(cls, irc_c, msg, cmd):
         msg.reply("https://www.youtube.com/watch?v=ioGoPOAxkCg")
