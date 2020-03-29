@@ -44,31 +44,33 @@ class Command:
         """Returns the argument parser for this command."""
         parser = ArgumentParser(prog=".{}".format(type(self).command_name),
                                 formatter_class=HelpFormatter)
-        # argument list is currently in some sort of funky condensed state.
-        # [mode,] type, nargs, name,...,name, docstring
+        # arguments is a list of dicts
+        # flags[], type, nargs, mode, help, choices
         for arg in type(self).arguments:
-            kwargs = {}
             # 1. Handle the mode, if present
-            if isinstance(arg[0], str):
-                mode = arg.pop(0)
-                if mode == 'hidden':
-                    kwargs['help'] = argparse.SUPPRESS
+            if 'mode' in arg:
+                if arg['mode'] == 'hidden':
+                    arg['help'] = argparse.SUPPRESS
                 else:
-                    raise ValueError("Unknown mode: {}".format(mode))
+                    raise ValueError("Unknown mode: {}".format(arg['mode']))
             # 2. Handle the type
-            if arg[0] is bool:
-                assert arg[1] == 0, "bool nargs must be 0"
-                kwargs['default'] = False
-                kwargs['action'] = 'store_true'
-            else:
-                kwargs['type'] = arg[0]
-                kwargs['nargs'] = arg[1]
-                # ^ previous version has this set to * for validation later
+            if arg['type'] is bool:
+                if 'nargs' in arg and arg['nargs'] != 0:
+                    raise ValueError("bool args must be 0 or not present")
+                arg['nargs'] = 0
+                arg['default'] = False
+                arg['action'] = 'store_true'
+            # Other types are self-sufficient
             # 3. Handle the flags
-            assert all([" " not in a for a in arg[2:-1]])
+            assert all([" " not in f for f in arg['flags']])
+            assert all([isinstance(f, str) not in f for f in arg['flags']])
             # 4. Handle the docstring
-            assert all([isinstance(a, str) for a in arg[2:]])
-            if 'help' not in kwargs:
-                kwargs['help'] = arg.pop(-1)
-            parser.add_argument(*arg[2:], **kwargs)
+            if 'help' not in arg:
+                raise ValueError("arg must have help string")
+            parser.add_argument(*arg['flags'], **arg)
+        # Add a hidden argument that takes the remainder of the command
+        # these will be later added to the root argument
+        parser.add_argument("_REMAINDER_",
+                            nargs=argparse.REMAINDER,
+                            help=argparse.SUPPRESS)
         return parser
