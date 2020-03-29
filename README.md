@@ -104,7 +104,7 @@ Each command class must have class vars `command_name` as a string, `defers_to`
 as a list of strings representing which bots the command defers to, and
 `arguments` as a list of dicts.
 
-Each argument dict uses the same keys as argparse - that is, `type`, `nargs`, `help`, optionally `choices` etc. - and a couple more:
+Each argument dict uses the same keys as argparse - that is, `type`, `nargs`, `help`, optionally `default`, `choices` etc. - and a couple more:
 
 * `flags` is a list of the argument's flags. At least one of these should not
   start with `--`, but this is not enforced, and just means that the command

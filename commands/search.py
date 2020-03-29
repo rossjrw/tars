@@ -117,7 +117,8 @@ class Search(Command):
              help="""If your search matches more than one article, return the
              newest one."""),
         dict(flags=['--order', '-o'], type=str, nargs=None,
-             choices=['random','recommend','recent','none','fuzzy'],
+             choices=['random', 'recommend', 'recent', 'none', 'fuzzy'],
+             default='fuzzy',
              help="""Returns the results in a certain order."""),
         dict(flags=['--offset', '-f'], type=int, nargs=None,
              help="""Remove this many results from the top of the list."""),
@@ -128,8 +129,8 @@ class Search(Command):
         dict(flags=['--ignorepromoted'], type=bool, mode='hidden',
              help="""Ignore articles that have been promoted."""),
     ]
-    @classmethod
-    def command(cls, irc_c, msg, cmd):
+
+    def command(self, irc_c, msg, cmd):
         # check to see if there are any arguments
         if len(cmd.args) == 1 and len(cmd.args['root']) == 0:
             raise CommandError("Must specify at least one search term")
