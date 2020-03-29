@@ -95,7 +95,7 @@ class Search(Command):
              By default, all categories are searched. If you include this
              argument but don't specify any categories, TARS will only search
              '_default'."""),
-        dict(flags=['--parent', '-p'], type=str, nargs=None,
+        dict(flags=['--parent', '-p'], type=str, nargs=1,
              help="""Filter pages by their parent page's slug.
 
              The parent page's slug must be given exactly (e.g. ``-p
