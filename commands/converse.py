@@ -3,39 +3,36 @@
 Responses for regular messages - ie, not commands.
 Adding anything to this that doesn't refer directly to TARS is 100% a dick move
 and should never be done.
+
+After a converse, unless you want the potential for a further converse to
+occur, return.
 """
 
+import re
+
 from fuzzywuzzy import fuzz
+
 from helpers.greetings import acronym, greet, greets
 from helpers.database import DB
 from helpers.config import CONFIG
-import commands
-import re
 
 class converse:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         # Recieves text in msg.message
-        message = cmd.unping
+        message = cmd.message
         # pinged section, for specifics
-        if cmd.pinged:
-            if any(x in message.lower() for x in [
-                "fuck you",
-                "piss off",
-                "fuck off",
-                "shut up",
-            ]):
+        if cmd.ping:
+            triggers = ["fuck you", "piss off", "fuck off", "shut up", "no"]
+            if any(trigger in strip(message) for trigger in triggers):
                 msg.reply("{}: no u".format(msg.nick))
                 return
         # unpinged section (well, ping-optional)
-        if message.startswith("?? "):
-            # CROM compatibility
-            getattr(commands.COMMANDS, 'search').command(irc_c, msg, cmd)
-        if message.lower() == "{}!".format(CONFIG.nick.lower()):
+        if strip(message) == "{}!".format(CONFIG.nick.lower()):
             msg.reply("{}!".format(msg.nick))
             return
-        if strip(message.lower()) in [strip("{}{}".format(g,CONFIG.nick.lower()))
-                                      for g in greets]:
+        if strip(message) in [strip("{}{}".format(greet, CONFIG.nick.lower()))
+                              for greet in greets]:
             if msg.sender == 'XilasCrowe':
                 msg.reply("toast")
                 return
@@ -77,7 +74,7 @@ class converse:
             return
 
         # after all attempts, must indicate failure if pinged
-        if cmd.pinged:
+        if cmd.ping:
             return 1
 
 def strip(string):

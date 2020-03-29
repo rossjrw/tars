@@ -20,7 +20,7 @@ def try_command(irc_c, msg, cmd, command_name=None):
         command_class.command(irc_c, msg, cmd)
         return 0
     except CommandNotExistError:
-        if cmd.pinged:
+        if cmd.ping:
             # there are .converse strings for pinged
             return try_command('converse', irc_c, msg, cmd)
         elif msg.raw_channel is None:
