@@ -13,14 +13,20 @@ from helpers.parse import nickColor
 from helpers.database import DB
 from helpers.defer import defer
 
+VOID = object()
+
 def prop_print(text):
     """Prints with propagation identifier"""
     print("[{}] {}".format(nickColor("Propagation"), text))
 
-def chunks(array, length):
-    """Splits list into lists of given length"""
+def chunks(array, length, placeholder=VOID):
+    """Splits list into lists of given length. If `placeholder` is not
+    commands.prop.VOID, fill en empty values with this."""
     for i in range(0, len(array), length):
-        yield array[i:i + length]
+        chunk = array[i:i + length]
+        if placeholder is not VOID:
+            chunk += [placeholder] * (length - len(chunk))
+        yield chunk
 
 class propagate:
     @classmethod

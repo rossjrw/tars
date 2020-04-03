@@ -9,6 +9,7 @@ import re
 import string
 
 import commands
+from commands.prop import chunks
 
 from fuzzywuzzy import fuzz
 
@@ -81,13 +82,16 @@ class converse:
             return
         # tell me about new acronyms
         match = re.search(
-            r"(?:\s+|(?:\s*[{{0}}]+\s*))".join(
-                [r"[{{0}}]*\b({}\S*)\b[{{0}}]*".format(l)
+            r"(\s+|(?:\s*[{0}]+\s*))".join(
+                [r"([{{0}}]*)\b({})(\S*)\b([{{0}}]*)".format(l)
                  for l in CONFIG['IRC']['nick']])
             .format(re.escape(string.punctuation)),
             message, re.IGNORECASE | re.VERBOSE)
         if match:
-            msg.reply(
+            submatches = chunks(match.groups(), 5)
+            msg.reply("".join(["{}\x02{}\x0F{}{}{}"
+                               .format(*chunks(submatch, 5, ""))
+                               for submatch in submatches]))
 
         ##### custom matches #####
 
