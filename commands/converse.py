@@ -80,12 +80,14 @@ class converse:
             msg.reply("https://www.reddit.com/r/{}".format(match.group(1)))
             return
         # tell me about new acronyms
-        match = re.search(r"""
-            \bT\S+\b[{0}]*(?:\s+|(?:\s*[{0}]+\s*))[{0}]*
-            \bA\S*\b[{0}]*(?:\s+|(?:\s*[{0}]+\s*))[{0}]*
-            \bR\S+\b[{0}]*(?:\s+|(?:\s*[{0}]+\s*))[{0}]*
-            \bS\S+\b[{0}]*(?:\s+|(?:\s*[{0}]+\s*))[{0}]*
-        """.format(re.escape(string.punctuation)), re.IGNORECASE | re.VERBOSE)
+        match = re.search(
+            r"(?:\s+|(?:\s*[{{0}}]+\s*))".join(
+                [r"[{{0}}]*\b({}\S*)\b[{{0}}]*".format(l)
+                 for l in CONFIG['IRC']['nick']])
+            .format(re.escape(string.punctuation)),
+            message, re.IGNORECASE | re.VERBOSE)
+        if match:
+            msg.reply(
 
         ##### custom matches #####
 
