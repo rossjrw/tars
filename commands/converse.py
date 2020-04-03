@@ -5,12 +5,16 @@ Adding anything to this that doesn't refer directly to TARS is 100% a dick move
 and should never be done.
 """
 
+import re
+import string
+
+import commands
+
 from fuzzywuzzy import fuzz
+
 from helpers.greetings import acronym, greet, greets
 from helpers.database import DB
 from helpers.config import CONFIG
-import commands
-import re
 
 class converse:
     @classmethod
@@ -76,7 +80,12 @@ class converse:
             msg.reply("https://www.reddit.com/r/{}".format(match.group(1)))
             return
         # tell me about new acronyms
-        match = 
+        match = re.search(r"""
+            \bT\S+\b[{0}]*(?:\s+|(?:\s*[{0}]+\s*))[{0}]*
+            \bA\S*\b[{0}]*(?:\s+|(?:\s*[{0}]+\s*))[{0}]*
+            \bR\S+\b[{0}]*(?:\s+|(?:\s*[{0}]+\s*))[{0}]*
+            \bS\S+\b[{0}]*(?:\s+|(?:\s*[{0}]+\s*))[{0}]*
+        """.format(re.escape(string.punctuation)), re.IGNORECASE | re.VERBOSE)
 
         ##### custom matches #####
 
