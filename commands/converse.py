@@ -17,7 +17,9 @@ class converse:
     def command(cls, irc_c, msg, cmd):
         # Recieves text in msg.message
         message = cmd.unping
-        # pinged section, for specifics
+
+        ##### ping matches #####
+
         if cmd.pinged:
             if any(x in message.lower() for x in [
                 "fuck you",
@@ -26,7 +28,9 @@ class converse:
             ]):
                 msg.reply("{}: no u".format(msg.nick))
                 return
-        # unpinged section (well, ping-optional)
+
+        ##### ping-optional text matches #####
+
         if message.startswith("?? "):
             # CROM compatibility
             getattr(commands.COMMANDS, 'search').command(irc_c, msg, cmd)
@@ -63,12 +67,19 @@ class converse:
         ]) and "TARS" in message.upper():
             msg.reply("big")
             return
-        # regex section
+
+        ##### regex matches #####
+
+        # give url for reddit links
         match = re.search(r"(?:^|\s)/?r/(\S*)", message, re.IGNORECASE)
         if match:
             msg.reply("https://www.reddit.com/r/{}".format(match.group(1)))
             return
-        # custom section
+        # tell me about new acronyms
+        match = 
+
+        ##### custom matches #####
+
         if (msg.sender == "Jazstar" and
             "slime" in msg.message and
             "XilasCrowe" in DB.get_channel_members(msg.raw_channel)):
