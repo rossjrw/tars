@@ -88,6 +88,7 @@ class converse:
             .format(re.escape(string.punctuation)),
             message, re.IGNORECASE | re.VERBOSE)
         if match:
+            raw_acronym = "".join(match.groups())
             submatches = list(chunks(list(match.groups()), 5))
             # the match is made up of 5 repeating parts:
                 # 0. punctation before word
@@ -97,10 +98,15 @@ class converse:
                 # 4. stuff between this word and the next word
             # for the last word (submatch), however, 4 is not present
             submatches[-1].append("")
-            for submatch in submatches:
-                submatch[1] = submatch[1].upper()
-            msg.reply("".join(["{}\x02{}\x0F{}{}{}".format(*submatch)
-                               for submatch in submatches]))
+            with open(CONFIG['converse']['acronyms'], 'r+') as acro:
+                existing_acronyms = [strip(line.rstrip('\n')) for line in acro]
+                if strip(raw_acronym) not in existing_acronyms:
+                    for submatch in submatches:
+                        submatch[1] = submatch[1].upper()
+                    msg.reply("".join(["{}\x02{}\x0F{}{}{}".format(*submatch)
+                                       for submatch in submatches]))
+                    acro.write(raw_acronym)
+                    return
 
         ##### custom matches #####
 
