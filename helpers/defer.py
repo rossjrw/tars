@@ -20,6 +20,11 @@ class defer:
         members = DB.get_channel_members(cmd.channel)
         return set(members) & set(bots)
 
+    @staticmethod
+    def report(cmd, message):
+        cmd.context.RAW("PRIVMSG {} {}".format(
+            CONFIG['channels']['home'], message))
+
     @classmethod
     def controller(cls, cmd):
         """Limit this command only to controllers."""
