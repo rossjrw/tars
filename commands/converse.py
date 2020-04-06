@@ -13,9 +13,10 @@ from commands.prop import chunks
 
 from fuzzywuzzy import fuzz
 
-from helpers.greetings import acronym, greet, greets
-from helpers.database import DB
 from helpers.config import CONFIG
+from helpers.database import DB
+from helpers.defer import defer
+from helpers.greetings import acronym, greet, greets
 
 class converse:
     @classmethod
@@ -100,13 +101,19 @@ class converse:
             submatches[-1].append("")
             with open(CONFIG['converse']['acronyms'], 'r+') as acro:
                 existing_acronyms = [strip(line.rstrip('\n')) for line in acro]
-                if strip(raw_acronym) not in existing_acronyms:
-                    for submatch in submatches:
-                        submatch[1] = submatch[1].upper()
-                    msg.reply("".join(["{}\x02{}\x0F{}{}{}".format(*submatch)
-                                       for submatch in submatches]))
+            if strip(raw_acronym) not in existing_acronyms:
+                for submatch in submatches:
+                    submatch[1] = submatch[1].upper()
+                bold_acronym = "".join(["{}\x02{}\x0F{}{}{}"
+                                        .format(*submatch)
+                                        for submatch in submatches])
+                msg.reply(bold_acronym)
+                if msg.raw_channel != CONFIG['channels']['home']:
+                    defer.report(cmd, bold_acronym)
+                with open(CONFIG['converse']['acronyms'], 'a') as acro:
                     acro.write(raw_acronym)
-                    return
+                    acro.write("\n")
+                return
 
         ##### custom matches #####
 
