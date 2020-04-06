@@ -62,37 +62,27 @@ def acronym_gen():
         "ano!Ther bot that !Also helps io do p!Romotion !Stuff", # Croquembouche
         "!Tool-!Assisted !Robotic !Sassmouth",
         "!Tantalising !And !Rambunctious !Sexbot", # Croquembouche
-        "!Target !Attack !Radar !System", # https://acronyms.thefreedictionary.com/TARS
-        "!This's !A !Random !Sentence",
         "!Tell !Aaron !Rocks !Suck", # ROUNDERHOUSE
         "!There's !A !Rong !Spelling", # ROUNDERHOUSE
-        "!This !Asshole !Robot !Sucks", # ROUNDERHOUSE
         "!TARS: !A !Recursive !Semantic", # CuteGirl
         "!Try !And !Rate !SCPs", # CuteGirl
         "!These !Acronyms !Really !Suck", # ROUNDERHOUSE
         "I stand for robot rights.", # ROUNDERHOUSE
-        "!Top !And !Rear !Suggested",
-        "!Tales !Are !Real !Shit",
+        "!Tales !Are the !Real !Shit",
         "!Tales !Are !Real !Shitty", # aismallard
         "!TARS' !Ass? !Real !Soft.",
         "It's just SRAT but backwards.",
-        "!Tummy & !Ass !Rubs, !Sergeant",
+        "!Tummy & !Ass !Rubs, !Sergeant", # Ayers
         "!Thanks, !Anderson !Robotics. !Sweet.",
         "!Trying !Acronyms !Repeatedly? !Super!",
         "!Tried !Adding !Rounderhouse - !Sorry!",
-        "!That's !A !Rounderhouse, !Sweety", # aismallard
-        "!That's !A !Regretful !Sentence",
-        "!These !Are !Really !Something.",
         "!TARS !Acronym !Repeating !Successfully",
-        "!Turnt !At #!Romanticpenthouse!Suite",
         "!T!A!R!SPWTCOTTTADC",
-        "!Total !Anal !Relapse !Surgery",
         "!Two !Anuses !Rigorously !Spread", # plaidypus
         "!Three !Anuses !Rigorously !Spread", # aismallard
         "!Twenty !Anuses !Rigorously !Spread", # aismallard
         "!The !Angry !Rash !Spreads", # bluesoul
         "!Talking !Animals? *!Rawr* *!Snuggles*", # LordofLaugh
-        "!Tortoises !Are !Robustly !Slow", # LordOdin
         "!Tagliatelle !And !Ragù !Sauce", # LordOdin
         "!Toronto !Activists: !Really !Sad", # Arlexus
         "!Temperatures !Are !Rising - !Sorry!", # LordOdin
