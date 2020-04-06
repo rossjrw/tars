@@ -88,9 +88,18 @@ class converse:
             .format(re.escape(string.punctuation)),
             message, re.IGNORECASE | re.VERBOSE)
         if match:
-            submatches = chunks(match.groups(), 5)
-            msg.reply("".join(["{}\x02{}\x0F{}{}{}"
-                               .format(*chunks(submatch, 5, ""))
+            submatches = list(chunks(list(match.groups()), 5))
+            # the match is made up of 5 repeating parts:
+                # 0. punctation before word
+                # 1. first letter of word
+                # 2. rest of word
+                # 3. punctuation after word
+                # 4. stuff between this word and the next word
+            # for the last word (submatch), however, 4 is not present
+            submatches[-1].append("")
+            for submatch in submatches:
+                submatch[1] = submatch[1].upper()
+            msg.reply("".join(["{}\x02{}\x0F{}{}{}".format(*submatch)
                                for submatch in submatches]))
 
         ##### custom matches #####
