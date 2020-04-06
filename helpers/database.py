@@ -966,7 +966,8 @@ class SqliteDriver:
         # Takes PRIVMSG, JOIN, PART, NICK
         chname = "private" if msg['channel'] is None else msg['channel']
         if msg['kind'] == 'NICK': chname = None
-        assert msg['kind'] in ['PRIVMSG','JOIN','PART','NICK','QUIT'], msg['kind']
+        if not msg['kind'] in ['PRIVMSG','JOIN','PART','NICK','QUIT']:
+            raise ValueError("unknown kind {}".format(msg['kind']))
         if msg['kind'] == 'PRIVMSG':
             msgiscmd = msg['message'].startswith((".","!","?","^"))
         else:
