@@ -76,11 +76,6 @@ class converse:
 
         ##### regex matches #####
 
-        # give url for reddit links
-        match = re.search(r"(?:^|\s)/?r/(\S*)", message, re.IGNORECASE)
-        if match:
-            msg.reply("https://www.reddit.com/r/{}".format(match.group(1)))
-            return
         # tell me about new acronyms
         match = re.search(
             r"(\s+|(?:\s*[{0}]+\s*))".join(
