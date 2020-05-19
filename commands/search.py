@@ -447,12 +447,6 @@ class lastcreated:
             self['title'] = []
         else:
             self['limit'] = [3]
-        # to make the query faster, if there's no other arguments, limit date
-        # the minimum args are root, order, limit and optionally verbose
-        # must expandargs to convert v to verbose
-        Search.expandargs(cmd)
-        if self.no_more_than(['root', 'order', 'limit', 'verbose']):
-            self['created'] = ["<3d"]
         Search.command(irc_c, msg, cmd)
 
 class MinMax:
