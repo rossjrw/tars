@@ -79,8 +79,6 @@ def acronym_gen():
         "!TARS !Acronym !Repeating !Successfully",
         "!T!A!R!SPWTCOTTTADC",
         "!Two !Anuses !Rigorously !Spread", # plaidypus
-        "!Three !Anuses !Rigorously !Spread", # aismallard
-        "!Twenty !Anuses !Rigorously !Spread", # aismallard
         "!The !Angry !Rash !Spreads", # bluesoul
         "!Talking !Animals? *!Rawr* *!Snuggles*", # LordofLaugh
         "!Tagliatelle !And !Ragù !Sauce", # LordOdin
@@ -91,6 +89,17 @@ def acronym_gen():
         #"!Travesty !Awaits !Remaining !",
         "!T y p i n g !A c r o n y m s !R e a l l y !S l o w l y", #Arlexus
         "!Tomorrow, !Another !Revolution !Starts", # Arlexus
+        "!Three !Anuses !Rigorously !Spread", # aismallard
+        "!Twenty !Anuses !Rigorously !Spread", # aismallard
+        "!Tomorrow's !A !Recycled !Sunday", # Arlexus
+        "!Trying !And !Rarely !Succeeding", # Arlexus
+        "!Time !And !Relative... !Space?", # Arlexus
+        #"!Turn !Around ... !Swivel
+        "!T. !A. !R. !S.", # Arlexus
+        "!Tumeric !Ain't a !Real !Spice", # Arlexus
+        "!Taunting !A !Random !Stranger", # Croquembouche
+        "!Tool-!Assisted !Run (!Sexual%)", # TheMightyMcB
+        "!Transmogrification !And !Radical !Sorcery", # aismallard
     ]
     last_response = []
     while True:
