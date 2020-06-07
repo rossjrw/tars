@@ -91,6 +91,7 @@ def acronym_gen():
         "!Tomorrow, !Another !Revolution !Starts", # Arlexus
         "!Three !Anuses !Rigorously !Spread", # aismallard
         "!Twenty !Anuses !Rigorously !Spread", # aismallard
+        "!Transmogrification !And !Radical !Sorcery", # aismallard
         "!Tomorrow's !A !Recycled !Sunday", # Arlexus
         "!Trying !And !Rarely !Succeeding", # Arlexus
         "!Time !And !Relative... !Space?", # Arlexus
