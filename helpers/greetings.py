@@ -61,24 +61,24 @@ def acronym_gen():
         "!Total !Annihilation !Reigns !Supreme", # TSATPWTCOTTTADC
         "ano!Ther bot that !Also helps io do p!Romotion !Stuff", # Croquembouche
         "!Tool-!Assisted !Robotic !Sassmouth",
-        "!Tantalising !And !Rambunctious !Sexbot", # Croquembouche
+        # "!Tantalising !And !Rambunctious !Sexbot", # Croquembouche
         "!Tell !Aaron !Rocks !Suck", # ROUNDERHOUSE
-        "!There's !A !Rong !Spelling", # ROUNDERHOUSE
+        # "!There's !A !Rong !Spelling", # ROUNDERHOUSE
         "!TARS: !A !Recursive !Semantic", # CuteGirl
-        "!Try !And !Rate !SCPs", # CuteGirl
+        # "!Try !And !Rate !SCPs", # CuteGirl
         "!These !Acronyms !Really !Suck", # ROUNDERHOUSE
         "I stand for robot rights.", # ROUNDERHOUSE
         "!Tales !Are the !Real !Shit",
         "!Tales !Are !Real !Shitty", # aismallard
-        "!TARS' !Ass? !Real !Soft.",
+        # "!TARS' !Ass? !Real !Soft.",
         "It's just SRAT but backwards.",
         "!Tummy & !Ass !Rubs, !Sergeant", # Ayers
         "!Thanks, !Anderson !Robotics. !Sweet.",
         "!Trying !Acronyms !Repeatedly? !Super!",
-        "!Tried !Adding !Rounderhouse - !Sorry!",
-        "!TARS !Acronym !Repeating !Successfully",
-        "!T!A!R!SPWTCOTTTADC",
-        "!Two !Anuses !Rigorously !Spread", # plaidypus
+        # "!Tried !Adding !Rounderhouse - !Sorry!",
+        # "!TARS !Acronym !Repeating !Successfully",
+        # "!T!A!R!SPWTCOTTTADC",
+        # "!Two !Anuses !Rigorously !Spread", # plaidypus
         "!The !Angry !Rash !Spreads", # bluesoul
         "!Talking !Animals? *!Rawr* *!Snuggles*", # LordofLaugh
         "!Tagliatelle !And !Ragù !Sauce", # LordOdin
@@ -87,18 +87,20 @@ def acronym_gen():
         "!Try !And !Run, !Samuel.", # Arlexus
         "!Transmission !Aborted; !Return to !Sender", # Arlexus
         #"!Travesty !Awaits !Remaining !",
-        "!T y p i n g !A c r o n y m s !R e a l l y !S l o w l y", #Arlexus
+        "!T y p i n g !A c r o n y m s !R e a l l y !S l o w l y", # Arlexus
         "!Tomorrow, !Another !Revolution !Starts", # Arlexus
         "!Three !Anuses !Rigorously !Spread", # aismallard
-        "!Twenty !Anuses !Rigorously !Spread", # aismallard
+        # "!Twenty !Anuses !Rigorously !Spread", # aismallard
         "!Tomorrow's !A !Recycled !Sunday", # Arlexus
         "!Trying !And !Rarely !Succeeding", # Arlexus
         "!Time !And !Relative... !Space?", # Arlexus
         #"!Turn !Around ... !Swivel
-        "!T. !A. !R. !S.", # Arlexus
         "!Tumeric !Ain't a !Real !Spice", # Arlexus
         "!Taunting !A !Random !Stranger", # Croquembouche
         "!Tool-!Assisted !Run (!Sexual%)", # TheMightyMcB
+        "'!Tis !A !Riddle, !See?", # TSATPWTCOTTTADC
+        "!Tear !Ass, !Riptide !Sailor!", # TSATPWTCOTTTADC
+        "!This !Anomaly !Repeatedly !Shits", # MalyceGraves
         "!Transmogrification !And !Radical !Sorcery", # aismallard
     ]
     last_response = []
