@@ -22,13 +22,11 @@ from helpers.greetings import acronym, greet, greets
 class converse:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        # Recieves text in msg.message
-        message = cmd.unping
 
         ##### ping matches #####
 
         if cmd.pinged:
-            if any(x in message.lower() for x in [
+            if any(x in cmd.unping.lower() for x in [
                 "fuck you",
                 "piss off",
                 "fuck off",
@@ -38,56 +36,52 @@ class converse:
 
         ##### ping-optional text matches #####
 
-        if message.startswith("?? "):
+        if cmd.unping.startswith("?? "):
             # CROM compatibility
             getattr(commands.COMMANDS, 'search').command(irc_c, msg, cmd)
-        if message.lower() == "{}!".format(CONFIG.nick.lower()):
+        if msg.message.lower() == "{}!".format(CONFIG.nick.lower()):
             msg.reply("{}!".format(msg.nick))
             return
-        if strip(message.lower()) in [strip("{}{}".format(g,CONFIG.nick.lower()))
+        if strip(msg.message.lower()) in [strip("{}{}".format(g,CONFIG.nick.lower()))
                                       for g in greets]:
             if msg.sender == 'XilasCrowe':
                 msg.reply("toast")
                 return
             msg.reply(greet(msg.nick))
             return
-        if CONFIG.nick == "TARS" and matches_any_of(message, [
+        if CONFIG.nick == "TARS" and matches_any_of(msg.message, [
             "what does tars stand for?",
             "is tars an acronym?",
-        ]) and "TARS" in message.upper():
+        ]) and "TARS" in msg.message.upper():
             msg.reply(acronym())
             return
-        if CONFIG.nick == "TARS" and matches_any_of(message, [
+        if CONFIG.nick == "TARS" and matches_any_of(msg.message, [
             "is tars a bot?",
             "tars are you a bot?",
-        ]) and "TARS" in message.upper():
+        ]) and "TARS" in msg.message.upper():
             msg.reply("Yep.")
             return
-        if CONFIG.nick == "TARS" and matches_any_of(message, [
+        if CONFIG.nick == "TARS" and matches_any_of(msg.message, [
             "is tars a person?",
             "tars are you a person?",
-        ]) and "TARS" in message.upper():
+        ]) and "TARS" in msg.message.upper():
             msg.reply("Nope. I'm a bot.")
             return
-        if CONFIG.nick == "TARS" and matches_any_of(message, [
+        if CONFIG.nick == "TARS" and matches_any_of(msg.message, [
             "what is your iq",
-        ]) and "TARS" in message.upper():
+        ]) and "TARS" in msg.message.upper():
             msg.reply("big")
             return
 
         ##### regex matches #####
 
         # give url for reddit links
-        match = re.search(r"(?:^|\s)/?r/(\S*)", message, re.IGNORECASE)
+        match = re.search(r"(?:^|\s)/?r/(\S*)", msg.message, re.IGNORECASE)
         if match:
             msg.reply("https://www.reddit.com/r/{}".format(match.group(1)))
             return
         # tell me about new acronyms
-        acronyms = find_acronym(message, CONFIG['IRC']['nick'])
-        if acronyms:
-            msg.reply("That's a match!")
-        else:
-            msg.reply("No match!")
+        acronyms = find_acronym(msg.message, CONFIG['IRC']['nick'])
         if acronyms:
             raw_acronym, bold_acronym = acronyms
             with open(CONFIG['converse']['acronyms'], 'r') as acro_file:
