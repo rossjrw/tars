@@ -5,6 +5,7 @@ Adding anything to this that doesn't refer directly to TARS is 100% a dick move
 and should never be done.
 """
 
+import json
 import re
 import string
 
@@ -84,16 +85,26 @@ class converse:
         # tell me about new acronyms
         acronyms = find_acronym(message, CONFIG['IRC']['nick'])
         if acronyms:
+            msg.reply("That's a match!")
+        else:
+            msg.reply("No match!")
+        if acronyms:
             raw_acronym, bold_acronym = acronyms
-            with open(CONFIG['converse']['acronyms'], 'r+') as acro:
-                existing_acronyms = [strip(line.rstrip('\n')) for line in acro]
-            if strip(raw_acronym) not in existing_acronyms:
+            with open(CONFIG['converse']['acronyms'], 'r') as acro_file:
+                acros = json.load(acro_file)
+                existing_acronyms = [acro['acronym'] for acro in acros]
+            if raw_acronym not in existing_acronyms:
                 msg.reply(bold_acronym)
                 if msg.raw_channel != CONFIG['channels']['home']:
                     defer.report(cmd, bold_acronym)
-                with open(CONFIG['converse']['acronyms'], 'a') as acro:
-                    acro.write("{}: {}".format(msg.nick, raw_acronym))
-                    acro.write("\n")
+                with open(CONFIG['converse']['acronyms'], 'w') as acro_file:
+                    acros.append({
+                        'acronym': raw_acronym,
+                        'sender': msg.nick,
+                        'channel': msg.raw_channel,
+                        'date': msg.timestamp
+                    })
+                    json.dump(acros, acro_file, indent=2)
                 return
 
         ##### custom matches #####

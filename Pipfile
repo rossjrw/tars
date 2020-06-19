@@ -28,3 +28,4 @@ python-Levenshtein = "*"
 GitPython = "*"
 pyaib = {git = "https://github.com/rossjrw/pyaib.git"}
 beautifulsoup4 = "*"
+toml = "*"
