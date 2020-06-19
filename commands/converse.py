@@ -111,7 +111,7 @@ class converse:
                 if msg.raw_channel != CONFIG['channels']['home']:
                     defer.report(cmd, bold_acronym)
                 with open(CONFIG['converse']['acronyms'], 'a') as acro:
-                    acro.write(raw_acronym)
+                    acro.write("{}: {}".format(msg.nick, raw_acronym))
                     acro.write("\n")
                 return
 
