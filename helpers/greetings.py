@@ -99,6 +99,7 @@ def acronym_gen():
         "!Tumeric !Ain't a !Real !Spice", # Arlexus
         "!Taunting !A !Random !Stranger", # Croquembouche
         "!Tool-!Assisted !Run (!Sexual%)", # TheMightyMcB
+        "!Transmogrification !And !Radical !Sorcery", # aismallard
     ]
     last_response = []
     while True:
