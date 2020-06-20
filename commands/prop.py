@@ -25,7 +25,7 @@ def chunks(array, length):
 class propagate:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        # arg 1 should be a url name
+        # arg 1 should be a slug name
         if 'sample' in cmd:
             samples = ['scp-173', 'scp-1111', 'scp-3939', 'cone', 'scp-series',
                        'listpages-magic-and-you', 'scp-4205', 'omega-k',
@@ -36,7 +36,7 @@ class propagate:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
             msg.reply("Fetching all tales... this will take a few minutes.")
-            tales = SCPWiki.select({'tags_all':['tale']})
+            tales = SCPWiki.get_all_pages(tags=['tale'])
             pprint(tales)
             propagate.get_wiki_data_for(tales, reply=msg.reply)
         elif 'all' in cmd:
@@ -45,18 +45,18 @@ class propagate:
             msg.reply("Propagating all pages...")
             propagate.get_all_pages(reply=msg.reply)
         elif 'metadata' in cmd:
-            meta_urls = ['attribution-metadata',
+            meta_slugs = ['attribution-metadata',
                          'scp-series',
                          'scp-series-2',
                          'scp-series-3',
                          'scp-series-4',
                          'scp-series-5',
                          'scp-series-6']
-            # meta_urls = ['attribution-metadata']
+            # meta_slugs = ['attribution-metadata']
             # XXX TODO replace with getting pages tagged "metadata"
             msg.reply("Propagating metadata...")
-            for url in meta_urls:
-                propagate.get_metadata(url, reply=msg.reply)
+            for slug in meta_slugs:
+                propagate.get_metadata(slug, reply=msg.reply)
         elif len(cmd.args['root']) > 0:
             propagate.get_wiki_data_for(cmd.args['root'], reply=msg.reply)
         else:
@@ -69,46 +69,46 @@ class propagate:
         # 1. get a list of articles
         # 2. get data for each article
         # 2.5. put that data in the db
-        pages = SCPWiki.select({'categories': ["_default"]})
+        pages = SCPWiki.get_all_pages(categories=['_default'])
         reply("{} pages to propagate".format(len(pages)))
         propagate.get_wiki_data_for(pages, reply=reply)
 
     @classmethod
-    def get_wiki_data_for(cls, urls, **kwargs):
+    def get_wiki_data_for(cls, slugs, **kwargs):
         print("Getting wiki data!")
         reply = kwargs.get('reply', lambda x: None)
         # get the wiki data for this article
-        # we're taking all of root, so url is a list
-        for urls in chunks(urls, 10):
-            print(urls)
-            articles = SCPWiki.get_meta({'pages': urls})
-            for url,article in articles.items():
-                prop_print("Updating {} in the database".format(url))
+        # we're taking all of root, so slug is a list
+        for slugs in chunks(slugs, 10):
+            print(slugs)
+            articles = SCPWiki.get_meta({'pages': slugs})
+            for slug,article in articles.items():
+                prop_print("Updating {} in the database".format(slug))
                 DB.add_article(article, commit=False)
                 if 'metadata' in article['tags']:
                     # TODO use list from above
                     continue # skip for now
-                    propagate.get_metadata(url, reply=reply)
+                    propagate.get_metadata(slug, reply=reply)
         DB.commit()
 
     @classmethod
-    def get_metadata(cls, url, **kwargs):
+    def get_metadata(cls, slug, **kwargs):
         """Handles metadata fetchers"""
-        print("Getting metadata for {}".format(url))
+        print("Getting metadata for {}".format(slug))
         reply = kwargs.get('reply', lambda x: None)
         # either attribution metadata or titles
         # we'll need the actual contents of the page
-        reply("Getting metadata from {}".format(url))
-        page = SCPWiki.get_page({'page': url})
+        reply("Getting metadata from {}".format(slug))
+        page = SCPWiki.get_page_html(slug)
         soup = BeautifulSoup(page['html'], "html.parser")
-        if url == 'attribution-metadata':
-            return propagate.get_attribution_metadata(url, soup, **kwargs)
+        if slug == 'attribution-metadata':
+            return propagate.get_attribution_metadata(slug, soup, **kwargs)
         else:
-            return propagate.get_series_metadata(url, soup, **kwargs)
+            return propagate.get_series_metadata(slug, soup, **kwargs)
 
 
     @staticmethod
-    def get_series_metadata(url, soup, **kwargs):
+    def get_series_metadata(slug, soup, **kwargs):
         """Gets metadata for generic series pages that match assumptions"""
         reply = kwargs.get('reply', lambda x: None)
         # parse the html
@@ -121,15 +121,15 @@ class propagate:
             title = str(title)
             # sort out the scp-number
             pattern = re.compile(r"""
-                <li>                  # start of the "title"
-                (.+?                  # anything before the link
-                href="/(.+?)"         # page url
-                >)(.+?)</a>           # page's literal title
-                (?:                   # start post-link group
-                  .+?-\s?             # anything after link & before title
-                  (.*?)               # page's meta title
-                )?                    # end post-link group; select if present
-                </li>                 # end of the "title"
+                <li>           # start of the "title"
+                (.+?           # anything before the link
+                href="/(.+?)"  # page slug
+                >)(.+?)</a>    # page's literal title
+                (?:            # start post-link group
+                  .+?-\s?      # anything after link & before title
+                  (.*?)        # page's meta title
+                )?             # end post-link group; select if present
+                </li>          # end of the "title"
             """, re.VERBOSE)
             match = pattern.search(title)
             if not match:
@@ -157,26 +157,26 @@ class propagate:
         DB.commit()
 
     @staticmethod
-    def get_attribution_metadata(url, soup, **kwargs):
+    def get_attribution_metadata(slug, soup, **kwargs):
         """Gets attribution metadata"""
         reply = kwargs.get('reply', lambda x: None)
         # parse the html
         titles = soup.select(".wiki-content-table tr:not(:first-child)")
-        # pages = dict of key url and value actions[]
+        # pages = dict of key slug and value actions[]
         pages = defaultdict(lambda: defaultdict(list))
         # actions to take for each type of metadata
         actions = {
-            'author': lambda url, values: DB.set_authors(
-                url, [v['name'] for v in values]),
-            'rewrite': lambda url, values: None,
-            'translator': lambda url, values: None,
-            'maintainer': lambda url, values: None
+            'author': lambda slug, values: DB.set_authors(
+                slug, [v['name'] for v in values]),
+            'rewrite': lambda slug, values: None,
+            'translator': lambda slug, values: None,
+            'maintainer': lambda slug, values: None
         }
         for title in titles:
             title = str(title)
             pattern = re.compile(r"""
                 <tr>\s*
-                <td>(.*?)</td>\s*      # affected page url
+                <td>(.*?)</td>\s*      # affected page slug
                 <td>(.*?)</td>\s*      # name
                 <td>(.*?)</td>\s*      # metadata type
                 <td>(.*?)</td>\s*      # date
@@ -188,13 +188,13 @@ class propagate:
                 continue
             pages[match.group(1)][match.group(3)].append({
                 'name': match.group(2), 'date': match.group(4)})
-        for url,page in pages.items():
-            if ':' in url:
+        for slug,page in pages.items():
+            if ':' in slug:
                 # we don't store other categories
                 continue
             for type_ in page:
                 try:
-                    actions[type_](url, page[type_])
+                    actions[type_](slug, page[type_])
                 except Exception as e:
                     reply(str(e))
         DB.commit()
