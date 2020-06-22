@@ -1038,8 +1038,18 @@ class SqliteDriver:
 
     def add_article(self, article, commit=True):
         """Adds an article and its data to the db.
-        article should be a dict as the response from API.get_meta.
+        article should be a dict of article info.
         Set commit=False for mass addition, then commit afterwards."""
+        # article = dict(
+            # int? ups
+            # int? downs
+            # int rating
+            # str fullname
+            # str title
+            # str created_at: ISO-8601
+            # str? created_by
+            # str? parent_fullname
+            # str[] tags
         # 1. add to articles
         # 1.1. make a new entry if it's a new article
         # 1.2. update the existing entry if the article already exists

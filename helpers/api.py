@@ -42,16 +42,35 @@ class ScuttleAPI:
         selectors['site'] = self.w
         return self.s.pages.save_one(selectors)
 
+    def get_one_page(self, slug):
+        """Gets all SCUTTLE data for a single page."""
+        return self.scuttle.page_by_slug(slug)
+
+    def get_one_page_meta(self, slug):
+        """Gets wikidot metadata for a single page."""
+        return self.get_one_page(slug)['metadata']['wikidot_metadata']
+
+    def get_one_page_html(self, slug):
+        """Gets the HTML for a single page."""
+        return self.get_one_page(slug)['latest_revision']
+
     def get_all_pages(self, *, tags=None, categories=None):
+        """Gets a list of all slugs that satisfy the requirements."""
         if tags is None:
             tags = []
         assert isinstance(tags, list)
         if categories is None:
             categories = []
+        else:
+            raise NotImplementedError
         assert isinstance(categories, list)
         # get info for all pages
-        all_pages = self.scuttle.all_pages()
-        # list of dicts of id: scuttle id, slug, wd_page_id
-        # to filter, will need to get info for all pages
+        if len(tags) == 1:
+            slugs = [page['slug'] for page in self.scuttle.tag_pages(tags[0])]
+        elif len(tags):
+            raise NotImplementedError
+        else:
+            slugs = [page['slug'] for page in self.scuttle.all_pages()]
+        return slugs
 
 SCPWiki = ScuttleAPI("en")

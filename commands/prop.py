@@ -45,17 +45,9 @@ class propagate:
             msg.reply("Propagating all pages...")
             propagate.get_all_pages(reply=msg.reply)
         elif 'metadata' in cmd:
-            meta_slugs = ['attribution-metadata',
-                         'scp-series',
-                         'scp-series-2',
-                         'scp-series-3',
-                         'scp-series-4',
-                         'scp-series-5',
-                         'scp-series-6']
-            # meta_slugs = ['attribution-metadata']
-            # XXX TODO replace with getting pages tagged "metadata"
+            metadata_slugs = SCPWiki.get_all_pages(tags=['metadata'])
             msg.reply("Propagating metadata...")
-            for slug in meta_slugs:
+            for slug in metadata_slugs:
                 propagate.get_metadata(slug, reply=msg.reply)
         elif len(cmd.args['root']) > 0:
             propagate.get_wiki_data_for(cmd.args['root'], reply=msg.reply)
@@ -77,18 +69,18 @@ class propagate:
     def get_wiki_data_for(cls, slugs, **kwargs):
         print("Getting wiki data!")
         reply = kwargs.get('reply', lambda x: None)
+        metadata_slugs = []
         # get the wiki data for this article
         # we're taking all of root, so slug is a list
-        for slugs in chunks(slugs, 10):
-            print(slugs)
-            articles = SCPWiki.get_meta({'pages': slugs})
-            for slug, article in articles.items():
-                prop_print("Updating {} in the database".format(slug))
-                DB.add_article(article, commit=False)
-                if 'metadata' in article['tags']:
-                    # TODO use list from above
-                    continue # skip for now
-                    propagate.get_metadata(slug, reply=reply)
+        for slug in slugs:
+            page = SCPWiki.get_one_page_meta(slug)
+            prop_print("Updating {} in the database".format(slug))
+            DB.add_article(page, commit=False)
+            if 'metadata' in page['tags']:
+                metadata_slugs.append(slug)
+                continue
+        for slug in metadata_slugs:
+            propagate.get_metadata(slug, reply=reply)
         DB.commit()
 
     @classmethod
