@@ -72,9 +72,9 @@ class propagate:
         metadata_slugs = []
         # get the wiki data for this article
         # we're taking all of root, so slug is a list
-        for slug in slugs:
-            page = SCPWiki.get_one_page_meta(slug)
+        for index, slug in enumerate(slugs):
             prop_print("Updating {} in the database".format(slug))
+            page = SCPWiki.get_one_page_meta(slug)
             DB.add_article(page, commit=False)
             if 'metadata' in page['tags']:
                 metadata_slugs.append(slug)
@@ -91,8 +91,8 @@ class propagate:
         # either attribution metadata or titles
         # we'll need the actual contents of the page
         reply("Getting metadata from {}".format(slug))
-        page = SCPWiki.get_page_html(slug)
-        soup = BeautifulSoup(page['html'], "html.parser")
+        html = SCPWiki.get_one_page_html(slug)
+        soup = BeautifulSoup(html, "html.parser")
         if slug == 'attribution-metadata':
             return propagate.get_attribution_metadata(slug, soup, **kwargs)
         else:
