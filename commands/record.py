@@ -95,6 +95,7 @@ class record:
         """Record and broadcast messages"""
         if not defer.controller(cmd):
             raise CommandError("You're not authorised to do that")
+        raise MyFaultError("The .record command is currently disabled.")
         cmd.expandargs(["output o",
                         "format f",
                         "restrict-channel-name"])
@@ -211,10 +212,7 @@ class record:
                 okchars = string.printable+"→←"
                 content = "".join(filter(lambda x: x in okchars, content))
                 # then format for wikidot
-                Topia.save_page({'page':"tars:recording-output",
-                                 'content': content,
-                                 'revision_comment': "New recording",
-                                 'notify_watchers': "true"})
+                # TODO save the content somewhere
                 msg.reply("Done! http://topia.wikidot.com/tars:recording-output")
             else:
                 raise MyFaultError("Unknown location")
