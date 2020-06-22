@@ -82,7 +82,7 @@ class propagate:
         for slugs in chunks(slugs, 10):
             print(slugs)
             articles = SCPWiki.get_meta({'pages': slugs})
-            for slug,article in articles.items():
+            for slug, article in articles.items():
                 prop_print("Updating {} in the database".format(slug))
                 DB.add_article(article, commit=False)
                 if 'metadata' in article['tags']:
@@ -176,10 +176,10 @@ class propagate:
             title = str(title)
             pattern = re.compile(r"""
                 <tr>\s*
-                <td>(.*?)</td>\s*      # affected page slug
-                <td>(.*?)</td>\s*      # name
-                <td>(.*?)</td>\s*      # metadata type
-                <td>(.*?)</td>\s*      # date
+                <td>(.*?)</td>\s*  # affected page slug
+                <td>(.*?)</td>\s*  # name
+                <td>(.*?)</td>\s*  # metadata type
+                <td>(.*?)</td>\s*  # date
                 </tr>
             """, re.VERBOSE)
             match = pattern.search(title)
@@ -188,7 +188,7 @@ class propagate:
                 continue
             pages[match.group(1)][match.group(3)].append({
                 'name': match.group(2), 'date': match.group(4)})
-        for slug,page in pages.items():
+        for slug, page in pages.items():
             if ':' in slug:
                 # we don't store other categories
                 continue

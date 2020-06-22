@@ -166,4 +166,4 @@ class debug:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         # msg.reply(", ".join("%s: %s" % item for item in vars(msg).items()))
-        msg.reply(SCPWiki.get_page_id(['scp-3939']))
+        pass
