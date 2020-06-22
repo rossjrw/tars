@@ -27,21 +27,6 @@ class ScuttleAPI:
     def __init__(self, domain):
         self.scuttle = scuttle(domain, keys['scuttle_api'], 1)
 
-    def get_meta(self, selectors):
-        """Equivalent to pages.get_meta. Limit 10 pages"""
-        selectors['site'] = self.w
-        return self.s.pages.get_meta(selectors)
-
-    def get_page(self, selectors):
-        """Equivalent to pages.get_one. Limit 1 page"""
-        selectors['site'] = self.w
-        return self.s.pages.get_one(selectors)
-
-    def save_page(self, selectors):
-        """Equivalent to pages.save_one Limit 1 page"""
-        selectors['site'] = self.w
-        return self.s.pages.save_one(selectors)
-
     def get_one_page(self, slug):
         """Gets all SCUTTLE data for a single page."""
         return self.scuttle.page_by_slug(slug)
