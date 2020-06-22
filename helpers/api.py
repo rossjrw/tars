@@ -19,8 +19,12 @@ import tomlkit
 
 from scuttle import scuttle
 
-with open(pathlib.Path(__file__).parent / "keys.secret.toml") as keys:
-    keys = tomlkit.parse(keys)['keys']
+with open(pathlib.Path.cwd() / "keys.secret.toml") as keys:
+    keys = tomlkit.parse(keys.read())['keys']
+
+GOOGLE_CSE_API_KEY = keys['google_cse_api']
+GOOGLE_CSE_ID = keys['google_cse_id']
+NICKSERV_PASSWORD = keys['irc_password']
 
 class ScuttleAPI:
     """Wrapper for Wikidot API functions."""

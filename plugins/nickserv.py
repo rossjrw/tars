@@ -7,7 +7,7 @@ import sys
 import os.path
 from time import sleep
 from helpers.greetings import greet
-from helpers.api import password
+from helpers.api import NICKSERV_PASSWORD
 from helpers.database import DB
 from helpers.config import CONFIG
 
@@ -20,7 +20,7 @@ def nsprint(message):
 class NickServ(object):
     def __init__(self, irc_c, config):
         self.config = config
-        self.password = password
+        self.password = NICKSERV_PASSWORD
 
     @observes("IRC_ONCONNECT")
     def AUTO_IDENTIFY(self, irc_c):

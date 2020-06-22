@@ -7,7 +7,7 @@ import string
 
 from pyaib.signals import await_signal
 
-from helpers.api import Topia
+# from helpers.api import Topia
 from helpers.database import DB
 from helpers.defer import defer
 from helpers.error import CommandError, MyFaultError
