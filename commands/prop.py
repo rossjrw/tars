@@ -3,10 +3,12 @@
 For propagating the database with wiki data.
 """
 
-import re
-from pprint import pprint
 from collections import defaultdict
+import re
+
 from bs4 import BeautifulSoup
+import numpy as np
+
 from helpers.api import SCPWiki
 from helpers.error import CommandError
 from helpers.parse import nickColor
@@ -37,7 +39,6 @@ class propagate:
                 raise CommandError("I'm afriad I can't let you do that.")
             msg.reply("Fetching all tales... this will take a few minutes.")
             tales = SCPWiki.get_all_pages(tags=['tale'])
-            pprint(tales)
             propagate.get_wiki_data_for(tales, reply=msg.reply)
         elif 'all' in cmd:
             if not defer.controller(cmd):
@@ -61,8 +62,7 @@ class propagate:
         # 1. get a list of articles
         # 2. get data for each article
         # 2.5. put that data in the db
-        pages = SCPWiki.get_all_pages(categories=['_default'])
-        reply("{} pages to propagate".format(len(pages)))
+        pages = SCPWiki.get_all_pages()
         propagate.get_wiki_data_for(pages, reply=reply)
 
     @classmethod
@@ -72,7 +72,11 @@ class propagate:
         metadata_slugs = []
         # get the wiki data for this article
         # we're taking all of root, so slug is a list
+        reply("{} pages to propagate".format(len(slugs)))
+        breakpoints = np.floor(np.linspace(0, 1, num=11) * len(slugs))
         for index, slug in enumerate(slugs):
+            if index in breakpoints:
+                reply("Propagated {} of {}".format(index, len(slugs)))
             prop_print("Updating {} in the database".format(slug))
             page = SCPWiki.get_one_page_meta(slug)
             DB.add_article(page, commit=False)
