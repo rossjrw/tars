@@ -28,7 +28,7 @@ python-Levenshtein = "*"
 GitPython = "*"
 pyaib = {git = "https://github.com/rossjrw/pyaib.git"}
 beautifulsoup4 = "*"
-scuttle = {editable = true, path = "./../python-scuttle"}
+scuttle = {editable = true, git = "https://github.com/scuttle/python-scuttle.git"}
 
 [requires]
 python_version = "3.8"
