@@ -13,30 +13,42 @@ from helpers.parse import nickColor
 from helpers.database import DB
 from helpers.defer import defer
 
+
 def prop_print(text):
     """Prints with propagation identifier"""
     print("[{}] {}".format(nickColor("Propagation"), text))
 
+
 def chunks(array, length):
     """Splits list into lists of given length"""
     for i in range(0, len(array), length):
-        yield array[i:i + length]
+        yield array[i : i + length]
+
 
 class propagate:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         # arg 1 should be a url name
         if 'sample' in cmd:
-            samples = ['scp-173', 'scp-1111', 'scp-3939', 'cone', 'scp-series',
-                       'listpages-magic-and-you', 'scp-4205', 'omega-k',
-                       'component:ar-theme', 'fragment:scp-3939-64']
+            samples = [
+                'scp-173',
+                'scp-1111',
+                'scp-3939',
+                'cone',
+                'scp-series',
+                'listpages-magic-and-you',
+                'scp-4205',
+                'omega-k',
+                'component:ar-theme',
+                'fragment:scp-3939-64',
+            ]
             msg.reply("Adding sample data...")
             propagate.get_wiki_data_for(samples, reply=msg.reply)
         elif 'tales' in cmd:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
             msg.reply("Fetching all tales... this will take a few minutes.")
-            tales = SCPWiki.select({'tags_all':['tale']})
+            tales = SCPWiki.select({'tags_all': ['tale']})
             pprint(tales)
             propagate.get_wiki_data_for(tales, reply=msg.reply)
         elif 'all' in cmd:
@@ -45,13 +57,15 @@ class propagate:
             msg.reply("Propagating all pages...")
             propagate.get_all_pages(reply=msg.reply)
         elif 'metadata' in cmd:
-            meta_urls = ['attribution-metadata',
-                         'scp-series',
-                         'scp-series-2',
-                         'scp-series-3',
-                         'scp-series-4',
-                         'scp-series-5',
-                         'scp-series-6']
+            meta_urls = [
+                'attribution-metadata',
+                'scp-series',
+                'scp-series-2',
+                'scp-series-3',
+                'scp-series-4',
+                'scp-series-5',
+                'scp-series-6',
+            ]
             # meta_urls = ['attribution-metadata']
             # XXX TODO replace with getting pages tagged "metadata"
             msg.reply("Propagating metadata...")
@@ -82,12 +96,12 @@ class propagate:
         for urls in chunks(urls, 10):
             print(urls)
             articles = SCPWiki.get_meta({'pages': urls})
-            for url,article in articles.items():
+            for url, article in articles.items():
                 prop_print("Updating {} in the database".format(url))
                 DB.add_article(article, commit=False)
                 if 'metadata' in article['tags']:
                     # TODO use list from above
-                    continue # skip for now
+                    continue  # skip for now
                     propagate.get_metadata(url, reply=reply)
         DB.commit()
 
@@ -106,13 +120,14 @@ class propagate:
         else:
             return propagate.get_series_metadata(url, soup, **kwargs)
 
-
     @staticmethod
     def get_series_metadata(url, soup, **kwargs):
         """Gets metadata for generic series pages that match assumptions"""
         reply = kwargs.get('reply', lambda x: None)
         # parse the html
-        titles = soup.select(".content-panel:nth-of-type(1) > ul:not(:first-of-type) li")
+        titles = soup.select(
+            ".content-panel:nth-of-type(1) > ul:not(:first-of-type) li"
+        )
         # <li><a href="/scp-xxx">SCP-xxx</a> - Title</li>
         for title in titles:
             # take the scp number from the URL, not the URL link
@@ -120,7 +135,8 @@ class propagate:
             # if ANYTHING is unexpected, cancel and throw
             title = str(title)
             # sort out the scp-number
-            pattern = re.compile(r"""
+            pattern = re.compile(
+                r"""
                 <li>                  # start of the "title"
                 (.+?                  # anything before the link
                 href="/(.+?)"         # page url
@@ -130,7 +146,9 @@ class propagate:
                   (.*?)               # page's meta title
                 )?                    # end post-link group; select if present
                 </li>                 # end of the "title"
-            """, re.VERBOSE)
+            """,
+                re.VERBOSE,
+            )
             match = pattern.search(title)
             if not match:
                 reply("Unknown link format: {}".format(title))
@@ -167,28 +185,33 @@ class propagate:
         # actions to take for each type of metadata
         actions = {
             'author': lambda url, values: DB.set_authors(
-                url, [v['name'] for v in values]),
+                url, [v['name'] for v in values]
+            ),
             'rewrite': lambda url, values: None,
             'translator': lambda url, values: None,
-            'maintainer': lambda url, values: None
+            'maintainer': lambda url, values: None,
         }
         for title in titles:
             title = str(title)
-            pattern = re.compile(r"""
+            pattern = re.compile(
+                r"""
                 <tr>\s*
                 <td>(.*?)</td>\s*      # affected page url
                 <td>(.*?)</td>\s*      # name
                 <td>(.*?)</td>\s*      # metadata type
                 <td>(.*?)</td>\s*      # date
                 </tr>
-            """, re.VERBOSE)
+            """,
+                re.VERBOSE,
+            )
             match = pattern.search(title)
             if not match:
                 reply("Unknown attribute format: {}".format(title))
                 continue
-            pages[match.group(1)][match.group(3)].append({
-                'name': match.group(2), 'date': match.group(4)})
-        for url,page in pages.items():
+            pages[match.group(1)][match.group(3)].append(
+                {'name': match.group(2), 'date': match.group(4)}
+            )
+        for url, page in pages.items():
             if ':' in url:
                 # we don't store other categories
                 continue

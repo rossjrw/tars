@@ -17,13 +17,13 @@ import time
 from pyaib.plugins import observe, keyword, plugin_class, every
 
 
-#Let pyaib know this is a plugin class and to
+# Let pyaib know this is a plugin class and to
 # Store the address of the class instance at
 # 'debug' in the irc_context obj
 @plugin_class('debug')
 class Debug(object):
 
-    #Get a copy of the irc_context, and a copy of your config
+    # Get a copy of the irc_context, and a copy of your config
     # So for us it would be 'plugin.debug' in the bot config
     def __init__(self, irc_context, config):
         print("Debug Plugin Loaded!")

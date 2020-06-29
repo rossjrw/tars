@@ -12,6 +12,7 @@ from pprint import pprint
 from helpers.database import DB
 from helpers.config import CONFIG
 
+
 def gimmick(message):
     """Detect if a message is the result of a gib gimmick."""
     if message is None:
@@ -24,6 +25,7 @@ def gimmick(message):
         return True
     return False
 
+
 @plugin_class('log')
 class Log:
     def __init__(self, irc_c, config):
@@ -33,27 +35,41 @@ class Log:
     # def print_everything(self, irc_c, msg):
     #     print(msg)
 
-    @observe('IRC_MSG_PRIVMSG','IRC_MSG_NICK',
-             'IRC_MSG_JOIN','IRC_MSG_PART','IRC_MSG_QUIT')
+    @observe(
+        'IRC_MSG_PRIVMSG',
+        'IRC_MSG_NICK',
+        'IRC_MSG_JOIN',
+        'IRC_MSG_PART',
+        'IRC_MSG_QUIT',
+    )
     def log(self, irc_c, msg):
         chname = "private" if msg.raw_channel is None else msg.raw_channel
         if msg.kind == 'PRIVMSG':
-            print("[{}] {} <{}> {}".format(
-                time.strftime("%H:%M:%S"),
-                parse.nickColor(chname),
-                parse.nickColor(msg.nick),
-                msg.message))
+            print(
+                "[{}] {} <{}> {}".format(
+                    time.strftime("%H:%M:%S"),
+                    parse.nickColor(chname),
+                    parse.nickColor(msg.nick),
+                    msg.message,
+                )
+            )
         elif msg.kind == 'NICK':
-            print("[{}] {} changed their name to {}".format(
-                time.strftime("%H:%M:%S"),
-                parse.nickColor(msg.nick),
-                parse.nickColor(msg.args)))
+            print(
+                "[{}] {} changed their name to {}".format(
+                    time.strftime("%H:%M:%S"),
+                    parse.nickColor(msg.nick),
+                    parse.nickColor(msg.args),
+                )
+            )
         else:
-            print("[{}] {} {} {}".format(
-                time.strftime("%H:%M:%S"),
-                parse.nickColor(msg.nick),
-                "joined" if msg.kind == 'JOIN' else "left",
-                parse.nickColor(chname)))
+            print(
+                "[{}] {} {} {}".format(
+                    time.strftime("%H:%M:%S"),
+                    parse.nickColor(msg.nick),
+                    "joined" if msg.kind == 'JOIN' else "left",
+                    parse.nickColor(chname),
+                )
+            )
         try:
             if not gimmick(msg.message):
                 DB.log_message(msg)
@@ -66,20 +82,25 @@ class Log:
         msg = parse.output(msg)
         if not msg:
             return
-        print("[{}] --> {}: {}".format(
-            time.strftime('%H:%M:%S'),
-            parse.nickColor(msg['channel']),
-            msg['message']
-        ))
-        if "IDENTIFY" in msg['message']: return
-        msg = {'channel': msg['channel']
-                          if msg['channel'].startswith('#')
-                          else None,
-               'sender': CONFIG.nick,
-               'kind': "PRIVMSG",
-               'message': msg['message'],
-               'nick': CONFIG.nick,
-               'timestamp': int(time.time())}
+        print(
+            "[{}] --> {}: {}".format(
+                time.strftime('%H:%M:%S'),
+                parse.nickColor(msg['channel']),
+                msg['message'],
+            )
+        )
+        if "IDENTIFY" in msg['message']:
+            return
+        msg = {
+            'channel': msg['channel']
+            if msg['channel'].startswith('#')
+            else None,
+            'sender': CONFIG.nick,
+            'kind': "PRIVMSG",
+            'message': msg['message'],
+            'nick': CONFIG.nick,
+            'timestamp': int(time.time()),
+        }
         try:
             DB.log_message(msg)
         except:

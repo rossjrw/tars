@@ -9,9 +9,15 @@ be on odd lines, key values should only be on even lines.)
 
 Valid key names are:
 """
-possible_keys = ["irc_password", "wikidot_api", "google_cse_api",
-                 "google_cse_id", "scuttle_api", "scuttle_oauth_id",
-                 "scuttle_oauth_secret"]
+possible_keys = [
+    "irc_password",
+    "wikidot_api",
+    "google_cse_api",
+    "google_cse_id",
+    "scuttle_api",
+    "scuttle_oauth_id",
+    "scuttle_oauth_secret",
+]
 
 import os.path
 from xmlrpc.client import ServerProxy
@@ -29,12 +35,17 @@ with open(os.path.dirname(__file__) + "/../keys.secret.txt") as file:
     google_api_key = keylist['google_cse_api']
     cse_key = keylist['google_cse_id']
 
+
 class WikidotAPI:
     """Wrapper for Wikidot API functions."""
+
     def __init__(self, wikiname):
         self.w = wikiname
-        self.s = ServerProxy("https://TARS:{}@www.wikidot.com/xml-rpc-api.php"
-                             .format(wikidot_api_key))
+        self.s = ServerProxy(
+            "https://TARS:{}@www.wikidot.com/xml-rpc-api.php".format(
+                wikidot_api_key
+            )
+        )
         self.access = keylist['scuttle_api']
         self.oauth_id = keylist['scuttle_oauth_id']
         self.oauth_secret = keylist['scuttle_oauth_secret']
@@ -73,14 +84,18 @@ class WikidotAPI:
     def get_page_id(self, pages):
         """Get wikidot ID for a list of pages, or all"""
         if self.w != 'scp-wiki':
-            raise ValueError("SCUTTLE only supports scp-wiki, not {}".format(self.w))
+            raise ValueError(
+                "SCUTTLE only supports scp-wiki, not {}".format(self.w)
+            )
         if isinstance(pages, str):
             if pages == 'all':
                 fields = {'all': True}
             elif pages == 'refresh':
-                fields = {'grant_type': "authorization_code",
-                          'client_id': self.oauth_id,
-                          'client_secret': self.oauth_secret}
+                fields = {
+                    'grant_type': "authorization_code",
+                    'client_id': self.oauth_id,
+                    'client_secret': self.oauth_secret,
+                }
             else:
                 raise ValueError("get_page_id expects a list of pages or all")
         elif isinstance(pages, list):
@@ -88,19 +103,23 @@ class WikidotAPI:
         else:
             raise ValueError("get_page_id expects a list of pages or all")
         r = http.request(
-            'GET',"http://scpfoundation.wiki/api/pages/get/wikidotid",
+            'GET',
+            "http://scpfoundation.wiki/api/pages/get/wikidotid",
             # 'GET',"http://scpfoundation.wiki/api/oauth/token",
             fields=fields,
             headers={
                 'Authorization': "Bearer {}".format(self.access),
                 'Accept': "application/json",
                 'User-Agent': "TARS",
-            })
-        return(json.loads(r.data.decode('utf-8'))['message'])
+            },
+        )
+        return json.loads(r.data.decode('utf-8'))['message']
+
 
 SCPWiki = WikidotAPI("scp-wiki")
 Sandbox3 = WikidotAPI("scp-sandbox-3")
 Topia = WikidotAPI("topia")
+
 
 def get_ups(article):
     r = http.request(
@@ -116,9 +135,10 @@ def get_ups(article):
             'Content-Type': "application/x-www-form-urlencoded; charset=UTF-8",
             'Accept': "*/*",
             'X-Requested-With': "XMLHttpRequest",
-            'Connection': "keep-alive"
-        }
+            'Connection': "keep-alive",
+        },
     )
+
 
 def get_id(fullname):
     """Gets the Wikidot ID of a page."""
