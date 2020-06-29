@@ -19,6 +19,7 @@ from helpers.database import DB
 from helpers.defer import defer
 from helpers.greetings import acronym, greet, greets
 
+
 class converse:
     @classmethod
     def command(cls, irc_c, msg, cmd):
@@ -26,11 +27,10 @@ class converse:
         ##### ping matches #####
 
         if cmd.pinged:
-            if any(x in cmd.unping.lower() for x in [
-                "fuck you",
-                "piss off",
-                "fuck off",
-            ]):
+            if any(
+                x in cmd.unping.lower()
+                for x in ["fuck you", "piss off", "fuck off",]
+            ):
                 msg.reply("{}: no u".format(msg.nick))
                 return
 
@@ -42,34 +42,47 @@ class converse:
         if msg.message.lower() == "{}!".format(CONFIG.nick.lower()):
             msg.reply("{}!".format(msg.nick))
             return
-        if strip(msg.message.lower()) in [strip("{}{}".format(g,CONFIG.nick.lower()))
-                                      for g in greets]:
+        if strip(msg.message.lower()) in [
+            strip("{}{}".format(g, CONFIG.nick.lower())) for g in greets
+        ]:
             if msg.sender == 'XilasCrowe':
                 msg.reply("toast")
                 return
             msg.reply(greet(msg.nick))
             return
-        if CONFIG.nick == "TARS" and matches_any_of(msg.message, [
-            "what does tars stand for?",
-            "is tars an acronym?",
-        ]) and "TARS" in msg.message.upper():
+        if (
+            CONFIG.nick == "TARS"
+            and matches_any_of(
+                msg.message,
+                ["what does tars stand for?", "is tars an acronym?",],
+            )
+            and "TARS" in msg.message.upper()
+        ):
             msg.reply(acronym())
             return
-        if CONFIG.nick == "TARS" and matches_any_of(msg.message, [
-            "is tars a bot?",
-            "tars are you a bot?",
-        ]) and "TARS" in msg.message.upper():
+        if (
+            CONFIG.nick == "TARS"
+            and matches_any_of(
+                msg.message, ["is tars a bot?", "tars are you a bot?",]
+            )
+            and "TARS" in msg.message.upper()
+        ):
             msg.reply("Yep.")
             return
-        if CONFIG.nick == "TARS" and matches_any_of(msg.message, [
-            "is tars a person?",
-            "tars are you a person?",
-        ]) and "TARS" in msg.message.upper():
+        if (
+            CONFIG.nick == "TARS"
+            and matches_any_of(
+                msg.message, ["is tars a person?", "tars are you a person?",]
+            )
+            and "TARS" in msg.message.upper()
+        ):
             msg.reply("Nope. I'm a bot.")
             return
-        if CONFIG.nick == "TARS" and matches_any_of(msg.message, [
-            "what is your iq",
-        ]) and "TARS" in msg.message.upper():
+        if (
+            CONFIG.nick == "TARS"
+            and matches_any_of(msg.message, ["what is your iq",])
+            and "TARS" in msg.message.upper()
+        ):
             msg.reply("big")
             return
 
@@ -92,20 +105,24 @@ class converse:
                 if msg.raw_channel != CONFIG['channels']['home']:
                     defer.report(cmd, bold_acronym)
                 with open(CONFIG['converse']['acronyms'], 'w') as acro_file:
-                    acros.append({
-                        'acronym': raw_acronym,
-                        'sender': msg.nick,
-                        'channel': msg.raw_channel,
-                        'date': msg.timestamp
-                    })
+                    acros.append(
+                        {
+                            'acronym': raw_acronym,
+                            'sender': msg.nick,
+                            'channel': msg.raw_channel,
+                            'date': msg.timestamp,
+                        }
+                    )
                     json.dump(acros, acro_file, indent=2)
                 return
 
         ##### custom matches #####
 
-        if (msg.sender == "Jazstar" and
-            "slime" in msg.message and
-            "XilasCrowe" in DB.get_channel_members(msg.raw_channel)):
+        if (
+            msg.sender == "Jazstar"
+            and "slime" in msg.message
+            and "XilasCrowe" in DB.get_channel_members(msg.raw_channel)
+        ):
             msg.reply("Oy xilas I heard you like slime!")
             return
 
@@ -113,9 +130,11 @@ class converse:
         if cmd.pinged:
             return 1
 
+
 def strip(string):
     """Strips all non-alphanumeric characters."""
     return ''.join(l for l in string if l.isalnum()).lower()
+
 
 def matches_any_of(subject, matches, threshold=80):
     for match in matches:
@@ -123,28 +142,33 @@ def matches_any_of(subject, matches, threshold=80):
             return True
     return False
 
+
 def find_acronym(message, acro_letters):
     match = re.search(
         r"(\s+|(?:\s*[{0}]+\s*))".join(
-            [r"([{{0}}]*)\b({})(\S*)\b([{{0}}]*)".format(l)
-             for l in acro_letters])
-        .format(re.escape(string.punctuation)),
-        message, re.IGNORECASE | re.VERBOSE)
+            [
+                r"([{{0}}]*)\b({})(\S*)\b([{{0}}]*)".format(l)
+                for l in acro_letters
+            ]
+        ).format(re.escape(string.punctuation)),
+        message,
+        re.IGNORECASE | re.VERBOSE,
+    )
     if match:
         raw_acronym = "".join(match.groups())
         submatches = list(chunks(list(match.groups()), 5))
         # the match is made up of 5 repeating parts:
-            # 0. punctation before word
-            # 1. first letter of word
-            # 2. rest of word
-            # 3. punctuation after word
-            # 4. stuff between this word and the next word
+        # 0. punctation before word
+        # 1. first letter of word
+        # 2. rest of word
+        # 3. punctuation after word
+        # 4. stuff between this word and the next word
         # for the last word (submatch), however, 4 is not present
         submatches[-1].append("")
         for submatch in submatches:
             submatch[1] = submatch[1].upper()
-        bold_acronym = "".join(["{}\x02{}\x0F{}{}{}"
-                                .format(*submatch)
-                                for submatch in submatches])
+        bold_acronym = "".join(
+            ["{}\x02{}\x0F{}{}{}".format(*submatch) for submatch in submatches]
+        )
         return raw_acronym, bold_acronym
     return False

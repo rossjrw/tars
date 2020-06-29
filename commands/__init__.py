@@ -11,73 +11,64 @@ COMMANDS = {
 """
 
 COMMANDS = {
-    "search": {"search": {"search","sea","s"},
-               "regexsearch": {"regexsearch","rsearch","rsea","rs"},
-               "tags": {"tags"},
-               "lastcreated": {"lastcreated","lc","l"},
-              },
-    "showmore": {"showmore": {"showmore","sm","pick"},
-                },
-    "admin": {"kill": {"kys"},
-              "join": {"join","rejoin"},
-              "leave": {"leave","part"},
-              "reload": {"reload"},
-              "say": {"say"},
-              "config": {"config"},
-              "reboot": {"reboot"},
-              "debug": {"debug"},
-              "update": {"update"},
-              "helenhere": {"checkhelen","helenhere"},
-             },
-    "refactor": {"refactor": {"refactor"},
-                },
-    "chevron": {"chevron": {"chevron"},
-               },
-    "info": {"help": {"help"},
-             "status": {"tars","version","status","uptime"},
-             "github": {"github","gh"},
-             "user": {"user"},
-             "tag": {"tag"},
-            },
-    "promote": {"promote": {"promote"},
-               },
-    "gimmick": {"reptile": {"reptile","rep"},
-                "fish": {"fish","reptile+","rep+"},
-                "bear": {"bear"},
-                "cat": {"cat"},
-                "narcissism": {"rounderhouse","jazstar","themightymcb"},
-                "password": {"password","passcode"},
-                "hug": {"hug","hugtars"},
-                "fiction": {"isthisreal"},
-                "idea": {"idea"},
-               },
-    "converse": {"converse": {"converse"},
-                },
-    "dbq": {"query": {"query","dbq"},
-            "seen": {"seen","lastseen"},
-           },
-    "record": {"record": {"record"},
-               "pingall": {"pingall"},
-              },
-    "prop": {"propagate": {"propagate","prop"},
-            },
-    "analytic": {"analyse_wiki": {"analyse_wiki"},
-                },
-    "gib": {"gib": {"gibber","gib","big","goob","boog","gob","bog"},
-           },
-    "nick": {"alias": {"alias"},
-            },
-    "shortest": {"shortest": {"shortest"}
-                },
+    "search": {
+        "search": {"search", "sea", "s"},
+        "regexsearch": {"regexsearch", "rsearch", "rsea", "rs"},
+        "tags": {"tags"},
+        "lastcreated": {"lastcreated", "lc", "l"},
+    },
+    "showmore": {"showmore": {"showmore", "sm", "pick"},},
+    "admin": {
+        "kill": {"kys"},
+        "join": {"join", "rejoin"},
+        "leave": {"leave", "part"},
+        "reload": {"reload"},
+        "say": {"say"},
+        "config": {"config"},
+        "reboot": {"reboot"},
+        "debug": {"debug"},
+        "update": {"update"},
+        "helenhere": {"checkhelen", "helenhere"},
+    },
+    "refactor": {"refactor": {"refactor"},},
+    "chevron": {"chevron": {"chevron"},},
+    "info": {
+        "help": {"help"},
+        "status": {"tars", "version", "status", "uptime"},
+        "github": {"github", "gh"},
+        "user": {"user"},
+        "tag": {"tag"},
+    },
+    "promote": {"promote": {"promote"},},
+    "gimmick": {
+        "reptile": {"reptile", "rep"},
+        "fish": {"fish", "reptile+", "rep+"},
+        "bear": {"bear"},
+        "cat": {"cat"},
+        "narcissism": {"rounderhouse", "jazstar", "themightymcb"},
+        "password": {"password", "passcode"},
+        "hug": {"hug", "hugtars"},
+        "fiction": {"isthisreal"},
+        "idea": {"idea"},
+    },
+    "converse": {"converse": {"converse"},},
+    "dbq": {"query": {"query", "dbq"}, "seen": {"seen", "lastseen"},},
+    "record": {"record": {"record"}, "pingall": {"pingall"},},
+    "prop": {"propagate": {"propagate", "prop"},},
+    "analytic": {"analyse_wiki": {"analyse_wiki"},},
+    "gib": {"gib": {"gibber", "gib", "big", "goob", "boog", "gob", "bog"},},
+    "nick": {"alias": {"alias"},},
+    "shortest": {"shortest": {"shortest"}},
 }
 
 from helpers.error import CommandNotExistError
+
 
 class Commands_Directory:
     def __init__(self, directory):
         self.COMMANDS = directory
 
-    def get(self,file=None,command=None):
+    def get(self, file=None, command=None):
         if file is None:
             # return a list of files
             return self.COMMANDS.keys()
@@ -94,8 +85,10 @@ class Commands_Directory:
         """Raise an error when a command doesn't exist"""
         raise CommandNotExistError(name)
 
+
 from importlib import import_module, reload
 import sys
+
 
 def cmdprint(text, error=False):
     bit = "[\x1b[38;5;75mCommands\x1b[0m] "
@@ -103,16 +96,17 @@ def cmdprint(text, error=False):
         bit += "[\x1b[38;5;196mError\x1b[0m] "
     print(bit + str(text))
 
+
 COMMANDS = Commands_Directory(COMMANDS)
 
 for file in COMMANDS.get():
     if "commands.{}".format(file) in sys.modules:
         reload(sys.modules["commands.{}".format(file)])
     else:
-        import_module(".{}".format(file),"commands")
+        import_module(".{}".format(file), "commands")
     for cmd in COMMANDS.get(file):
-        cmdprint("Importing {} from {}".format(cmd,file))
-        for alias in COMMANDS.get(file,cmd):
+        cmdprint("Importing {} from {}".format(cmd, file))
+        for alias in COMMANDS.get(file, cmd):
             try:
                 setattr(COMMANDS, alias, getattr(locals()[file], cmd))
             except AttributeError as e:

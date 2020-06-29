@@ -14,18 +14,20 @@ from helpers.parse import nickColor
 from helpers.database import DB
 from helpers.defer import defer
 
+
 def nameprint(text, error=False):
     bit = "[\x1b[38;5;218mNames\x1b[0m] "
     if error:
         bit += "[\x1b[38;5;196mError\x1b[0m] "
     print(bit + str(text))
 
+
 @plugin_class('names')
 class Names:
     def __init__(self, irc_c, config):
         print('Names Plugin Loaded!')
 
-    @observe('IRC_MSG_353') # 353 is a NAMES response
+    @observe('IRC_MSG_353')  # 353 is a NAMES response
     def record_names(self, irc_c, msg):
         # msg.args is a string
         # "TARS = #channel :name1 name2 name3 name4"
@@ -36,19 +38,16 @@ class Names:
         # chatstaff names start with a punctuation
         for key, name in enumerate(names):
             if name['nick'][0] in '+%@&~':
-                names[key] = {
-                    'nick': name['nick'][1:],
-                    'mode': name['nick'][0]
-                }
+                names[key] = {'nick': name['nick'][1:], 'mode': name['nick'][0]}
             else:
-                names[key] = {
-                    'nick': name['nick'],
-                    'mode': None
-                }
+                names[key] = {'nick': name['nick'], 'mode': None}
         # just need to log these names to the db now
-        nameprint("Updating NAMES for {}: {}".format(
-            nickColor(channel),
-            ", ".join(nickColor(nick) for nick in sorted(nicks))))
+        nameprint(
+            "Updating NAMES for {}: {}".format(
+                nickColor(channel),
+                ", ".join(nickColor(nick) for nick in sorted(nicks)),
+            )
+        )
         try:
             DB.sort_names(channel, names)
         except Exception as e:
@@ -57,7 +56,7 @@ class Names:
         # broadcast this info to whatever needs it
         emit_signal(irc_c, 'NAMES_RESPONSE', data=channel)
 
-    @observe('IRC_MSG_NICK') # someone changes their name
+    @observe('IRC_MSG_NICK')  # someone changes their name
     def change_name(self, irc_c, msg):
         assert msg.kind == 'NICK'
         nameprint("{} changed their name to {}".format(msg.nick, msg.args))

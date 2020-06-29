@@ -1,16 +1,19 @@
 import sys
 from itertools import product, combinations_with_replacement
 
-NAMES = ['john smith',
-         'amelie jones',
-         'mark williams',
-         'amanda brown',
-         'logan wilson',
-         'rebecca taylor',
-         'armaldo johnson',
-         'perrianne white',
-         'glomorthy martin',
-         'andolandoman anderson']
+NAMES = [
+    'john smith',
+    'amelie jones',
+    'mark williams',
+    'amanda brown',
+    'logan wilson',
+    'rebecca taylor',
+    'armaldo johnson',
+    'perrianne white',
+    'glomorthy martin',
+    'andolandoman anderson',
+]
+
 
 def get_term_sizes(max_length, term_count_limit):
     # terms is a list of lists
@@ -20,12 +23,15 @@ def get_term_sizes(max_length, term_count_limit):
     # string (which means including whitespace)
     def whitelen(l):
         return sum(l) + len(l) - 1
+
     terms = []
-    for count in range(1, term_count_limit+1):
-        terms.extend(combinations_with_replacement(
-            range(max_length, 0, -1), count))
+    for count in range(1, term_count_limit + 1):
+        terms.extend(
+            combinations_with_replacement(range(max_length, 0, -1), count)
+        )
     terms = sorted(terms, key=whitelen)
     return list(filter(lambda l: whitelen(l) <= max_length, terms))
+
 
 def get_all_substrings(selected_name, space_allowed=True):
     # returns a list of lists
@@ -34,24 +40,31 @@ def get_all_substrings(selected_name, space_allowed=True):
     # the first returned list is empty, so the index of the returned master
     # list is synonymous with the length of each string in that list
     all_substrings = [[]]
-    for length in range(1, len(selected_name)+1):
+    for length in range(1, len(selected_name) + 1):
         substrings = []
         # get name from start->length to (end-length)->end
-        for offset in range(0, len(selected_name)-length+1):
-            substring = selected_name[offset:offset+length]
+        for offset in range(0, len(selected_name) - length + 1):
+            substring = selected_name[offset : offset + length]
             if ' ' not in substring or space_allowed:
                 substrings.append(substring)
         all_substrings.append(substrings)
     return all_substrings
 
+
 def get_substring(selected_name, all_names):
     length_substrings = get_all_substrings(selected_name)
     for substrings in length_substrings:
         for substring in substrings:
-            if not any([substring.lower() in name.lower() for name in all_names
-                        if name != selected_name]):
+            if not any(
+                [
+                    substring.lower() in name.lower()
+                    for name in all_names
+                    if name != selected_name
+                ]
+            ):
                 return substring
     return None
+
 
 def get_substring_no_spaces(selected_name, all_names):
     length_substrings = get_all_substrings(selected_name, False)
@@ -66,11 +79,16 @@ def get_substring_no_spaces(selected_name, all_names):
         for search_term in search_terms:
             if len(search_term) != len(set(search_term)):
                 continue
-            if not any([all([term.lower() in name.lower()
-                             for term in search_term])
-                        for name in all_names if name != selected_name]):
+            if not any(
+                [
+                    all([term.lower() in name.lower() for term in search_term])
+                    for name in all_names
+                    if name != selected_name
+                ]
+            ):
                 return " ".join(search_term)
     return None
+
 
 def go():
     try:
@@ -83,6 +101,7 @@ def go():
     substring = get_substring_no_spaces(name, NAMES)
     print("Shortest unique substring without spaces: {}".format(substring))
 
+
 if __name__ == '__main__':
-    print(get_term_sizes(10,5))
+    print(get_term_sizes(10, 5))
     # go()

@@ -1,5 +1,6 @@
 from commands.converse import find_acronym
 
+
 def test_acronym_match():
     def acro(string, final=None):
         if final is None:
