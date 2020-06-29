@@ -53,7 +53,7 @@ class gib:
         )
         if 'help' in cmd:
             msg.reply(
-                "Usage: .gib [--channel #channel] [--user user] " "[--no-cache]"
+                "Usage: .gib [--channel #channel] [--user user] [--no-cache]"
             )
             return
         channels = [msg.raw_channel]
@@ -85,7 +85,7 @@ class gib:
                 channels = cmd['channel']
         elif msg.raw_channel is None:
             raise CommandError(
-                "Specify a channel to gib from with " "--channel/-c"
+                "Specify a channel to gib from with --channel/-c"
             )
         if 'user' in cmd:
             if len(cmd['user']) == 0:
@@ -115,7 +115,7 @@ class gib:
                 )
             if limit < 200:
                 raise CommandError(
-                    "When using --limit, the limit cannot be " "lower than 200"
+                    "When using --limit, the limit cannot be lower than 200"
                 )
         else:
             limit = CONFIG['gib']['limit']
@@ -185,7 +185,7 @@ class gib:
         if 'regex' in cmd:
             if len(cmd['regex']) == 0:
                 raise CommandError(
-                    "When using the regex filter, you must " "specify a regex"
+                    "When using the regex filter, you must specify a regex"
                 )
             patterns = cmd['regex']
             for pattern in patterns:
@@ -396,7 +396,7 @@ class gib:
         )
         if len(messages) == 0:
             raise MyFaultError(
-                "I didn't find any URLs in the " "selection criteria."
+                "I didn't find any URLs in the selection criteria."
             )
         # then reduce strings containing urls to urls
         urls = [

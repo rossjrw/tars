@@ -134,7 +134,7 @@ class seen:
             cmd.args['root'].extend(cmd.args['count'])
         if len(cmd.args['root']) < 1:
             raise CommandError(
-                "Specify a user and I'll tell you when I last " "saw them"
+                "Specify a user and I'll tell you when I last saw them"
             )
         nick = cmd.args['root'][0]
         messages = DB.get_messages_from_user(nick, msg.raw_channel)
