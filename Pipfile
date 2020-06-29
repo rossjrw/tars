@@ -7,6 +7,7 @@ verify_ssl = true
 pylint = "*"
 jedi = "*"
 pytest = "*"
+black = "==19.10b0"
 
 [packages]
 edtf = "*"
@@ -29,3 +30,6 @@ GitPython = "*"
 pyaib = {git = "https://github.com/rossjrw/pyaib.git"}
 beautifulsoup4 = "*"
 toml = "*"
+
+[requires]
+python_version = "3.8"
