@@ -59,7 +59,7 @@ class ScuttleAPI:
         elif len(tags):
             raise NotImplementedError
         else:
-            slugs = [page['slug'] for page in self.scuttle.all_pages()]
+            slugs = [page['slug'] for page in self.scuttle.pages()]
         return slugs
 
 SCPWiki = ScuttleAPI("en")
