@@ -55,7 +55,6 @@ COMMANDS = {
     "dbq": {"query": {"query", "dbq"}, "seen": {"seen", "lastseen"},},
     "record": {"record": {"record"}, "pingall": {"pingall"},},
     "prop": {"propagate": {"propagate", "prop"},},
-    "analytic": {"analyse_wiki": {"analyse_wiki"},},
     "gib": {"gib": {"gibber", "gib", "big", "goob", "boog", "gob", "bog"},},
     "nick": {"alias": {"alias"},},
     "shortest": {"shortest": {"shortest"}},

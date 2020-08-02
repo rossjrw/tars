@@ -17,7 +17,7 @@ from googleapiclient.discovery import build
 from commands.gib import gib
 from commands.showmore import showmore
 from helpers.defer import defer
-from helpers.api import google_api_key, cse_key
+from helpers.api import GOOGLE_CSE_API_KEY, GOOGLE_CSE_ID
 from helpers.error import CommandError, isint
 from helpers.database import DB
 
@@ -796,8 +796,8 @@ class DateRange:
 # TODO move this to helpers/api.py
 def google_search(search_term, **kwargs):
     """Performs a mismatch search via google"""
-    service = build("customsearch", "v1", developerKey=google_api_key)
-    res = service.cse().list(q=search_term, cx=cse_key, **kwargs).execute()
+    service = build("customsearch", "v1", developerKey=GOOGLE_CSE_API_KEY)
+    res = service.cse().list(q=search_term, cx=GOOGLE_CSE_ID, **kwargs).execute()
     if 'items' in res:
         return res['items']
     return [None]

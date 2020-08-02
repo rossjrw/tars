@@ -30,6 +30,7 @@ GitPython = "*"
 pyaib = {git = "https://github.com/rossjrw/pyaib.git"}
 beautifulsoup4 = "*"
 toml = "*"
+python-scuttle = "*"
 
 [requires]
 python_version = "3.8"
