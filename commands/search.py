@@ -797,7 +797,9 @@ class DateRange:
 def google_search(search_term, **kwargs):
     """Performs a mismatch search via google"""
     service = build("customsearch", "v1", developerKey=GOOGLE_CSE_API_KEY)
-    res = service.cse().list(q=search_term, cx=GOOGLE_CSE_ID, **kwargs).execute()
+    res = (
+        service.cse().list(q=search_term, cx=GOOGLE_CSE_ID, **kwargs).execute()
+    )
     if 'items' in res:
         return res['items']
     return [None]

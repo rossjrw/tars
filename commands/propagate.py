@@ -129,7 +129,8 @@ class propagate:
             # if ANYTHING is unexpected, cancel and throw
             title = str(title)
             # sort out the scp-number
-            pattern = re.compile(r"""
+            pattern = re.compile(
+                r"""
                 <li>           # start of the "title"
                 (.+?           # anything before the link
                 href="/(.+?)"  # page slug
@@ -139,7 +140,9 @@ class propagate:
                   (.*?)        # page's meta title
                 )?             # end post-link group; select if present
                 </li>          # end of the "title"
-            """, re.VERBOSE)
+            """,
+                re.VERBOSE,
+            )
             match = pattern.search(title)
             if not match:
                 reply("Unknown link format: {}".format(title))
@@ -176,10 +179,11 @@ class propagate:
         # actions to take for each type of metadata
         actions = {
             'author': lambda slug, values: DB.set_authors(
-                slug, [v['name'] for v in values]),
+                slug, [v['name'] for v in values]
+            ),
             'rewrite': lambda slug, values: None,
             'translator': lambda slug, values: None,
-            'maintainer': lambda slug, values: None
+            'maintainer': lambda slug, values: None,
         }
         for title in titles:
             title = str(title)
@@ -198,8 +202,9 @@ class propagate:
             if not match:
                 reply("Unknown attribute format: {}".format(title))
                 continue
-            pages[match.group(1)][match.group(3)].append({
-                'name': match.group(2), 'date': match.group(4)})
+            pages[match.group(1)][match.group(3)].append(
+                {'name': match.group(2), 'date': match.group(4)}
+            )
         for slug, page in pages.items():
             if ':' in slug:
                 # we don't store other categories

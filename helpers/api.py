@@ -26,8 +26,10 @@ GOOGLE_CSE_API_KEY = keys['google_cse_api']
 GOOGLE_CSE_ID = keys['google_cse_id']
 NICKSERV_PASSWORD = keys['irc_password']
 
+
 class ScuttleAPI:
     """Wrapper for Wikidot API functions."""
+
     def __init__(self, domain):
         self.scuttle = scuttle(domain, keys['scuttle_api'], 1)
 
@@ -61,5 +63,6 @@ class ScuttleAPI:
         else:
             slugs = [page['slug'] for page in self.scuttle.pages()]
         return slugs
+
 
 SCPWiki = ScuttleAPI("en")
