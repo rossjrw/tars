@@ -54,7 +54,7 @@ COMMANDS = {
     "converse": {"converse": {"converse"},},
     "dbq": {"query": {"query", "dbq"}, "seen": {"seen", "lastseen"},},
     "record": {"record": {"record"}, "pingall": {"pingall"},},
-    "prop": {"propagate": {"propagate", "prop"},},
+    "propagate": {"propagate": {"propagate", "prop"},},
     "gib": {"gib": {"gibber", "gib", "big", "goob", "boog", "gob", "bog"},},
     "nick": {"alias": {"alias"},},
     "shortest": {"shortest": {"shortest"}},
