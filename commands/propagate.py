@@ -90,7 +90,12 @@ class propagate:
             if index in breakpoints:
                 reply("Propagated {} of {}".format(index, len(slugs)))
             prop_print("Updating {} in the database".format(slug))
-            page = SCPWiki.get_one_page_meta(slug)
+            try:
+                page = SCPWiki.get_one_page_meta(slug)
+            except KeyError:
+                # Raised when the page does not exist, for example if it has
+                # been deleted during propagation
+                continue
             DB.add_article(page, commit=False)
             if 'metadata' in page['tags']:
                 metadata_slugs.append(slug)
