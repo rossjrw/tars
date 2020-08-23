@@ -1356,6 +1356,20 @@ class SqliteDriver:
         if commit:
             self.conn.commit()
 
+    def delete_article(self, url, commit=True):
+        """Delete an article by slug"""
+        dbprint("Adding article {}".format(url))
+        c = self.conn.cursor()
+        c.execute(
+            '''
+            DELETE FROM articles
+            WHERE url=?
+            ''',
+            (url,),
+        )
+        if commit:
+            self.conn.commit()
+
     def add_article_title(self, url, num, title, commit=True):
         """Update the meta title for an SCP"""
         c = self.conn.cursor()
