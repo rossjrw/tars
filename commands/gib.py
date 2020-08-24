@@ -238,7 +238,8 @@ class gib:
                     ),
                     (
                         channels[0]
-                        if len(channels) == 1 and channels[0] == msg.raw_channel
+                        if len(channels) == 1
+                        and channels[0] == msg.raw_channel
                         else "that channel"
                         if len(channels) == 1
                         else "those channels"
@@ -321,7 +322,9 @@ class gib:
         if len(messages) == 0:
             raise AttributeError
         for decr in range(0, cls.size):
-            print("Making model from messages, size {}".format(cls.size - decr))
+            print(
+                "Making model from messages, size {}".format(cls.size - decr)
+            )
             cls.model = cls.make_model(messages, decrement=decr)
             print("Making sentence")
             sentence = cls.model.make_short_sentence(

@@ -205,9 +205,9 @@ class record:
                 }
             )
         if action == 'stop':
-            sett = [s for s in cls.settings if s['channel'] == msg.raw_channel][
-                0
-            ]
+            sett = [
+                s for s in cls.settings if s['channel'] == msg.raw_channel
+            ][0]
             end_id = DB.get_most_recent_message(msg.raw_channel)
             messages = DB.get_messages_between(
                 msg.raw_channel, sett['start_id'], end_id

@@ -139,7 +139,9 @@ class say:
         else:
             message = " ".join(cmd.args['root'][1:])
             if 'obfuscate' in cmd and msg.raw_channel is not None:
-                message = gib.obfuscate(message, DB.get_aliases(None) + ["ops"])
+                message = gib.obfuscate(
+                    message, DB.get_aliases(None) + ["ops"]
+                )
             if 'colour' in cmd:
                 print(nickColor(message))
                 msg.reply("Printed that to console")

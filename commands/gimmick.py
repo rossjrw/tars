@@ -15,7 +15,9 @@ class idea:
         msg.reply(
             "{} · {}".format(
                 "http://bit.ly/scp-gen",
-                requests.get("https://scp-generator.herokuapp.com/newscp").text,
+                requests.get(
+                    "https://scp-generator.herokuapp.com/newscp"
+                ).text,
             )
         )
 

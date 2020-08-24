@@ -25,7 +25,9 @@ class alias:
             return
         # 2. Add new aliases
         if 'add' in cmd:
-            if nick.lower() != msg.sender.lower() and not defer.controller(cmd):
+            if nick.lower() != msg.sender.lower() and not defer.controller(
+                cmd
+            ):
                 raise CommandError("You can't add an alias for someone else.")
             aliases = cmd['add']
             # db has add_alias, but that needs user ID
@@ -41,7 +43,9 @@ class alias:
             )
             irc_c.PRIVMSG(CONFIG.home, "{} added alias {}".format(nick, alias))
         if 'remove' in cmd:
-            if nick.lower() != msg.sender.lower() and not defer.controller(cmd):
+            if nick.lower() != msg.sender.lower() and not defer.controller(
+                cmd
+            ):
                 raise CommandError(
                     "You can't remove an alias from someone else."
                 )

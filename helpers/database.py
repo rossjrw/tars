@@ -132,7 +132,9 @@ class SqliteDriver:
             )
         else:
             raise AttributeError(
-                "Checking existence of {} of unknown type {}".format(name, type)
+                "Checking existence of {} of unknown type {}".format(
+                    name, type
+                )
             )
         return bool(c.fetchone())
 

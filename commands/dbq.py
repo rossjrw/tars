@@ -81,7 +81,9 @@ class query:
                     )
         if 'alias' in cmd:
             search = (
-                cmd.args['root'][1] if len(cmd.args['root']) > 1 else msg.sender
+                cmd.args['root'][1]
+                if len(cmd.args['root']) > 1
+                else msg.sender
             )
             aliases = DB.get_aliases(search)
             # should be None or a list of lists

@@ -25,9 +25,9 @@ class shortest:
         ]
         try:
             title = DB.get_article_info(
-                DB.get_articles([{'type': 'url', 'term': cmd.args['root'][0]}])[
-                    0
-                ]
+                DB.get_articles(
+                    [{'type': 'url', 'term': cmd.args['root'][0]}]
+                )[0]
             )['title']
         except IndexError:
             raise MyFaultError("I couldn't find the page with that URL.")
@@ -121,7 +121,9 @@ class shortest:
             return None
         # then check normally
         length_substrings = shortest.get_all_substrings(selected_name, False)
-        template_terms = shortest.get_term_sizes(min(10, len(selected_name)), 4)
+        template_terms = shortest.get_term_sizes(
+            min(10, len(selected_name)), 4
+        )
         already_searched_terms = []
         # iterate through each template term
         # need to replace each value in the template with a value from the
@@ -129,7 +131,9 @@ class shortest:
         for template_term in template_terms:
             # template_term = (4, 3, 2) or somesuch
             print(template_term)
-            term_substring_lists = [length_substrings[l] for l in template_term]
+            term_substring_lists = [
+                length_substrings[l] for l in template_term
+            ]
             search_terms = list(product(*term_substring_lists))
             for search_term in search_terms:
                 if len(search_term) != len(set(search_term)):

@@ -38,7 +38,10 @@ class Names:
         # chatstaff names start with a punctuation
         for key, name in enumerate(names):
             if name['nick'][0] in '+%@&~':
-                names[key] = {'nick': name['nick'][1:], 'mode': name['nick'][0]}
+                names[key] = {
+                    'nick': name['nick'][1:],
+                    'mode': name['nick'][0],
+                }
             else:
                 names[key] = {'nick': name['nick'], 'mode': None}
         # just need to log these names to the db now
