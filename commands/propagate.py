@@ -42,7 +42,6 @@ class propagate:
                 'scp-4205',
                 'omega-k',
                 'component:ar-theme',
-                'fragment:scp-3939-64',
             ]
             msg.reply("Adding sample data...")
             propagate.get_wiki_data_for(samples, reply=msg.reply)
@@ -90,7 +89,14 @@ class propagate:
             if index in breakpoints:
                 reply("Propagated {} of {}".format(index, len(slugs)))
             prop_print("Updating {} in the database".format(slug))
-            page = SCPWiki.get_one_page_meta(slug)
+            try:
+                page = SCPWiki.get_one_page_meta(slug)
+            except KeyError:
+                # Raised when the page does not exist, for example if it has
+                # been deleted during propagation
+                reply("{} was deleted during propagation".format(slug))
+                DB.delete_article(slug)
+                continue
             DB.add_article(page, commit=False)
             if 'metadata' in page['tags']:
                 metadata_slugs.append(slug)
@@ -129,7 +135,8 @@ class propagate:
             # if ANYTHING is unexpected, cancel and throw
             title = str(title)
             # sort out the scp-number
-            pattern = re.compile(r"""
+            pattern = re.compile(
+                r"""
                 <li>           # start of the "title"
                 (.+?           # anything before the link
                 href="/(.+?)"  # page slug
@@ -139,15 +146,12 @@ class propagate:
                   (.*?)        # page's meta title
                 )?             # end post-link group; select if present
                 </li>          # end of the "title"
-            """, re.VERBOSE)
+                """,
+                re.VERBOSE,
+            )
             match = pattern.search(title)
             if not match:
                 reply("Unknown link format: {}".format(title))
-                continue
-            # TODO if newpage in class then article does not exist
-            if "class=\"newpage\"" in match.group(1):
-                # article doesn't exist
-                # DB.remove_article()
                 continue
             num = match.group(2)
             meta_title = match.group(4)
@@ -162,7 +166,11 @@ class propagate:
                     # don't add title but also don't delete
             # then add these numbers and names to the DB
             # if "<" in meta_title: print(num, meta_title)
-            DB.add_article_title(num, num, meta_title, False)
+            if "class=\"newpage\"" in match.group(1):
+                # article doesn't exist
+                DB.delete_article(num)
+            else:
+                DB.add_article_title(num, num, meta_title, False)
         DB.commit()
 
     @staticmethod
@@ -176,10 +184,11 @@ class propagate:
         # actions to take for each type of metadata
         actions = {
             'author': lambda slug, values: DB.set_authors(
-                slug, [v['name'] for v in values]),
+                slug, [v['name'] for v in values]
+            ),
             'rewrite': lambda slug, values: None,
             'translator': lambda slug, values: None,
-            'maintainer': lambda slug, values: None
+            'maintainer': lambda slug, values: None,
         }
         for title in titles:
             title = str(title)
@@ -198,8 +207,9 @@ class propagate:
             if not match:
                 reply("Unknown attribute format: {}".format(title))
                 continue
-            pages[match.group(1)][match.group(3)].append({
-                'name': match.group(2), 'date': match.group(4)})
+            pages[match.group(1)][match.group(3)].append(
+                {'name': match.group(2), 'date': match.group(4)}
+            )
         for slug, page in pages.items():
             if ':' in slug:
                 # we don't store other categories

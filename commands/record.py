@@ -271,7 +271,9 @@ class record:
                 content = "".join(filter(lambda x: x in okchars, content))
                 # then format for wikidot
                 # TODO save the content somewhere
-                msg.reply("Done! http://topia.wikidot.com/tars:recording-output")
+                msg.reply(
+                    "Done! http://topia.wikidot.com/tars:recording-output"
+                )
             else:
                 raise MyFaultError("Unknown location")
             cls.settings.remove(sett)

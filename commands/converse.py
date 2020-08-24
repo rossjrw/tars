@@ -10,7 +10,7 @@ import re
 import string
 
 import commands
-from commands.prop import chunks
+from commands.propagate import chunks
 
 from fuzzywuzzy import fuzz
 

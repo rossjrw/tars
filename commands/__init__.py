@@ -11,6 +11,7 @@ COMMANDS = {
 """
 
 COMMANDS = {
+    # Searching
     "search": {
         "search": {"search", "sea", "s"},
         "regexsearch": {"regexsearch", "rsearch", "rsea", "rs"},
@@ -18,6 +19,16 @@ COMMANDS = {
         "lastcreated": {"lastcreated", "lc", "l"},
     },
     "showmore": {"showmore": {"showmore", "sm", "pick"},},
+    "shortest": {"shortest": {"shortest"}},
+    # Database manipulation
+    "propagate": {"propagate": {"propagate", "prop"},},
+    "dbq": {"query": {"query", "dbq"}, "seen": {"seen", "lastseen"},},
+    "refactor": {"refactor": {"refactor"},},
+    "nick": {"alias": {"alias"},},
+    # Staff tools
+    "record": {"record": {"record"}, "pingall": {"pingall"},},
+    "promote": {"promote": {"promote"},},
+    # Internal commands
     "admin": {
         "kill": {"kys"},
         "join": {"join", "rejoin"},
@@ -30,8 +41,8 @@ COMMANDS = {
         "update": {"update"},
         "helenhere": {"checkhelen", "helenhere"},
     },
-    "refactor": {"refactor": {"refactor"},},
-    "chevron": {"chevron": {"chevron"},},
+    "converse": {"converse": {"converse"},},
+    # Information retrieval
     "info": {
         "help": {"help"},
         "status": {"tars", "version", "status", "uptime"},
@@ -39,7 +50,6 @@ COMMANDS = {
         "user": {"user"},
         "tag": {"tag"},
     },
-    "promote": {"promote": {"promote"},},
     "gimmick": {
         "reptile": {"reptile", "rep"},
         "fish": {"fish", "reptile+", "rep+"},
@@ -51,13 +61,9 @@ COMMANDS = {
         "fiction": {"isthisreal"},
         "idea": {"idea"},
     },
-    "converse": {"converse": {"converse"},},
-    "dbq": {"query": {"query", "dbq"}, "seen": {"seen", "lastseen"},},
-    "record": {"record": {"record"}, "pingall": {"pingall"},},
-    "prop": {"propagate": {"propagate", "prop"},},
+    # Other
+    "chevron": {"chevron": {"chevron"},},
     "gib": {"gib": {"gibber", "gib", "big", "goob", "boog", "gob", "bog"},},
-    "nick": {"alias": {"alias"},},
-    "shortest": {"shortest": {"shortest"}},
 }
 
 from helpers.error import CommandNotExistError
