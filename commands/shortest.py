@@ -15,35 +15,41 @@ class shortest:
 
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        if len(cmd.args['root']) < 1:
+        cmd.expandargs(
+            ["url u", "title t",]
+        )
+        if 'title' not in cmd and 'url' not in cmd:
             raise CommandError(
-                "Specify a page's URL whose shortest search "
-                "term you want to find."
+                "Usage: ..shortest [--url URL | --title TITLE] — find the "
+                "shortest search for the page at URL, or the page named TITLE."
             )
+        if 'title' in cmd:
+            title = " ".join(cmd['title'])
+        if 'url' in cmd:
+            url = cmd['url'][0].split("/")[-1]
+            if len(url) < 1:
+                raise CommandError(
+                    "Usage: ..shortest --url URL — URL should be the fullname "
+                    "as seen in an article's URL, e.g. 'scp-173'"
+                )
+            try:
+                title = DB.get_article_info(
+                    DB.get_articles([{'type': 'url', 'term': url}])[0]
+                )['title']
+            except IndexError:
+                raise MyFaultError("I couldn't find the page with that URL.")
         pages = [
             DB.get_article_info(p_id)['title'] for p_id in DB.get_articles([])
         ]
-        try:
-            title = DB.get_article_info(
-                DB.get_articles(
-                    [{'type': 'url', 'term': cmd.args['root'][0]}]
-                )[0]
-            )['title']
-        except IndexError:
-            raise MyFaultError("I couldn't find the page with that URL.")
         single_string = shortest.get_substring(title, pages)
-        print("Single string:", single_string)
         helen_style = shortest.get_multi_substring(title, pages)
         if single_string is None and helen_style is None:
             raise MyFaultError(
-                "There's no unique search for {} (\"{}\")".format(
-                    cmd.args['root'][0], title
-                )
+                "There's no unique search for \"{}\".".format(title)
             )
         msg.reply(
-            "Shortest search for \x02{}\x0F · {}".format(
-                cmd.args['root'][0],
-                shortest.pick_answer(single_string, helen_style),
+            "Shortest search for \"\x1d{}\x0F\" · {}".format(
+                title, shortest.pick_answer(single_string, helen_style),
             )
         )
 
@@ -53,11 +59,11 @@ class shortest:
             raise TypeError("None check should have been done by now")
         if helen_style is None or single_string == helen_style:
             if ' ' in single_string:
-                return "\"{}\"".format(single_string.lower())
-            return single_string.lower()
+                return "\"\x02{}\x0F\"".format(single_string.lower())
+            return "\x02{}\x0F".format(single_string.lower())
         if single_string is None:
-            return helen_style.lower()
-        return "single string: \"{}\" · multi string: {}".format(
+            return "\x02{}\x0F".format(helen_style.lower())
+        return "single string: \"\x02{}\x0F\" · multi string: \x02{}\x0F".format(
             single_string.lower(), helen_style.lower()
         )
 
