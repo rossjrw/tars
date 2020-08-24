@@ -124,10 +124,20 @@ class propagate:
     def get_series_metadata(slug, soup, **kwargs):
         """Gets metadata for generic series pages that match assumptions"""
         reply = kwargs.get('reply', lambda x: None)
+
+        selectors = {
+            "scp-series(-[0-9])?": ".content-panel:nth-of-type(1) > ul:not(:first-of-type) li",
+            "decommissioned-scps-arc|archived-scps|joke-scps|scp-ex": ".content-panel > ul > li",
+        }
+
         # parse the html
-        titles = soup.select(
-            ".content-panel:nth-of-type(1) > ul:not(:first-of-type) li"
-        )
+        for pattern in selectors:
+            if re.match(pattern, slug):
+                selector = selectors[pattern]
+                break
+            reply("Unknown metadata page {}".format(slug))
+            return
+        titles = soup.select()
         # <li><a href="/scp-xxx">SCP-xxx</a> - Title</li>
         for title in titles:
             # take the scp number from the URL, not the URL link
