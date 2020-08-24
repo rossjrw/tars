@@ -153,11 +153,6 @@ class propagate:
             if not match:
                 reply("Unknown link format: {}".format(title))
                 continue
-            # TODO if newpage in class then article does not exist
-            if "class=\"newpage\"" in match.group(1):
-                # article doesn't exist
-                # DB.remove_article()
-                continue
             num = match.group(2)
             meta_title = match.group(4)
             if meta_title in ("[ACCESS DENIED]", ""):
@@ -171,7 +166,11 @@ class propagate:
                     # don't add title but also don't delete
             # then add these numbers and names to the DB
             # if "<" in meta_title: print(num, meta_title)
-            DB.add_article_title(num, num, meta_title, False)
+            if "class=\"newpage\"" in match.group(1):
+                # article doesn't exist
+                DB.delete_article(num)
+            else:
+                DB.add_article_title(num, num, meta_title, False)
         DB.commit()
 
     @staticmethod
