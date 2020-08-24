@@ -135,6 +135,7 @@ class propagate:
             if re.match(pattern, slug):
                 selector = selectors[pattern]
                 break
+        else:
             reply("Unknown metadata page {}".format(slug))
             return
         titles = soup.select(selector)
