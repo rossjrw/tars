@@ -35,5 +35,11 @@ At the end of your contribution, make sure to run the *Black* autoformatter:
 pipenv run black .
 ```
 
+Or, to run Black automatically as a pre-commit hook, install the hook:
+
+```shell
+pipenv run pre-commit install
+```
+
 You might not like some of the changes it makes to your beautiful code. Neither
 do I. Let's both just deal with it.
