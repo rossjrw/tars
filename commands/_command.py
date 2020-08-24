@@ -10,16 +10,21 @@ import shlex
 
 from helpers.error import ArgumentMessage, CommandError
 
+
 class ArgumentParser(argparse.ArgumentParser):
     """A new argparser that has all the custom stuff TARS needs."""
+
     def error(self, message):
         raise ArgumentMessage(message)
+
     def exit(self, status=0, message=None):
         if message is not None:
             raise ArgumentMessage(message)
 
+
 class HelpFormatter(argparse.HelpFormatter):
     """A new --help formatter."""
+
     def _format_args(self, action, default_metavar):
         """Add an ellipsis to arguments that accept an unlimited number of
         arguments (all of them) instead of repeating the arg name over and
@@ -36,6 +41,7 @@ class HelpFormatter(argparse.HelpFormatter):
         of that argument instead of its uppercase"""
         return action.dest
 
+
 class Command:
     command_name = None
     arguments = []
@@ -49,7 +55,7 @@ class Command:
         # self.args will become the parsed Namespace object.
         parser = self.get_parser()
         message = message.replace("'", "<<APOS>>")
-        message = message.replace('\\"', "<<QUOT>>") # explicit \"
+        message = message.replace('\\"', "<<QUOT>>")  # explicit \"
         try:
             message = shlex.split(message, posix=False)
             # posix=False does not remove quotes
@@ -57,8 +63,10 @@ class Command:
         except ValueError:
             # raised if shlex detects fucked up quotemarks
             # message = message.split()
-            raise CommandError("Unmatched quotemark. Use \\\" to escape a "
-                               "literal quotemark.")
+            raise CommandError(
+                "Unmatched quotemark. Use \\\" to escape a "
+                "literal quotemark."
+            )
         message = [w.replace("<<APOS>>", "'") for w in message]
         message = [w.replace("<<QUOT>>", '"') for w in message]
         try:
@@ -68,8 +76,9 @@ class Command:
 
     def get_parser(self):
         """Returns the argument parser for this command."""
-        parser = ArgumentParser(prog=type(self).command_name,
-                                formatter_class=HelpFormatter)
+        parser = ArgumentParser(
+            prog=type(self).command_name, formatter_class=HelpFormatter
+        )
         # arguments is a list of dicts
         # flags[], type, nargs, mode, help, choices
         for arg in copy.deepcopy(type(self).arguments):
@@ -104,9 +113,9 @@ class Command:
             parser.add_argument(*flags, **arg)
         # Add a hidden argument that takes the remainder of the command
         # these will be later added to the root argument
-        parser.add_argument("_REMAINDER_",
-                            nargs=argparse.REMAINDER,
-                            help=argparse.SUPPRESS)
+        parser.add_argument(
+            "_REMAINDER_", nargs=argparse.REMAINDER, help=argparse.SUPPRESS
+        )
         return parser
 
     def __contains__(self, arg):

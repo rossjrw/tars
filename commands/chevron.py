@@ -1,6 +1,7 @@
 from helpers.greetings import bad_command
 from helpers.database import DB
 
+
 class chevron:
     @classmethod
     def execute(cls, irc_c, msg, cmd):

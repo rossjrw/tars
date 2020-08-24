@@ -9,6 +9,7 @@ For checking whether a command should defer to jarvis or Secretary_Helen.
 from helpers.database import DB
 from helpers.config import CONFIG
 
+
 class defer:
     @classmethod
     def check(cls, cmd, *bots):

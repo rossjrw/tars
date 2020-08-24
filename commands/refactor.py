@@ -13,8 +13,10 @@ from helpers.error import CommandError
 from helpers.database import DB
 from helpers.defer import defer
 
+
 class refactor:
     has_refactored = False
+
     @classmethod
     def execute(cls, irc_c, msg, cmd):
         if not defer.controller(cmd):

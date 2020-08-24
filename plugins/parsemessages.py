@@ -13,6 +13,7 @@ from helpers import parse
 from helpers.config import CONFIG
 from helpers.error import CommandError, CommandNotExistError, MyFaultError
 
+
 def try_command(irc_c, msg, cmd, command_name=None):
     """Execute the command of the given name."""
     if command_name is None:
@@ -39,13 +40,20 @@ def try_command(irc_c, msg, cmd, command_name=None):
         return 1
     except Exception as e:
         if msg.raw_channel != CONFIG.channels.home:
-            msg.reply("An unexpected error has occurred. "
-                      "I've already reported it — you don't need to "
-                      "do anything.")
+            msg.reply(
+                "An unexpected error has occurred. "
+                "I've already reported it — you don't need to "
+                "do anything."
+            )
         # need to log the error somewhere - why not #tars?
-        irc_c.PRIVMSG("#tars", "\x02Error report:\x0F {} issued `{}` → `{}`"
-                               .format(msg.sender, msg.message, e))
+        irc_c.PRIVMSG(
+            "#tars",
+            "\x02Error report:\x0F {} issued `{}` → `{}`".format(
+                msg.sender, msg.message, e
+            ),
+        )
         raise
+
 
 def execute_commands(irc_c, msg, cmds, command_name=None):
     """Executes a series of commands."""
@@ -71,8 +79,9 @@ def execute_commands(irc_c, msg, cmds, command_name=None):
         if command_failed:
             break
 
+
 @plugin_class('parsemessages')
-class ParseMessages():
+class ParseMessages:
     def __init__(self, irc_c, config):
         print("Parse plugin loaded!")
 

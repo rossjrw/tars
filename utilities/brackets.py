@@ -1,5 +1,6 @@
 import sys
 
+
 def bracketify(string, bracket="()"):
     """Return a bool indicating that the string is missing an opening
     bracket"""
@@ -16,6 +17,7 @@ def bracketify(string, bracket="()"):
     string = opening * -min(depths) + string
     string += closing * depths[-1]
     return string
+
 
 if __name__ == '__main__':
     print(bracketify(sys.argv[1]))

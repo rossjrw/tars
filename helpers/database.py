@@ -19,21 +19,24 @@ from pypika.functions import Max, Length
 from pyaib.irc import Message
 from helpers.config import CONFIG
 from helpers.error import nonelist, MyFaultError
+
 try:
     import re2 as re
 except ImportError:
     print("re2 failed to load, falling back to re")
     import re
 
-DB = {} # is instantiated as SqliteDriver at the end of this file
+DB = {}  # is instantiated as SqliteDriver at the end of this file
 
 sqlite3.enable_callback_tracebacks(True)
+
 
 def dbprint(text, error=False):
     bit = "[\x1b[38;5;108mDatabase\x1b[0m] "
     if error:
         bit += "[\x1b[38;5;196mError\x1b[0m] "
     print(bit + str(text))
+
 
 def norm(thing):
     """fetchX often returns a tuple or a list of tuples because it's dumb"""
@@ -52,24 +55,31 @@ def norm(thing):
             if isinstance(thing[0], sqlite3.Row):
                 return thing
             # shouldn't be norming this thing
-            raise IndexError("norming something of length {}"
-                             .format(len(thing)))
+            raise IndexError(
+                "norming something of length {}".format(len(thing))
+            )
     return thing
+
 
 def _regexp(expr, item):
     """For evaluating db strings against a given regex."""
-    if item is None: return False
+    if item is None:
+        return False
     return re.search(expr, item, re.IGNORECASE) is not None
+
 
 def _glob(expr, item):
     """For evaluating db strings against a given string."""
-    if item is None: return False
+    if item is None:
+        return False
     return expr.lower() in item.lower()
+
 
 # mark this file as the driver instead of pyaib.dbd.sqlite
 # also set by db.backend in the config
 class SqliteDriver:
     """SQLite3 database driver"""
+
     def __init__(self):
         path = CONFIG['db']['driver.database']['path']
         if not path:
@@ -95,25 +105,37 @@ class SqliteDriver:
         """Check if something exists in the database"""
         c = self.conn.cursor()
         if type == 'channel':
-            c.execute('''
+            c.execute(
+                '''
                 SELECT channel_name FROM channels
                 WHERE channel_name=?
-                      ''', (name, ))
+                      ''',
+                (name,),
+            )
         elif type == 'alias':
-            c.execute('''
+            c.execute(
+                '''
                 SELECT alias FROM user_aliases
                 WHERE alias=?
-                      ''', (name, ))
+                      ''',
+                (name,),
+            )
         elif type == 'user':
             raise AttributeError("Seems weird to check for user, not alias")
         elif type == 'table':
-            c.execute('''
+            c.execute(
+                '''
                 SELECT name FROM sqlite_master
                 WHERE type=? AND name=?
-                      ''', (type, name))
+                      ''',
+                (type, name),
+            )
         else:
-            raise AttributeError("Checking existence of {} of unknown type {}"
-                                 .format(name, type))
+            raise AttributeError(
+                "Checking existence of {} of unknown type {}".format(
+                    name, type
+                )
+            )
         return bool(c.fetchone())
 
     def _create_database(self):
@@ -123,7 +145,8 @@ class SqliteDriver:
         else:
             dbprint("Creating database...")
         c = self.conn.cursor()
-        c.executescript('''
+        c.executescript(
+            '''
             CREATE TABLE IF NOT EXISTS channels (
                 id INTEGER PRIMARY KEY,
                 channel_name TEXT NOT NULL
@@ -241,7 +264,8 @@ class SqliteDriver:
                 id INTEGER PRIMARY KEY,
                 message TEXT NOT NULL,
                 UNIQUE(message)
-            )''')
+            )'''
+        )
         # Will also need a messages table for each channel
         self.conn.commit()
 
@@ -274,52 +298,67 @@ class SqliteDriver:
         c = self.conn.cursor()
         # create a new entry in channels
         # will be IGNOREd if channel already exists (UNIQUE constraint)
-        c.execute('''
+        c.execute(
+            '''
             INSERT OR IGNORE INTO channels
                 (channel_name)
             VALUES (?)
-                  ''', (channel, ))
-        c.execute('''
+                  ''',
+            (channel,),
+        )
+        c.execute(
+            '''
             UPDATE channels
             SET autojoin=1
             WHERE channel_name=?
-                  ''', (channel,))
+                  ''',
+            (channel,),
+        )
         self.conn.commit()
         dbprint("Joined {}".format(channel))
 
     def leave_channel(self, channel):
         """Leave a channel"""
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             UPDATE channels
             SET autojoin=0
             WHERE channel_name=?
-                  ''', (channel,))
+                  ''',
+            (channel,),
+        )
         self.conn.commit()
         dbprint("Left {}".format(channel))
 
     def get_autojoins(self):
         """Get all channels that the bot was in last time"""
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT channel_name FROM channels
             WHERE autojoin=1
-                  ''')
+                  '''
+        )
         return [r['channel_name'] for r in c.fetchall()]
 
     def get_all_tables(self):
         """Returns a list of all tables"""
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT name FROM sqlite_master WHERE type='table'
-                  ''')
+                  '''
+        )
         # convert list of tuples to list of strings
         return [row['name'] for row in c.fetchall()]
 
     def print_one_table(self, table):
         """Pretty print a single table"""
         try:
-            df = pandas.read_sql_query("SELECT * FROM {}".format(table),self.conn)
+            df = pandas.read_sql_query(
+                "SELECT * FROM {}".format(table), self.conn
+            )
             if table == 'user_aliases':
                 df.sort_values('user_id', inplace=True)
             print(df)
@@ -345,20 +384,31 @@ class SqliteDriver:
         # For now, just return aliases
         # TODO return actual users
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT alias FROM user_aliases
-                  ''')
+                  '''
+        )
         return [r['alias'] for r in c.fetchall()]
 
-    def get_messages(self, channels, users=None, senders=None, patterns=None,
-                     contains=None, minlength=None, limit=None):
+    def get_messages(
+        self,
+        channels,
+        users=None,
+        senders=None,
+        patterns=None,
+        contains=None,
+        minlength=None,
+        limit=None,
+    ):
         """Returns all messages from the channel by the user.\
         user, sender, pattern, contains should be lists (and channel can be)."""
         c = self.conn.cursor()
         print("Getting messages")
         # TODO make this lookup all names of a user and do an IN check
         # need to convert channel name to channel id
-        if not isinstance(channels, list): channels = [channels]
+        if not isinstance(channels, list):
+            channels = [channels]
         for channel in channels:
             assert isinstance(channel, str) and channel.startswith('#')
         assert isinstance(users, (list, type(None)))
@@ -367,10 +417,14 @@ class SqliteDriver:
         assert isinstance(contains, (list, type(None)))
         assert isinstance(minlength, (int, type(None)))
         assert isinstance(limit, (int, type(None)))
-        c.execute('''
+        c.execute(
+            '''
             SELECT id FROM channels
-            WHERE channel_name IN ({})'''.format(",".join(["?"]*len(channels)))
-                  , channels)
+            WHERE channel_name IN ({})'''.format(
+                ",".join(["?"] * len(channels))
+            ),
+            channels,
+        )
         channels = [row['id'] for row in c.fetchall()]
         if None in channels:
             raise ValueError("That channel does not exist")
@@ -383,14 +437,13 @@ class SqliteDriver:
         # if user is not None: TODO
         #     q = q.where(messages.sender == user)
         if not nonelist(senders):
-            senders_in = [s.lstrip("+") for s in senders
-                          if not s.startswith("-")]
-            senders_out = [s.lstrip("-") for s in senders
-                           if s.startswith("-")]
+            senders_in = [
+                s.lstrip("+") for s in senders if not s.startswith("-")
+            ]
+            senders_out = [s.lstrip("-") for s in senders if s.startswith("-")]
             if len(senders_out) == 0:
                 senders_out.append("Secretary_Helen")
-            senders_out = [s for s in senders_out
-                           if s not in senders_in]
+            senders_out = [s for s in senders_out if s not in senders_in]
             if len(senders_in):
                 q = q.where(messages.sender.isin(senders_in))
             if len(senders_out):
@@ -406,7 +459,7 @@ class SqliteDriver:
         q = q.orderby(messages.timestamp, order=Order.desc)
         if limit is not None:
             q = q[:limit]
-        q = str(q).replace(" LIKE "," GLOB ").replace(" REGEX "," REGEXP ")
+        q = str(q).replace(" LIKE ", " GLOB ").replace(" REGEX ", " REGEXP ")
         print("Getting messages:", str(q))
         c.execute(str(q))
         result = c.fetchall()
@@ -417,25 +470,31 @@ class SqliteDriver:
         """Get the ID of the most recent message in a channel."""
         assert channel.startswith('#')
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT MAX(id) FROM messages
             WHERE channel_id=(SELECT id FROM channels
                               WHERE channel_name=?)
             AND kind='PRIVMSG'
-                  ''', (channel,))
+                  ''',
+            (channel,),
+        )
         return int(c.fetchone()['MAX(id)'])
 
     def get_messages_between(self, channel, start, end):
         """Get all messages between 2 ids in a channel, inclusive."""
         assert channel.startswith('#')
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT * FROM messages
             WHERE id BETWEEN ? AND ?
             AND (kind='NICK' OR kind='QUIT'
                  OR channel_id=(SELECT id FROM channels
                                 WHERE channel_name=?))
-                  ''', (start, end, channel))
+                  ''',
+            (start, end, channel),
+        )
         rows = c.fetchall()
         return rows
 
@@ -444,7 +503,8 @@ class SqliteDriver:
         commands"""
         assert channel.startswith('#')
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT message FROM messages
             WHERE id >= (SELECT min(id) FROM (
                   SELECT id FROM messages
@@ -457,24 +517,31 @@ class SqliteDriver:
             AND channel_id=(SELECT id FROM channels
                             WHERE channel_name=?)
             AND kind='PRIVMSG'
-                  ''', (channel, limit, channel))
+                  ''',
+            (channel, limit, channel),
+        )
         return [m['message'] for m in c.fetchall()]
 
     def add_gib(self, gib):
         """Add a gib"""
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             INSERT OR REPLACE INTO gibs( message )
             VALUES( ? )
-                  ''', (gib,))
+                  ''',
+            (gib,),
+        )
         self.conn.commit()
 
     def get_gibs(self):
         """Return all previous gibs"""
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT message FROM gibs
-                  ''')
+                  '''
+        )
         return [row['message'] for row in c.fetchall()]
 
     def get_aliases(self, nick):
@@ -482,17 +549,22 @@ class SqliteDriver:
         nick can be an alias or an ID"""
         c = self.conn.cursor()
         if nick is None:
-            c.execute('''
+            c.execute(
+                '''
                 SELECT alias FROM user_aliases
-                      ''')
+                      '''
+            )
             return [row['alias'] for row in c.fetchall()]
         if isinstance(nick, int):
             ids = [nick]
         else:
-            c.execute('''
+            c.execute(
+                '''
                 SELECT user_id FROM user_aliases
                 WHERE alias=?
-                    ''', (nick, ))
+                    ''',
+                (nick,),
+            )
             ids = c.fetchall()
         if len(ids) == 0:
             return None
@@ -500,10 +572,13 @@ class SqliteDriver:
             result = []
             # list of lists
             for id in ids:
-                c.execute('''
+                c.execute(
+                    '''
                     SELECT alias FROM user_aliases
                     WHERE user_id=?
-                          ''', (id, ))
+                          ''',
+                    (id,),
+                )
                 result.extend(c.fetchall())
             return [row['alias'] for row in result]
 
@@ -513,18 +588,25 @@ class SqliteDriver:
         # TODO exhaustive most_recent checking
         c = self.conn.cursor()
         # get all ids in channel
-        c.execute('''
+        c.execute(
+            '''
             SELECT user_id FROM channels_users
             WHERE channel_id=(
                 SELECT id FROM channels
                 WHERE channel_name=?)
-                  ''', (channel,))
+                  ''',
+            (channel,),
+        )
         ids = [row['user_id'] for row in c.fetchall()]
         # then get the aliases of those ids
-        c.execute('''
+        c.execute(
+            '''
             SELECT alias FROM user_aliases
-            WHERE user_id IN ({})'''.format(','.join(['?']*len(ids)))
-                  , [str(id) for id in ids])
+            WHERE user_id IN ({})'''.format(
+                ','.join(['?'] * len(ids))
+            ),
+            [str(id) for id in ids],
+        )
         return [row['alias'] for row in c.fetchall()]
 
     def get_generic_id(self, search):
@@ -532,33 +614,41 @@ class SqliteDriver:
         c = self.conn.cursor()
         if search[0] == '#':
             type = 'channel'
-            c.execute('''
+            c.execute(
+                '''
                 SELECT id FROM channels
                 WHERE channel_name=?
-                      ''', (search, ))
+                      ''',
+                (search,),
+            )
             id = norm(c.fetchone())
             if not id:
                 return None, type
         else:
             type = 'user'
-            c.execute('''
+            c.execute(
+                '''
                 SELECT user_id FROM user_aliases
                 WHERE alias=?
-                      ''', (search, ))
+                      ''',
+                (search,),
+            )
             id = norm(c.fetchone())
             if not id:
                 type = 'article'
-                c.execute('''
+                c.execute(
+                    '''
                     SELECT id FROM articles
                     WHERE url=?
-                          ''', (search, ))
+                          ''',
+                    (search,),
+                )
                 id = norm(c.fetchone())
                 if not id:
                     return None, type
         return id, type
 
-    def get_occupants(self, channel,
-                      convert_to_nicks=False, levels=False):
+    def get_occupants(self, channel, convert_to_nicks=False, levels=False):
         """Get a list of current occupants of a channel.
 
         `levels`: bool; return channel operator levels as well. Result will be
@@ -568,17 +658,23 @@ class SqliteDriver:
             raise ValueError("Channel name must start with #.")
         c = self.conn.cursor()
         # find out the channel id
-        c.execute('''
+        c.execute(
+            '''
             SELECT id FROM channels WHERE channel_name=?
-                  ''', (channel, ))
+                  ''',
+            (channel,),
+        )
         id = norm(c.fetchone())
         assert id is not None, "Channel {} does not exist.".format(channel)
         # get the occupants
-        c.execute('''
+        c.execute(
+            '''
             SELECT user_id,user_mode FROM channels_users WHERE channel_id=?
-                  ''', (id, ))
+                  ''',
+            (id,),
+        )
         users = [(r['user_id'], r['user_mode']) for r in c.fetchall()]
-        dbprint("get_occupants: users is {}".format(",".join(map(str,users))))
+        dbprint("get_occupants: users is {}".format(",".join(map(str, users))))
         assert len(users) > 0, "There are no users in {}.".format(channel)
         if convert_to_nicks:
             users = [(self.get_current_nick(id), mode) for id, mode in users]
@@ -590,37 +686,47 @@ class SqliteDriver:
     def get_current_nick(self, id):
         """Gets the current nick of a user."""
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT alias FROM user_aliases
             WHERE most_recent=1 AND user_id=? AND type='irc'
-                  ''', (id, ))
+                  ''',
+            (id,),
+        )
         name = norm(c.fetchone())
         if name:
             return name
         else:
-            c.execute('''
+            c.execute(
+                '''
                 SELECT alias FROM user_aliases
                 WHERE user_id=?
-                      ''', (id, ))
+                      ''',
+                (id,),
+            )
             name = random.choice(norm(c.fetchall()))
             return "??{}".format(name)
 
     def get_all_channels(self):
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT channel_name FROM channels
             WHERE NOT channel_name='private'
-                  ''')
+                  '''
+        )
         return [row['channel_name'] for row in c.fetchall()]
 
     def get_controllers(self):
         """Gets bot controllers"""
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT alias FROM user_aliases
             WHERE user_id IN (SELECT id FROM users
                               WHERE controller=1)
-                  ''')
+                  '''
+        )
         return [row['alias'] for row in c.fetchall()]
 
     def set_controller(self, user):
@@ -629,20 +735,25 @@ class SqliteDriver:
         else:
             id = user
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             UPDATE users SET controller=1 WHERE id=?
-                  ''', (id,))
+                  ''',
+            (id,),
+        )
         self.conn.commit()
         print("Added {} as controller".format(user))
-
 
     def get_user_id(self, alias):
         """Get the user id from the alias"""
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT user_id FROM user_aliases
             WHERE alias=?
-                  ''', (alias,))
+                  ''',
+            (alias,),
+        )
         ids = [row['user_id'] for row in c.fetchall()]
         if len(ids) == 0:
             return None
@@ -667,49 +778,67 @@ class SqliteDriver:
             name['id'] = self.add_user(name['nick'])
         # 2. add NAMES to channels_users
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT id FROM channels WHERE channel_name=?
-                  ''', (channel, ))
+                  ''',
+            (channel,),
+        )
         channel = norm(c.fetchone())
         assert isinstance(channel, int)
         # need to delete old NAMES data for this channel
         # (may want to waive this in the future for single user changes)
-        c.execute('''
+        c.execute(
+            '''
             DELETE FROM channels_users
             WHERE channel_id=?
             AND date_checked < CAST(STRFTIME('%s','now') AS INT) - 60
-                  ''', (channel, ))
+                  ''',
+            (channel,),
+        )
         # then add new NAMES data
         for name in names:
-            c.execute('''
+            c.execute(
+                '''
                 INSERT OR REPLACE INTO channels_users
                     (channel_id, user_id, user_mode)
                 VALUES( ? , ? , ? )
-                      ''', (channel, name['id'], name['mode']))
+                      ''',
+                (channel, name['id'], name['mode']),
+            )
         # 3. updates in channels when this channel was last checked
-        c.execute('''
+        c.execute(
+            '''
             UPDATE channels
             SET date_checked=CURRENT_TIMESTAMP
             WHERE id=?
-                  ''', (channel, ))
+                  ''',
+            (channel,),
+        )
         # 4. TODO what else needs to be done?
         self.conn.commit()
 
     def get_last_sort(self, channel):
         """Get the time at which the channel's names were last sorted"""
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT date_checked FROM channels
             WHERE channel=?
-                  ''', (channel,))
+                  ''',
+            (channel,),
+        )
         return c.fetchone()['date_checked']
 
     def add_user(self, alias, type='irc'):
         """Adds/updates a user and returns their ID"""
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT user_id FROM user_aliases WHERE alias=? AND type=?
-                  ''', (alias, type))
+                  ''',
+            (alias, type),
+        )
         result = c.fetchall()
         if result:
             # this alias already exists
@@ -731,18 +860,23 @@ class SqliteDriver:
         else:
             # this alias does not already exist
             # 1. create a new user
-            c.execute('''
+            c.execute(
+                '''
                 INSERT INTO users DEFAULT VALUES
-                      ''')
+                      '''
+            )
             new_user_id = c.lastrowid
             # dbprint("Adding user {} as ID {}"
             #         .format(nickColor(alias), new_user_id))
             # 2. add the alias
             # 2.1 mark the previous alias as not current
-            c.execute('''
+            c.execute(
+                '''
                 INSERT INTO user_aliases (alias, type, user_id)
                 VALUES ( ? , ? , ? )
-                       ''', (alias, type, new_user_id))
+                       ''',
+                (alias, type, new_user_id),
+            )
             self.conn.commit()
             return new_user_id
 
@@ -754,26 +888,40 @@ class SqliteDriver:
         assert isinstance(user, int)
         c = self.conn.cursor()
         # first first, let's see if the combo already exists
-        c.execute('''
+        c.execute(
+            '''
             SELECT user_id FROM user_aliases
             WHERE user_id=? AND alias=? AND weight=?
-                  ''', (user, alias, weight))
+                  ''',
+            (user, alias, weight),
+        )
         combo_exists = len(c.fetchall())
         # things to do:
-            # 1. detect if the user-alias combo already exists
-            # if it does, mark as most recento
-            # BUT only do this if weight=0
+        # 1. detect if the user-alias combo already exists
+        # if it does, mark as most recento
+        # BUT only do this if weight=0
         if weight == 0:
-            c.execute('''
+            c.execute(
+                '''
                 UPDATE user_aliases SET most_recent=0
                 WHERE user_id=? AND type=? AND weight=0
-                      ''', (user, nick_type))
-        c.execute('''
+                      ''',
+                (user, nick_type),
+            )
+        c.execute(
+            '''
             INSERT OR REPLACE INTO user_aliases
                   (user_id, alias, type, weight, most_recent)
             VALUES ( ? , ? , ? , ? , ? )
-                  ''', (user, alias, nick_type, weight,
-                        (not weight if nick_type is 'irc' else 0)))
+                  ''',
+            (
+                user,
+                alias,
+                nick_type,
+                weight,
+                (not weight if nick_type is 'irc' else 0),
+            ),
+        )
         self.conn.commit()
         return combo_exists
 
@@ -783,16 +931,22 @@ class SqliteDriver:
         # this function doesn't care about weight?
         assert isinstance(user, int)
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT user_id FROM user_aliases
             WHERE user_id=? AND alias=?
-                  ''', (user, alias))
+                  ''',
+            (user, alias),
+        )
         combo_exists = len(c.fetchall())
         # things to do:
-            # scrap the alias
-        c.execute('''
+        # scrap the alias
+        c.execute(
+            '''
             DELETE FROM user_aliases WHERE user_id=? AND alias=?
-                  ''', (user, alias))
+                  ''',
+            (user, alias),
+        )
         self.conn.commit()
         return combo_exists
 
@@ -802,10 +956,13 @@ class SqliteDriver:
         # make sure to handle when a user renames to an alias that exists
         # check if either name already exists (old should)
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT user_id FROM user_aliases
             WHERE alias=?
-                  ''', (old, ))
+                  ''',
+            (old,),
+        )
         old_result = c.fetchall()
         print("old_result:")
         print(old_result)
@@ -818,10 +975,13 @@ class SqliteDriver:
             # there's more than one user with this nick
             # ignore for now?
             pass
-        c.execute('''
+        c.execute(
+            '''
             SELECT user_id FROM user_aliases
             WHERE alias=?
-                  ''', (new, ))
+                  ''',
+            (new,),
+        )
         new_result = c.fetchall()
         print("new_result:")
         print(new_result)
@@ -853,31 +1013,40 @@ class SqliteDriver:
                 dbprint("Adding a new nick to {}".format(old))
                 print(old_result)
                 print(new)
-                c.execute('''
+                c.execute(
+                    '''
                     INSERT INTO user_aliases (user_id, alias, type)
                     VALUES ( ? , ? , ? )
-                          ''', (old_result, new, 'irc'))
+                          ''',
+                    (old_result, new, 'irc'),
+                )
                 self.conn.commit()
             else:
                 # both nicks are associated with different users
                 # what the fuck do we do here??
-                force = True # fuck it, just steal the nick
+                force = True  # fuck it, just steal the nick
                 # probably need to work out which nick is regged
-                    # we can do that!
-                    # save the modes of channels when we NAMES them
-                    # if the channel is +R, then each name THAT JOINS must be r
+                # we can do that!
+                # save the modes of channels when we NAMES them
+                # if the channel is +R, then each name THAT JOINS must be r
                 if force:
                     # force the change
-                    dbprint("Stealing {} from {}" .format(new, old))
+                    dbprint("Stealing {} from {}".format(new, old))
                     # ^TODO make that more informative (wikiname?)
-                    c.execute('''
+                    c.execute(
+                        '''
                         DELETE FROM user_aliases
                         WHERE alias=?
-                              ''', (new, ))
-                    c.execute('''
+                              ''',
+                        (new,),
+                    )
+                    c.execute(
+                        '''
                         INSERT INTO user_aliases (user_id, alias, type)
                         VALUES ( ? , ? , ? )
-                              ''', (new_result, new, 'irc'))
+                              ''',
+                        (new_result, new, 'irc'),
+                    )
                     self.conn.commit()
                 else:
                     # prompt the user for confirmation?
@@ -892,13 +1061,16 @@ class SqliteDriver:
         # first: get the current user's ID
         # use the highest available weight for this nick (reduce ambiguity)
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT user_id,weight FROM user_aliases
             WHERE alias=? AND weight=(
                 SELECT MAX(weight) FROM user_aliases
                 WHERE alias=?
             )
-                  ''', (old_nick, old_nick))
+                  ''',
+            (old_nick, old_nick),
+        )
         old_id = c.fetchall()
         # old_id should be a single row (multiple if the nick is ambiguous)
         if len(old_id) == 0:
@@ -914,13 +1086,16 @@ class SqliteDriver:
             dbprint("Nick {} is ambiguous".format(old_nick), True)
             # maybe perform the query here?
         # now get the id of the new nick
-        c.execute('''
+        c.execute(
+            '''
             SELECT user_id,weight FROM user_aliases
             WHERE alias=? AND weight=(
                 SELECT MAX(weight) FROM user_aliases
                 WHERE alias=?
             )
-                  ''', (new_nick, new_nick))
+                  ''',
+            (new_nick, new_nick),
+        )
         new_id = c.fetchall()
         if len(new_id) == 0:
             # this is a totally new nick - assign it to the current user
@@ -932,7 +1107,9 @@ class SqliteDriver:
             new_id = new_id[0]['user_id']
             if new_id == old_id:
                 # they are the same user! no need to do anything
-                dbprint("{} and {} are the same user".format(old_nick, new_nick))
+                dbprint(
+                    "{} and {} are the same user".format(old_nick, new_nick)
+                )
                 # TODO mark as most recent
                 pass
             else:
@@ -956,71 +1133,102 @@ class SqliteDriver:
         """Logs a message in the db.
         inp should be either a message object or equivalent dict"""
         if isinstance(msg, Message):
-            msg = {'channel': msg.raw_channel,
-                   'sender': msg.sender,
-                   'kind': msg.kind,
-                   'message': msg.message,
-                   'nick': msg.nick,
-                   'args': msg.args,
-                   'timestamp': msg.timestamp}
+            msg = {
+                'channel': msg.raw_channel,
+                'sender': msg.sender,
+                'kind': msg.kind,
+                'message': msg.message,
+                'nick': msg.nick,
+                'args': msg.args,
+                'timestamp': msg.timestamp,
+            }
         # Takes PRIVMSG, JOIN, PART, NICK
         chname = "private" if msg['channel'] is None else msg['channel']
-        if msg['kind'] == 'NICK': chname = None
-        assert msg['kind'] in ['PRIVMSG','JOIN','PART','NICK','QUIT'], msg['kind']
+        if msg['kind'] == 'NICK':
+            chname = None
+        assert msg['kind'] in ['PRIVMSG', 'JOIN', 'PART', 'NICK', 'QUIT'], msg[
+            'kind'
+        ]
         if msg['kind'] == 'PRIVMSG':
-            msgiscmd = msg['message'].startswith((".","!","?","^"))
+            msgiscmd = msg['message'].startswith((".", "!", "?", "^"))
         else:
             msgiscmd = False
         c = self.conn.cursor()
         # log this message into the messages table
         if chname is not None:
-            c.execute('''
+            c.execute(
+                '''
                 SELECT id FROM channels
                 WHERE channel_name=?
-                      ''', (chname, ))
+                      ''',
+                (chname,),
+            )
             channel = norm(c.fetchone())
-            assert isinstance(channel, int), "chname {} id {}".format(chname,channel)
-        c.execute('''
+            assert isinstance(channel, int), "chname {} id {}".format(
+                chname, channel
+            )
+        c.execute(
+            '''
             INSERT INTO messages
                 (channel_id, kind, sender, timestamp, message, command)
             VALUES ( ? , ? , ? , ? , ? , ? )
-                  ''', (channel if msg['kind'] != 'NICK' else None,
-                        msg['kind'],
-                        msg['nick'],
-                        round(msg['timestamp']),
-                        (msg['message'] if msg['kind'] == 'PRIVMSG'
-                         else msg['args'] if msg['kind'] == 'NICK'
-                         else ""),
-                        msgiscmd))
+                  ''',
+            (
+                channel if msg['kind'] != 'NICK' else None,
+                msg['kind'],
+                msg['nick'],
+                round(msg['timestamp']),
+                (
+                    msg['message']
+                    if msg['kind'] == 'PRIVMSG'
+                    else msg['args']
+                    if msg['kind'] == 'NICK'
+                    else ""
+                ),
+                msgiscmd,
+            ),
+        )
         # mark current nick as most recent
-        c.execute('''
+        c.execute(
+            '''
             SELECT user_id FROM user_aliases
             WHERE alias=?
-                  ''', (msg['nick'], ))
+                  ''',
+            (msg['nick'],),
+        )
         user = c.fetchall()
         if len(user) == 0:
             user = self.add_user(msg['nick'])
         elif len(user) > 1:
-            raise ValueError("User {} exists more than once".format(msg['nick']))
+            raise ValueError(
+                "User {} exists more than once".format(msg['nick'])
+            )
         else:
             user = user[0]['user_id']
         assert isinstance(user, int)
-        c.execute('''
+        c.execute(
+            '''
             UPDATE user_aliases
             SET most_recent=0
             WHERE type='irc' AND user_id=?
-                  ''', (user, ))
-        c.execute('''
+                  ''',
+            (user,),
+        )
+        c.execute(
+            '''
             UPDATE user_aliases
             SET most_recent=1
             WHERE type='irc' AND user_id=? AND alias=?
-                  ''', (user, msg['nick']))
+                  ''',
+            (user, msg['nick']),
+        )
         self.conn.commit()
 
     def get_messages_from_user(self, nick, channel=None):
         c = self.conn.cursor()
         assert channel.startswith('#')
-        c.execute('''
+        c.execute(
+            '''
             SELECT * FROM messages
             WHERE kind='PRIVMSG'
             AND channel_id=(
@@ -1032,7 +1240,9 @@ class SqliteDriver:
                     SELECT user_id FROM user_aliases
                     WHERE alias=?))
             ORDER BY timestamp
-                  ''', (channel, nick))
+                  ''',
+            (channel, nick),
+        )
         return c.fetchall()
 
     def add_article(self, article, commit=True):
@@ -1071,49 +1281,71 @@ class SqliteDriver:
             'rating': article['rating'],
             'ups': article['ups'],
             'downs': article['downs'],
-            'date_posted': pd.parse(article['created_at']).int_timestamp}
-        c.execute('''
+            'date_posted': pd.parse(article['created_at']).int_timestamp,
+        }
+        c.execute(
+            '''
             SELECT id FROM articles WHERE url=?
-                  ''', (article['url'], ))
+                  ''',
+            (article['url'],),
+        )
         article_data['id'] = norm(c.fetchone())
         if article_data['id'] is None:
             # the article does not already exist
             # replace shouldn't actually happen but hey can't hurt
-            c.execute('''
+            c.execute(
+                '''
                 INSERT OR REPLACE INTO articles
                     (url, category, title, scp_num, parent,
                      rating, ups, downs, date_posted)
                 VALUES (:url, :category, :title, :scp_num, :parent,
                         :rating, :ups, :downs, :date_posted)
-                      ''', article_data)
+                      ''',
+                article_data,
+            )
             article_data['id'] = c.lastrowid
         else:
             # the article already exists and must be updated
             dbprint("This article already exists", True)
             # ignore ups/downs
-            c.execute('''
+            c.execute(
+                '''
                 UPDATE articles
                 SET url=:url, category=:category, title=:title,
                     scp_num=:scp_num, parent=:parent, rating=:rating,
                     date_posted=:date_posted
                 WHERE id=:id
-                      ''', article_data)
+                      ''',
+                article_data,
+            )
         # update tags and authors
-        c.execute('''
+        c.execute(
+            '''
             DELETE FROM articles_tags WHERE article_id=?
-                  ''', (article_data['id'],))
-        c.executemany('''
+                  ''',
+            (article_data['id'],),
+        )
+        c.executemany(
+            '''
             INSERT INTO articles_tags (article_id, tag)
             VALUES ( ? , ? )
-                      ''', [(article_data['id'],t) for t in article['tags']])
-        c.execute('''
+                      ''',
+            [(article_data['id'], t) for t in article['tags']],
+        )
+        c.execute(
+            '''
             DELETE FROM articles_authors
             WHERE article_id=? AND metadata=0
-                  ''', (article_data['id'],))
-        c.execute('''
+                  ''',
+            (article_data['id'],),
+        )
+        c.execute(
+            '''
             INSERT INTO articles_authors (article_id, author)
             VALUES ( ? , ? )
-                  ''', (article_data['id'], article['created_by']))
+                  ''',
+            (article_data['id'], article['created_by']),
+        )
         if commit:
             self.conn.commit()
 
@@ -1124,44 +1356,58 @@ class SqliteDriver:
         # for scps: scp-num is fill, title is to be filled
         # possibly TODO throw if scp doesn't exist
         # title is allowed to be None
-        c.execute('''
+        c.execute(
+            '''
             UPDATE articles
             SET title=?, scp_num=?
             WHERE url=?
-                  ''', (title, num, url))
+                  ''',
+            (title, num, url),
+        )
         if commit:
             self.conn.commit()
 
     def set_authors(self, url, authors, commit=True):
         """Set the authors for a given article."""
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT id FROM articles WHERE url=?
-                  ''', (url,))
+                  ''',
+            (url,),
+        )
         page_id = c.fetchone()
         if page_id is None:
             raise ValueError("page {} doesn't exist".format(url))
         page_id = page_id['id']
-        c.execute('''
+        c.execute(
+            '''
             DELETE FROM articles_authors
             WHERE article_id=?
-                  ''', (page_id,))
-        c.executemany('''
+                  ''',
+            (page_id,),
+        )
+        c.executemany(
+            '''
             INSERT INTO articles_authors (article_id, author)
             VALUES ( ? , ? )
-                      ''' , ((page_id, author) for author in authors))
+                      ''',
+            ((page_id, author) for author in authors),
+        )
         if commit:
             self.conn.commit()
-
 
     def get_article_info(self, id):
         """Gets info about an article"""
         page = {'id': id, 'tags': [], 'authors': []}
         c = self.conn.cursor()
-        c.execute('''
+        c.execute(
+            '''
             SELECT category,url,title,scp_num,rating,date_posted
             FROM articles WHERE id=?
-                  ''', (id,))
+                  ''',
+            (id,),
+        )
         result = c.fetchone()
         for column in result.keys():
             page[column] = result[column]
@@ -1171,15 +1417,21 @@ class SqliteDriver:
         else:
             page['fullname'] = ":".join([page['category'], page['url']])
         # now get authors and tags
-        c.execute('''
+        c.execute(
+            '''
             SELECT tag FROM articles_tags WHERE article_id=?
-                  ''', (id,))
+                  ''',
+            (id,),
+        )
         for row in c.fetchall():
             page['tags'].append(row['tag'])
         # TODO this does not take metadata into account
-        c.execute('''
+        c.execute(
+            '''
             SELECT author FROM articles_authors WHERE article_id=?
-                  ''', (id,))
+                  ''',
+            (id,),
+        )
         for row in c.fetchall():
             page['authors'].append(row['author'])
         return page
@@ -1202,8 +1454,17 @@ class SqliteDriver:
         each."""
         # loop through searches and query the database, I guess
         # start with the least intensive process, to most intensive:
-        keyorder = {'url': 0, 'rating': 0, 'parent': 1, 'category': 2,
-                    'date': 3, 'author': 4, 'tags': 5, None: 6, 'regex': 7}
+        keyorder = {
+            'url': 0,
+            'rating': 0,
+            'parent': 1,
+            'category': 2,
+            'date': 3,
+            'author': 4,
+            'tags': 5,
+            None: 6,
+            'regex': 7,
+        }
         searches.sort(key=lambda x: keyorder[x['type']])
         # begin query
         art = Table('articles')
@@ -1232,18 +1493,27 @@ class SqliteDriver:
                     q = q.where(art.date_posted >= timestamp)
             elif search['type'] == 'author':
                 # yay for triple-nested queries!
-                meta_q = MySQLQuery.from_(art_au).select(Max(art_au.metadata)) \
-                         .where(art_au.article_id == art.id)
-                au_q = MySQLQuery.from_(art_au).select(art_au.author) \
-                       .where(art_au.article_id == art.id) \
-                       .where(art_au.metadata == meta_q)
+                meta_q = (
+                    MySQLQuery.from_(art_au)
+                    .select(Max(art_au.metadata))
+                    .where(art_au.article_id == art.id)
+                )
+                au_q = (
+                    MySQLQuery.from_(art_au)
+                    .select(art_au.author)
+                    .where(art_au.article_id == art.id)
+                    .where(art_au.metadata == meta_q)
+                )
                 for author in search['term']['include']:
                     q = q.where(ValueWrapper(author).isin(au_q))
                 for author in search['term']['exclude']:
                     q = q.where(ValueWrapper(author).notin(au_q))
             elif search['type'] == 'tags':
-                tag_q = MySQLQuery.from_(art_tags).select(art_tags.tag) \
-                        .where(art_tags.article_id == art.id)
+                tag_q = (
+                    MySQLQuery.from_(art_tags)
+                    .select(art_tags.tag)
+                    .where(art_tags.article_id == art.id)
+                )
                 for tag in search['term']['include']:
                     q = q.where(ValueWrapper(tag).isin(tag_q))
                 for tag in search['term']['exclude']:
@@ -1259,8 +1529,11 @@ class SqliteDriver:
             elif search['type'] == 'url':
                 q = q.where(art.url == search['term'])
             else:
-                raise TypeError("Unknown search: {}/{}".format(
-                    search['type'], search['term']))
+                raise TypeError(
+                    "Unknown search: {}/{}".format(
+                        search['type'], search['term']
+                    )
+                )
         # query complete
         # insert custom functions
         q = str(q).replace(" LIKE ", " GLOB ")
@@ -1273,20 +1546,29 @@ class SqliteDriver:
     def set_showmore_list(self, channel_name, page_ids):
         c = self.conn.cursor()
         assert channel_name.startswith('#')
-        c.execute('''
+        c.execute(
+            '''
             SELECT id FROM channels
             WHERE channel_name=?
-                  ''', (channel_name,))
+                  ''',
+            (channel_name,),
+        )
         channel_id = c.fetchone()['id']
         assert channel_id is not None
-        c.execute('''
+        c.execute(
+            '''
             DELETE FROM showmore_list
             WHERE channel_id=?
-                  ''', (channel_id,))
-        c.executemany('''
+                  ''',
+            (channel_id,),
+        )
+        c.executemany(
+            '''
             INSERT INTO showmore_list (channel_id, article_id)
             VALUES ( ? , ? )
-                      ''', ((channel_id, p_id) for p_id in page_ids))
+                      ''',
+            ((channel_id, p_id) for p_id in page_ids),
+        )
         self.conn.commit()
 
     def get_showmore_list(self, channel_name):
@@ -1294,12 +1576,16 @@ class SqliteDriver:
         IDs."""
         c = self.conn.cursor()
         assert channel_name.startswith('#')
-        c.execute('''
+        c.execute(
+            '''
             SELECT article_id FROM showmore_list
             WHERE channel_id=(
                 SELECT id FROM channels
                 WHERE channel_name=?)
-                  ''', (channel_name,))
+                  ''',
+            (channel_name,),
+        )
         return [row['article_id'] for row in c.fetchall()]
+
 
 DB = SqliteDriver()

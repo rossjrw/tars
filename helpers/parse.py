@@ -10,34 +10,40 @@ import shlex
 from helpers.config import CONFIG
 from helpers.error import CommandError, ArgumentMessage
 
+
 def parse_commands(irc_c, message):
     """Takes a message object and returns a list of parsed commands."""
     submessages = [m.strip() for m in message.message.split("&&")]
     return [ParsedCommand(irc_c, message, m) for m in submessages]
 
-class ParsedCommand():
+
+class ParsedCommand:
     """Object representing a single command"""
+
     def __init__(self, irc_c, msg, message):
         """msg is the pyaib message object
         message is the text of the message"""
-        self.sender = msg.sender # nick of issuing user
-        self.channel = msg.raw_channel # channel to which message was sent
-        self.raw = str(message) # the original message
-        self.ping = False # was the bot pinged?
-        self.command = None # if command, then the command name
-        self.message = None # message text excluding ping and command name
-        self.force = False # whether to bypass defer
+        self.sender = msg.sender  # nick of issuing user
+        self.channel = msg.raw_channel  # channel to which message was sent
+        self.raw = str(message)  # the original message
+        self.ping = False  # was the bot pinged?
+        self.command = None  # if command, then the command name
+        self.message = None  # message text excluding ping and command name
+        self.force = False  # whether to bypass defer
         self.context = irc_c
 
         # Was someone pinged?
-        pattern = re.compile(r"""
+        pattern = re.compile(
+            r"""
             ^                          # Start of message
             ([A-Z0-9\\\[\]\^_-{\|}]+)  # Ping, including allowed chars
             [,:]+                      # Colon or comma to denote ping
             \s*                        # Whitespace between ping and message
             (.*)                       # Message body
             $                          # End of message
-        """, re.IGNORECASE | re.VERBOSE)
+        """,
+            re.IGNORECASE | re.VERBOSE,
+        )
         match = pattern.search(self.raw)
         if match:
             # Remove ping from the message
@@ -76,21 +82,68 @@ class ParsedCommand():
             if len(match.group('signal')) > 1:
                 self.force = True
 
+
 # Parse a nick to its IRCCloud colour
 def nickColor(string, html=False):
     length = 27
-    colours =      [180,220,216,209,208,
-                     46, 11,143,113, 77,
-                    108, 71, 79, 37, 80,
-                     14, 39,117, 75, 69,
-                    146,205,170,213,177,
-                     13,217]
-    html_colours = ['#b22222','#d2691e','#ff9166','#fa8072','#ff8c00',
-                    '#228b22','#808000','#b7b05d','#8ebd2e','#2ebd2e',
-                    '#82b482','#37a467','#57c8a1','#1da199','#579193',
-                    '#008b8b','#00bfff','#4682b4','#1e90ff','#4169e1',
-                    '#6a5acd','#7b68ee','#9400d3','#8b008b','#ba55d3',
-                    '#ff00ff','#ff1493']
+    colours = [
+        180,
+        220,
+        216,
+        209,
+        208,
+        46,
+        11,
+        143,
+        113,
+        77,
+        108,
+        71,
+        79,
+        37,
+        80,
+        14,
+        39,
+        117,
+        75,
+        69,
+        146,
+        205,
+        170,
+        213,
+        177,
+        13,
+        217,
+    ]
+    html_colours = [
+        '#b22222',
+        '#d2691e',
+        '#ff9166',
+        '#fa8072',
+        '#ff8c00',
+        '#228b22',
+        '#808000',
+        '#b7b05d',
+        '#8ebd2e',
+        '#2ebd2e',
+        '#82b482',
+        '#37a467',
+        '#57c8a1',
+        '#1da199',
+        '#579193',
+        '#008b8b',
+        '#00bfff',
+        '#4682b4',
+        '#1e90ff',
+        '#4169e1',
+        '#6a5acd',
+        '#7b68ee',
+        '#9400d3',
+        '#8b008b',
+        '#ba55d3',
+        '#ff00ff',
+        '#ff1493',
+    ]
 
     def t(x):
         x &= 0xFFFFFFFF
@@ -105,7 +158,7 @@ def nickColor(string, html=False):
     bytes = bytes.encode('utf-16-le')
     hash = 0.0
     for i in range(0, len(bytes), 2):
-        char_code = bytes[i] + 256*bytes[i+1]
+        char_code = bytes[i] + 256 * bytes[i + 1]
         hash = char_code + t(int(hash) << 6) + t(int(hash) << 16) - hash
     index = int(hash % length if hash >= 0 else abs(hash % length - length))
     index = index % length
@@ -113,6 +166,7 @@ def nickColor(string, html=False):
         return html_colours[index]
     else:
         return "\x1b[38;5;{}m{}\x1b[0m".format(colours[index], string)
+
 
 def output(output):
     """Takes an output message from plugins/log.py"""
@@ -122,9 +176,9 @@ def output(output):
     if not match:
         return None
     msg = {}
-    #if match.group('ch')[0] == '#':
+    # if match.group('ch')[0] == '#':
     #    msg['channel'] = match.group('ch')
-    #else:
+    # else:
     #    msg['channel'] = "private"
     #    msg['nick'] = match.group('ch')
     msg['channel'] = match.group('ch')

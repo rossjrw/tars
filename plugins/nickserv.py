@@ -11,8 +11,10 @@ from helpers.api import password
 from helpers.database import DB
 from helpers.config import CONFIG
 
+
 def nsprint(message):
     print("[\x1b[38;5;212mNickServ\x1b[0m] " + str(message))
+
 
 # Let pyaib know that this is a plugin class
 # Store the address of the class at 'nickserv' in the context obj
@@ -40,16 +42,15 @@ class NickServ(object):
     def identify(self, irc_c):
         if irc_c.botnick != irc_c.config.irc.nick:
             nsprint("Trying to reacquire nick...")
-            irc_c.PRIVMSG("nickserv",
-                          "GHOST {} {}".format(
-                                    irc_c.config.irc.nick,
-                                    self.password))
+            irc_c.PRIVMSG(
+                "nickserv",
+                "GHOST {} {}".format(irc_c.config.irc.nick, self.password),
+            )
             irc_c.NICK(irc_c.config.irc.nick)
 
         # Identify
         nsprint("Idenfifying with nickserv...")
-        irc_c.PRIVMSG("nickserv",
-                      "IDENTIFY {}".format(self.password))
+        irc_c.PRIVMSG("nickserv", "IDENTIFY {}".format(self.password))
         nsprint("Marking myself as a bot...")
         irc_c.RAW("mode {} +B".format(CONFIG.nick))
 

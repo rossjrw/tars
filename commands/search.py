@@ -30,49 +30,74 @@ except ImportError:
     print("re2 failed to load, falling back to re")
     import re
 
+
 class Search(Command):
     """Searches the wiki for pages.
 
     Provides URLs and basic info for the page(s) that match your search
     criteria. Searching is never case-sensitive."""
+
     command_name = "search"
     arguments = [
-        dict(flags=['title'], type=str, nargs='*',
-             help="""Search for pages whose title contains all of these words.
+        dict(
+            flags=['title'],
+            type=str,
+            nargs='*',
+            help="""Search for pages whose title contains all of these words.
 
              Words are space-separated. Like all commands, anything wrapped in
              quotemarks (``'``) will be treated as a single word. If you leave
              **title** empty, then it will match all pages, and you'll need to
              specify more criteria. If you actually need to search for
              quotemarks, escape them with a backslash - e.g. ``.s \\'The
-             Administrator\\'``."""),
-        dict(flags=['--regex', '-x'], type=str, nargs='+',
-             help="""Filter pages by a regular expression.
+             Administrator\\'``.""",
+        ),
+        dict(
+            flags=['--regex', '-x'],
+            type=str,
+            nargs='+',
+            help="""Filter pages by a regular expression.
 
              You may use more than one regex in a single search, still
              delimited by a space. If you want to include a literal space in
              the regex, you should either wrap the whole regex in quotes or use
-             ``\\s`` instead."""),
-        dict(flags=['--tags', '--tag', '--tagged', '-t'], type=str, nargs='+',
-             help="""Filter pages by tags.
+             ``\\s`` instead.""",
+        ),
+        dict(
+            flags=['--tags', '--tag', '--tagged', '-t'],
+            type=str,
+            nargs='+',
+            help="""Filter pages by tags.
 
              The matched pages must have all the tags that you specified,
              unless that tag starts with ``-``, in which case they must not
-             have that tag."""),
-        dict(flags=['--author', '--au', '--by', '-a'], type=str, nargs='+',
-             help="""Filter pages by exact author name.
+             have that tag.""",
+        ),
+        dict(
+            flags=['--author', '--au', '--by', '-a'],
+            type=str,
+            nargs='+',
+            help="""Filter pages by exact author name.
 
              The matched pages must have all the authors that you specified,
              unless that author starts with ``-``, in which case they must not
-             have that author."""),
-        dict(flags=['--rating', '-r'], type=str, nargs='+',
-             help="""Filter pages by rating.
+             have that author.""",
+        ),
+        dict(
+            flags=['--rating', '-r'],
+            type=str,
+            nargs='+',
+            help="""Filter pages by rating.
 
              Prefix the number with any of ``<``, ``>``, ``=``. Default is
              ``>``. Can also specify a range of ratings with two dots, e.g.
-             ``20..50``. Ranges are always inclusive."""),
-        dict(flags=['--created', '--date', '-c'], type=str, nargs='+',
-             help="""Filter pages by date of creation. Accepts both absolute
+             ``20..50``. Ranges are always inclusive.""",
+        ),
+        dict(
+            flags=['--created', '--date', '-c'],
+            type=str,
+            nargs='+',
+            help="""Filter pages by date of creation. Accepts both absolute
              and relative dates.
 
              Absolute dates must be in ISO-8601 format (YYYY-MM-DD, YYYY-MM or
@@ -88,47 +113,87 @@ class Search(Command):
 
              Also supports ranges of dates with two dots e.g. ``2018..2019``.
              Ranges are always inclusive, and you can mix relative dates and
-             absolute dates."""),
-        dict(flags=['--category', '--cat', '-y'], type=str, nargs='+',
-             help="""Filter pages by Wikidot category.
+             absolute dates.""",
+        ),
+        dict(
+            flags=['--category', '--cat', '-y'],
+            type=str,
+            nargs='+',
+            help="""Filter pages by Wikidot category.
 
              By default, all categories are searched. If you include this
              argument but don't specify any categories, TARS will only search
-             '_default'."""),
-        dict(flags=['--parent', '-p'], type=str, nargs=None,
-             help="""Filter pages by their parent page's slug.
+             '_default'.""",
+        ),
+        dict(
+            flags=['--parent', '-p'],
+            type=str,
+            nargs=None,
+            help="""Filter pages by their parent page's slug.
 
              The parent page's slug must be given exactly (e.g. ``-p
              antimemetics-division-hub``). The entire parent tree will be
              checked - the page will be found even if it's a great-grandchild
-             of the **--parent**."""),
-        dict(flags=['--summary', '--summarise', '-u'], type=bool,
-             help="""Summarise search results.
+             of the **--parent**.""",
+        ),
+        dict(
+            flags=['--summary', '--summarise', '-u'],
+            type=bool,
+            help="""Summarise search results.
 
              Instead of providing a link to a single article, TARS will
-             summarise all articles that match the search criteria."""),
-        dict(flags=['--random', '--rand', '--ran', '-d'], type=bool,
-             help="""If your search matches more than one article, return a
-             random one."""),
-        dict(flags=['--recommend', '--rec', '-m'], type=bool,
-             help="""If your search matches more than one article, return the
-             one that most needs attention."""),
-        dict(flags=['--newest', '--new', '-n'], type=bool,
-             help="""If your search matches more than one article, return the
-             newest one."""),
-        dict(flags=['--order', '-o'], type=str, nargs=None,
-             choices=['random', 'recommend', 'recent', 'none', 'fuzzy'],
-             default='fuzzy',
-             help="""Returns the results in a certain order."""),
-        dict(flags=['--offset', '-f'], type=int, nargs=None,
-             default=0,
-             help="""Remove this many results from the top of the list."""),
-        dict(flags=['--limit', '-l'], type=int, nargs=None,
-             help="""Limit the number of results."""),
-        dict(flags=['--verbose', '-v'], type=bool,
-             help="""State the search criteria that TARS thinks you want."""),
-        dict(flags=['--ignorepromoted'], type=bool, mode='hidden',
-             help="""Ignore articles that have been promoted."""),
+             summarise all articles that match the search criteria.""",
+        ),
+        dict(
+            flags=['--random', '--rand', '--ran', '-d'],
+            type=bool,
+            help="""If your search matches more than one article, return a
+             random one.""",
+        ),
+        dict(
+            flags=['--recommend', '--rec', '-m'],
+            type=bool,
+            help="""If your search matches more than one article, return the
+             one that most needs attention.""",
+        ),
+        dict(
+            flags=['--newest', '--new', '-n'],
+            type=bool,
+            help="""If your search matches more than one article, return the
+             newest one.""",
+        ),
+        dict(
+            flags=['--order', '-o'],
+            type=str,
+            nargs=None,
+            choices=['random', 'recommend', 'recent', 'none', 'fuzzy'],
+            default='fuzzy',
+            help="""Returns the results in a certain order.""",
+        ),
+        dict(
+            flags=['--offset', '-f'],
+            type=int,
+            nargs=None,
+            default=0,
+            help="""Remove this many results from the top of the list.""",
+        ),
+        dict(
+            flags=['--limit', '-l'],
+            type=int,
+            nargs=None,
+            help="""Limit the number of results.""",
+        ),
+        dict(
+            flags=['--verbose', '-v'],
+            type=bool,
+            help="""State the search criteria that TARS thinks you want.""",
+        ),
+        dict(
+            flags=['--ignorepromoted'],
+            type=bool,
+            mode='hidden',
+            help="""Ignore articles that have been promoted.""",
+        ),
     ]
 
     def execute(self, irc_c, msg, cmd):
@@ -164,8 +229,9 @@ class Search(Command):
                 re.compile(regex)
             except re.error as e:
                 raise CommandError(
-                    "'{}' isn't a valid regular expression: {}"
-                    .format(regex, e)
+                    "'{}' isn't a valid regular expression: {}".format(
+                        regex, e
+                    )
                 )
             regexes.append(regex)
             # don't append compiled regex - SQL doesn't like that
@@ -240,8 +306,9 @@ class Search(Command):
                 try:
                     rating = int(rating)
                 except ValueError:
-                    raise CommandError("Rating must be a range, comparison, "
-                                       "or number")
+                    raise CommandError(
+                        "Rating must be a range, comparison, " "or number"
+                    )
                 # Assume =, assign both
                 try:
                     ratings >= rating
@@ -285,15 +352,13 @@ class Search(Command):
         if self['verbose']:
             verbose = "Searching for articles "
             if len(strings) > 0:
-                verbose += (
-                    "containing \"{}\"; ".format("\", \"".join(strings))
-                )
+                verbose += "containing \"{}\"; ".format("\", \"".join(strings))
             if len(regexes) > 0:
                 verbose += "matching the regex /{}/; ".format(
                     "/ & /".join(regexes)
                 )
             if parents is not None:
-                verbose += ("whose parent page is '{}'; ".format(parents))
+                verbose += "whose parent page is '{}'; ".format(parents)
             if len(categories['include']) == 1:
                 verbose += (
                     "in the category '" + categories['include'][0] + "'; "
@@ -319,18 +384,19 @@ class Search(Command):
                     "without the tags '" + "', '".join(tags['exclude']) + "'; "
                 )
             if len(authors['include']) > 0:
-                verbose += ("by " + " & ".join(authors['include']) + "; ")
+                verbose += "by " + " & ".join(authors['include']) + "; "
             if len(authors['exclude']) > 0:
-                verbose += ("not by " + " or ".join(authors['exclude']) + "; ")
+                verbose += "not by " + " or ".join(authors['exclude']) + "; "
             if ratings['max'] is not None and ratings['min'] is not None:
                 if ratings['max'] == ratings['min']:
-                    verbose += (
-                        "with a rating of " + str(ratings['max']) + "; "
-                    )
+                    verbose += "with a rating of " + str(ratings['max']) + "; "
                 else:
                     verbose += (
-                        "with a rating between " + str(ratings['min']) +
-                        " and " + str(ratings['max']) + "; "
+                        "with a rating between "
+                        + str(ratings['min'])
+                        + " and "
+                        + str(ratings['max'])
+                        + "; "
                     )
             elif ratings['max'] is not None:
                 verbose += (
@@ -338,23 +404,29 @@ class Search(Command):
                 )
             elif ratings['min'] is not None:
                 verbose += (
-                    "with a rating greater than " + str(ratings['min'] - 1) +
-                    "; "
+                    "with a rating greater than "
+                    + str(ratings['min'] - 1)
+                    + "; "
                 )
             if createds['min'] is not None and createds['max'] is not None:
                 verbose += (
-                    "created between " + createds['min'].to_datetime_string() +
-                    " and " + createds['max'].to_datetime_string() + "; "
+                    "created between "
+                    + createds['min'].to_datetime_string()
+                    + " and "
+                    + createds['max'].to_datetime_string()
+                    + "; "
                 )
             elif createds['max'] is not None:
                 verbose += (
-                    "created before " + createds['max'].to_datetime_string() +
-                    "; "
+                    "created before "
+                    + createds['max'].to_datetime_string()
+                    + "; "
                 )
             elif createds['min'] is not None:
                 verbose += (
-                    "created after " + createds['min'].to_datetime_string() +
-                    "; "
+                    "created after "
+                    + createds['min'].to_datetime_string()
+                    + "; "
                 )
             if verbose.endswith("; "):
                 verbose = verbose[:-2]
@@ -365,12 +437,17 @@ class Search(Command):
         pages = Search.order(pages, search_term=strings, **selection)
 
         if len(pages) >= 50:
-            msg.reply("{} results found - you're going to have to be more "
-                      "specific!".format(len(pages)))
+            msg.reply(
+                "{} results found - you're going to have to be more "
+                "specific!".format(len(pages))
+            )
             return
         if len(pages) > 3:
-            msg.reply("{} results (use ..sm to choose): {}".format(
-                len(pages), showmore.parse_multiple_titles(pages)))
+            msg.reply(
+                "{} results (use ..sm to choose): {}".format(
+                    len(pages), showmore.parse_multiple_titles(pages)
+                )
+            )
             DB.set_showmore_list(msg.raw_channel, [p['id'] for p in pages])
             return
         if len(pages) == 0:
@@ -386,19 +463,30 @@ class Search(Command):
                 if url['title'].endswith(" - SCP Foundation"):
                     url['title'] = url['title'][:-17]
                 msg.reply(
-                    "No matches found. Did you mean \x02{}\x0F? {}"
-                    .format(url['title'], url['link'])
+                    "No matches found. Did you mean \x02{}\x0F? {}".format(
+                        url['title'], url['link']
+                    )
                 )
             else:
                 msg.reply("No matches found.")
             return
         for page in pages:
-            msg.reply(gib.obfuscate(showmore.parse_title(page),
-                                    DB.get_channel_members(msg.raw_channel)))
+            msg.reply(
+                gib.obfuscate(
+                    showmore.parse_title(page),
+                    DB.get_channel_members(msg.raw_channel),
+                )
+            )
 
     @staticmethod
-    def order(pages, search_term=None,
-              order=None, limit=None, offset=0, **wanted_filters):
+    def order(
+        pages,
+        search_term=None,
+        order=None,
+        limit=None,
+        offset=0,
+        **wanted_filters
+    ):
         """Order the results of a search by `order`.
         If `order` is None, then order by fuzzywuzzy of the search term.
         `search_term` should be a list of strings.
@@ -410,8 +498,9 @@ class Search(Command):
         orders = {
             'random': lambda page: random(),
             'recent': lambda page: -page['date_posted'],
-            'fuzzy': lambda page: -sum([fuzz.ratio(s, page['title'])
-                                        for s in search_term]),
+            'fuzzy': lambda page: -sum(
+                [fuzz.ratio(s, page['title']) for s in search_term]
+            ),
             # 'recommend': None,
         }
         for wanted_filter, wanted in wanted_filters.items():
@@ -424,6 +513,7 @@ class Search(Command):
         pages = pages[:limit]
         return pages
 
+
 class regexsearch:
     @classmethod
     def execute(cls, irc_c, msg, cmd):
@@ -431,12 +521,14 @@ class regexsearch:
         self['title'] = []
         Search.command(irc_c, msg, cmd)
 
+
 class tags:
     @classmethod
     def execute(cls, irc_c, msg, cmd):
         self['tags'] = self['title']
         self['title'] = []
         Search.command(irc_c, msg, cmd)
+
 
 class lastcreated:
     @classmethod
@@ -449,11 +541,13 @@ class lastcreated:
             self['limit'] = [3]
         Search.command(irc_c, msg, cmd)
 
+
 class MinMax:
     """Stores a minimum int and a maximum int representing a range of values,
     inclusive.
     Once set, values are immutable.
     """
+
     def __repr__(self):
         return "MinMax({}..{})".format(self.min, self.max)
 
@@ -518,11 +612,14 @@ class MinMax:
             raise MinMaxError("Can only have one maximum {0}")
         raise ValueError("Unknown MinMaxError {}".format(type))
 
+
 class MinMaxError(Exception):
     pass
 
+
 class DateRange:
     """A non-precise date for creating date ranges"""
+
     def __repr__(self):
         return "DateRange({}..{})".format(self.min, self.max)
 
@@ -583,11 +680,13 @@ class DateRange:
             diffs = []
             for i, minimum in enumerate(self.min):
                 for j, maximum in enumerate(self.max):
-                    diffs.append({
-                        'i': i,
-                        'j': j,
-                        'diff': self.min[i].diff(self.max[j]).in_seconds()
-                    })
+                    diffs.append(
+                        {
+                            'i': i,
+                            'j': j,
+                            'diff': self.min[i].diff(self.max[j]).in_seconds(),
+                        }
+                    )
             diffs = max(diffs, key=lambda x: x['diff'])
             self.max = self.max[diffs['j']]
             self.min = self.min[diffs['i']]
@@ -621,8 +720,7 @@ class DateRange:
                 if key not in 'smhdwMy':
                     raise CommandError(
                         "'{}' isn't a valid unit of time in a relative date. "
-                        "Valid units are s, m, h, d, w, M, and y."
-                        .format(key)
+                        "Valid units are s, m, h, d, w, M, and y.".format(key)
                     )
             self.date = pd.now().subtract(
                 years=sel.get('y', 0),
@@ -661,8 +759,10 @@ class DateRange:
             except pd.parsing.exceptions.ParserError:
                 return False
             else:
-                raise CommandError("Absolute dates must be of the format "
-                                   "YYYY, YYYY-MM or YYYY-MM-DD")
+                raise CommandError(
+                    "Absolute dates must be of the format "
+                    "YYYY, YYYY-MM or YYYY-MM-DD"
+                )
         else:
             return True
 

@@ -18,8 +18,10 @@ import random
 from emoji import emojize
 from helpers.defer import defer
 
+
 class analyse_wiki:
     """For compiling data of the file contents of a sandbox"""
+
     @classmethod
     def execute(cls, irc_c, msg, cmd):
         if not defer.controller(cmd):
@@ -47,23 +49,28 @@ class analyse_wiki:
         msg.reply("Getting file names...")
         # pages is now a list of page names
         # make a list for files
-        files_list = [] # this is the master list
-        percents = [math.ceil(i*len(pages)) for i in numpy.linspace(0, 1, 101)]
+        files_list = []  # this is the master list
+        percents = [
+            math.ceil(i * len(pages)) for i in numpy.linspace(0, 1, 101)
+        ]
         # get select_files per 1 page
-        for i,page in enumerate(pages):
+        for i, page in enumerate(pages):
             if i in percents:
                 msg.reply("{}% complete".format(percents.index(i)))
             try:
-                pages[i] = {'page': page, 'files': target.select_files({'page': page})}
+                pages[i] = {
+                    'page': page,
+                    'files': target.select_files({'page': page}),
+                }
             except Exception as e:
-                msg.reply("Error on {}: {}".format(page['page'],str(e)))
-            print("Found {} files for {}".format(len(pages[i]['files']),page))
+                msg.reply("Error on {}: {}".format(page['page'], str(e)))
+            print("Found {} files for {}".format(len(pages[i]['files']), page))
             if i == abort_limit:
                 msg.reply("Process aborted after {} pages".format(abort_limit))
                 break
         # TODO loop over pages and remove errored entries
         msg.reply("Getting info for files...")
-        for i,page in enumerate(pages):
+        for i, page in enumerate(pages):
             if i in percents:
                 msg.reply("{}% complete".format(percents.index(i)))
             # for each page, get_files_meta can take up to 10 files
@@ -73,20 +80,25 @@ class analyse_wiki:
             for files in chunks(page['files'], 10):
                 print(files)
                 try:
-                    f = target.get_files_meta({'page': page['page'],
-                                               'files': files})
+                    f = target.get_files_meta(
+                        {'page': page['page'], 'files': files}
+                    )
                     pprint(f)
                     for filename in files:
                         f[filename]['page'] = page['page']
                         files_list.append(f[filename])
                 except Exception as e:
-                    msg.reply("Error on {} of {}: {}".format(files,page['page'],str(e)))
+                    msg.reply(
+                        "Error on {} of {}: {}".format(
+                            files, page['page'], str(e)
+                        )
+                    )
             if i == abort_limit:
                 msg.reply("Process aborted after {} pages".format(abort_limit))
                 break
         msg.reply("List of files created.")
         msg.reply("Outputting to .csv...")
-        with open("wiki_analysis.csv",'w') as f:
+        with open("wiki_analysis.csv", 'w') as f:
             w = csv.DictWriter(f, files_list[0].keys())
             w.writeheader()
             w.writerows(files_list)
