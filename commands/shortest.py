@@ -63,6 +63,10 @@ class shortest:
             return "\x02{}\x0F".format(single_string.lower())
         if single_string is None:
             return "\x02{}\x0F".format(helen_style.lower())
+            return (
+                "single-string: \x02{}\x0F · There is no unique multi-string "
+                "(Helen-style) search"
+            ).format(single_string.lower())
         return "single string: \"\x02{}\x0F\" · multi string: \x02{}\x0F".format(
             single_string.lower(), helen_style.lower()
         )
