@@ -8,33 +8,50 @@ After a converse, unless you want the potential for a further converse to
 occur, return.
 """
 
+import json
 import re
+import string
+
+import commands
 
 from fuzzywuzzy import fuzz
 
-from helpers.greetings import acronym, greet, greets
-from helpers.database import DB
 from helpers.config import CONFIG
+from helpers.database import DB
+from helpers.defer import defer
+from helpers.greetings import acronym, greet, greets
 
 
-class converse:
+def chunks(array, length):
+    """Splits list into lists of given length"""
+    for i in range(0, len(array), length):
+        yield array[i : i + length]
+
+
+class Converse:
     @classmethod
     def execute(cls, irc_c, msg, cmd):
-        # Recieves text in msg.message
-        message = cmd.message
-        # pinged section, for specifics
-        if cmd.ping:
-            triggers = ["fuck you", "piss off", "fuck off", "shut up", "no"]
-            if any(trigger in strip(message) for trigger in triggers):
+
+        ##### ping matches #####
+
+        if cmd.pinged:
+            if any(
+                x in cmd.unping.lower()
+                for x in ["fuck you", "piss off", "fuck off",]
+            ):
                 msg.reply("{}: no u".format(msg.nick))
                 return
-        # unpinged section (well, ping-optional)
-        if strip(message) == "{}!".format(CONFIG.nick.lower()):
+
+        ##### ping-optional text matches #####
+
+        if cmd.unping.startswith("?? "):
+            # CROM compatibility
+            getattr(commands.COMMANDS, 'search').command(irc_c, msg, cmd)
+        if msg.message.lower() == "{}!".format(CONFIG.nick.lower()):
             msg.reply("{}!".format(msg.nick))
             return
-        if strip(message) in [
-            strip("{}{}".format(greet, CONFIG.nick.lower()))
-            for greet in greets
+        if strip(msg.message.lower()) in [
+            strip("{}{}".format(g, CONFIG.nick.lower())) for g in greets
         ]:
             if msg.sender == 'XilasCrowe':
                 msg.reply("toast")
@@ -44,43 +61,71 @@ class converse:
         if (
             CONFIG.nick == "TARS"
             and matches_any_of(
-                message, ["what does tars stand for?", "is tars an acronym?",]
+                msg.message,
+                ["what does tars stand for?", "is tars an acronym?",],
             )
-            and "TARS" in message.upper()
+            and "TARS" in msg.message.upper()
         ):
             msg.reply(acronym())
             return
         if (
             CONFIG.nick == "TARS"
             and matches_any_of(
-                message, ["is tars a bot?", "tars are you a bot?",]
+                msg.message, ["is tars a bot?", "tars are you a bot?",]
             )
-            and "TARS" in message.upper()
+            and "TARS" in msg.message.upper()
         ):
             msg.reply("Yep.")
             return
         if (
             CONFIG.nick == "TARS"
             and matches_any_of(
-                message, ["is tars a person?", "tars are you a person?",]
+                msg.message, ["is tars a person?", "tars are you a person?",]
             )
-            and "TARS" in message.upper()
+            and "TARS" in msg.message.upper()
         ):
             msg.reply("Nope. I'm a bot.")
             return
         if (
             CONFIG.nick == "TARS"
-            and matches_any_of(message, ["what is your iq",])
-            and "TARS" in message.upper()
+            and matches_any_of(msg.message, ["what is your iq",])
+            and "TARS" in msg.message.upper()
         ):
             msg.reply("big")
             return
-        # regex section
-        match = re.search(r"(?:^|\s)/?r/(\S*)", message, re.IGNORECASE)
+
+        ##### regex matches #####
+
+        # give url for reddit links
+        match = re.search(r"(?:^|\s)/?r/(\S*)", msg.message, re.IGNORECASE)
         if match:
             msg.reply("https://www.reddit.com/r/{}".format(match.group(1)))
             return
-        # custom section
+        # tell me about new acronyms
+        acronyms = find_acronym(msg.message, CONFIG['IRC']['nick'])
+        if acronyms:
+            raw_acronym, bold_acronym = acronyms
+            with open(CONFIG['converse']['acronyms'], 'r') as acro_file:
+                acros = json.load(acro_file)
+                existing_acronyms = [acro['acronym'] for acro in acros]
+            if raw_acronym not in existing_acronyms:
+                msg.reply(bold_acronym)
+                if msg.raw_channel != CONFIG['channels']['home']:
+                    defer.report(cmd, bold_acronym)
+                with open(CONFIG['converse']['acronyms'], 'w') as acro_file:
+                    acros.append(
+                        {
+                            'acronym': raw_acronym,
+                            'sender': msg.nick,
+                            'channel': msg.raw_channel,
+                            'date': msg.timestamp,
+                        }
+                    )
+                    json.dump(acros, acro_file, indent=2)
+                return
+
+        ##### custom matches #####
+
         if (
             msg.sender == "Jazstar"
             and "slime" in msg.message
@@ -103,4 +148,35 @@ def matches_any_of(subject, matches, threshold=80):
     for match in matches:
         if fuzz.ratio(subject.lower(), match) >= threshold:
             return True
+    return False
+
+
+def find_acronym(message, acro_letters):
+    match = re.search(
+        r"(\s+|(?:\s*[{0}]+\s*))".join(
+            [
+                r"([{{0}}]*)\b({})(\S*)\b([{{0}}]*)".format(l)
+                for l in acro_letters
+            ]
+        ).format(re.escape(string.punctuation)),
+        message,
+        re.IGNORECASE | re.VERBOSE,
+    )
+    if match:
+        raw_acronym = "".join(match.groups())
+        submatches = list(chunks(list(match.groups()), 5))
+        # the match is made up of 5 repeating parts:
+        # 0. punctation before word
+        # 1. first letter of word
+        # 2. rest of word
+        # 3. punctuation after word
+        # 4. stuff between this word and the next word
+        # for the last word (submatch), however, 4 is not present
+        submatches[-1].append("")
+        for submatch in submatches:
+            submatch[1] = submatch[1].upper()
+        bold_acronym = "".join(
+            ["{}\x02{}\x0F{}{}{}".format(*submatch) for submatch in submatches]
+        )
+        return raw_acronym, bold_acronym
     return False

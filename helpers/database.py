@@ -109,7 +109,7 @@ class SqliteDriver:
                 '''
                 SELECT channel_name FROM channels
                 WHERE channel_name=?
-                      ''',
+                ''',
                 (name,),
             )
         elif type == 'alias':
@@ -117,7 +117,7 @@ class SqliteDriver:
                 '''
                 SELECT alias FROM user_aliases
                 WHERE alias=?
-                      ''',
+                ''',
                 (name,),
             )
         elif type == 'user':
@@ -127,7 +127,7 @@ class SqliteDriver:
                 '''
                 SELECT name FROM sqlite_master
                 WHERE type=? AND name=?
-                      ''',
+                ''',
                 (type, name),
             )
         else:
@@ -264,7 +264,8 @@ class SqliteDriver:
                 id INTEGER PRIMARY KEY,
                 message TEXT NOT NULL,
                 UNIQUE(message)
-            )'''
+                )
+                '''
         )
         # Will also need a messages table for each channel
         self.conn.commit()
@@ -303,7 +304,7 @@ class SqliteDriver:
             INSERT OR IGNORE INTO channels
                 (channel_name)
             VALUES (?)
-                  ''',
+            ''',
             (channel,),
         )
         c.execute(
@@ -311,7 +312,7 @@ class SqliteDriver:
             UPDATE channels
             SET autojoin=1
             WHERE channel_name=?
-                  ''',
+            ''',
             (channel,),
         )
         self.conn.commit()
@@ -325,7 +326,7 @@ class SqliteDriver:
             UPDATE channels
             SET autojoin=0
             WHERE channel_name=?
-                  ''',
+            ''',
             (channel,),
         )
         self.conn.commit()
@@ -338,7 +339,7 @@ class SqliteDriver:
             '''
             SELECT channel_name FROM channels
             WHERE autojoin=1
-                  '''
+            '''
         )
         return [r['channel_name'] for r in c.fetchall()]
 
@@ -348,7 +349,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT name FROM sqlite_master WHERE type='table'
-                  '''
+            '''
         )
         # convert list of tuples to list of strings
         return [row['name'] for row in c.fetchall()]
@@ -387,7 +388,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT alias FROM user_aliases
-                  '''
+            '''
         )
         return [r['alias'] for r in c.fetchall()]
 
@@ -420,7 +421,8 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT id FROM channels
-            WHERE channel_name IN ({})'''.format(
+            WHERE channel_name IN ({})
+            '''.format(
                 ",".join(["?"] * len(channels))
             ),
             channels,
@@ -476,7 +478,7 @@ class SqliteDriver:
             WHERE channel_id=(SELECT id FROM channels
                               WHERE channel_name=?)
             AND kind='PRIVMSG'
-                  ''',
+            ''',
             (channel,),
         )
         return int(c.fetchone()['MAX(id)'])
@@ -492,7 +494,7 @@ class SqliteDriver:
             AND (kind='NICK' OR kind='QUIT'
                  OR channel_id=(SELECT id FROM channels
                                 WHERE channel_name=?))
-                  ''',
+            ''',
             (start, end, channel),
         )
         rows = c.fetchall()
@@ -517,7 +519,7 @@ class SqliteDriver:
             AND channel_id=(SELECT id FROM channels
                             WHERE channel_name=?)
             AND kind='PRIVMSG'
-                  ''',
+            ''',
             (channel, limit, channel),
         )
         return [m['message'] for m in c.fetchall()]
@@ -529,7 +531,7 @@ class SqliteDriver:
             '''
             INSERT OR REPLACE INTO gibs( message )
             VALUES( ? )
-                  ''',
+            ''',
             (gib,),
         )
         self.conn.commit()
@@ -540,7 +542,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT message FROM gibs
-                  '''
+            '''
         )
         return [row['message'] for row in c.fetchall()]
 
@@ -552,7 +554,7 @@ class SqliteDriver:
             c.execute(
                 '''
                 SELECT alias FROM user_aliases
-                      '''
+                '''
             )
             return [row['alias'] for row in c.fetchall()]
         if isinstance(nick, int):
@@ -562,7 +564,7 @@ class SqliteDriver:
                 '''
                 SELECT user_id FROM user_aliases
                 WHERE alias=?
-                    ''',
+                ''',
                 (nick,),
             )
             ids = c.fetchall()
@@ -576,7 +578,7 @@ class SqliteDriver:
                     '''
                     SELECT alias FROM user_aliases
                     WHERE user_id=?
-                          ''',
+                    ''',
                     (id,),
                 )
                 result.extend(c.fetchall())
@@ -594,7 +596,7 @@ class SqliteDriver:
             WHERE channel_id=(
                 SELECT id FROM channels
                 WHERE channel_name=?)
-                  ''',
+            ''',
             (channel,),
         )
         ids = [row['user_id'] for row in c.fetchall()]
@@ -602,7 +604,8 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT alias FROM user_aliases
-            WHERE user_id IN ({})'''.format(
+            WHERE user_id IN ({})
+            '''.format(
                 ','.join(['?'] * len(ids))
             ),
             [str(id) for id in ids],
@@ -618,7 +621,7 @@ class SqliteDriver:
                 '''
                 SELECT id FROM channels
                 WHERE channel_name=?
-                      ''',
+                ''',
                 (search,),
             )
             id = norm(c.fetchone())
@@ -630,7 +633,7 @@ class SqliteDriver:
                 '''
                 SELECT user_id FROM user_aliases
                 WHERE alias=?
-                      ''',
+                ''',
                 (search,),
             )
             id = norm(c.fetchone())
@@ -640,7 +643,7 @@ class SqliteDriver:
                     '''
                     SELECT id FROM articles
                     WHERE url=?
-                          ''',
+                    ''',
                     (search,),
                 )
                 id = norm(c.fetchone())
@@ -661,7 +664,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT id FROM channels WHERE channel_name=?
-                  ''',
+            ''',
             (channel,),
         )
         id = norm(c.fetchone())
@@ -670,7 +673,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT user_id,user_mode FROM channels_users WHERE channel_id=?
-                  ''',
+            ''',
             (id,),
         )
         users = [(r['user_id'], r['user_mode']) for r in c.fetchall()]
@@ -690,7 +693,7 @@ class SqliteDriver:
             '''
             SELECT alias FROM user_aliases
             WHERE most_recent=1 AND user_id=? AND type='irc'
-                  ''',
+            ''',
             (id,),
         )
         name = norm(c.fetchone())
@@ -701,7 +704,7 @@ class SqliteDriver:
                 '''
                 SELECT alias FROM user_aliases
                 WHERE user_id=?
-                      ''',
+                ''',
                 (id,),
             )
             name = random.choice(norm(c.fetchall()))
@@ -713,7 +716,7 @@ class SqliteDriver:
             '''
             SELECT channel_name FROM channels
             WHERE NOT channel_name='private'
-                  '''
+            '''
         )
         return [row['channel_name'] for row in c.fetchall()]
 
@@ -725,7 +728,7 @@ class SqliteDriver:
             SELECT alias FROM user_aliases
             WHERE user_id IN (SELECT id FROM users
                               WHERE controller=1)
-                  '''
+            '''
         )
         return [row['alias'] for row in c.fetchall()]
 
@@ -738,7 +741,7 @@ class SqliteDriver:
         c.execute(
             '''
             UPDATE users SET controller=1 WHERE id=?
-                  ''',
+            ''',
             (id,),
         )
         self.conn.commit()
@@ -751,7 +754,7 @@ class SqliteDriver:
             '''
             SELECT user_id FROM user_aliases
             WHERE alias=?
-                  ''',
+            ''',
             (alias,),
         )
         ids = [row['user_id'] for row in c.fetchall()]
@@ -781,7 +784,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT id FROM channels WHERE channel_name=?
-                  ''',
+            ''',
             (channel,),
         )
         channel = norm(c.fetchone())
@@ -793,7 +796,7 @@ class SqliteDriver:
             DELETE FROM channels_users
             WHERE channel_id=?
             AND date_checked < CAST(STRFTIME('%s','now') AS INT) - 60
-                  ''',
+            ''',
             (channel,),
         )
         # then add new NAMES data
@@ -803,7 +806,7 @@ class SqliteDriver:
                 INSERT OR REPLACE INTO channels_users
                     (channel_id, user_id, user_mode)
                 VALUES( ? , ? , ? )
-                      ''',
+                ''',
                 (channel, name['id'], name['mode']),
             )
         # 3. updates in channels when this channel was last checked
@@ -812,7 +815,7 @@ class SqliteDriver:
             UPDATE channels
             SET date_checked=CURRENT_TIMESTAMP
             WHERE id=?
-                  ''',
+            ''',
             (channel,),
         )
         # 4. TODO what else needs to be done?
@@ -825,7 +828,7 @@ class SqliteDriver:
             '''
             SELECT date_checked FROM channels
             WHERE channel=?
-                  ''',
+            ''',
             (channel,),
         )
         return c.fetchone()['date_checked']
@@ -836,7 +839,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT user_id FROM user_aliases WHERE alias=? AND type=?
-                  ''',
+            ''',
             (alias, type),
         )
         result = c.fetchall()
@@ -863,7 +866,7 @@ class SqliteDriver:
             c.execute(
                 '''
                 INSERT INTO users DEFAULT VALUES
-                      '''
+                '''
             )
             new_user_id = c.lastrowid
             # dbprint("Adding user {} as ID {}"
@@ -874,7 +877,7 @@ class SqliteDriver:
                 '''
                 INSERT INTO user_aliases (alias, type, user_id)
                 VALUES ( ? , ? , ? )
-                       ''',
+                ''',
                 (alias, type, new_user_id),
             )
             self.conn.commit()
@@ -892,7 +895,7 @@ class SqliteDriver:
             '''
             SELECT user_id FROM user_aliases
             WHERE user_id=? AND alias=? AND weight=?
-                  ''',
+            ''',
             (user, alias, weight),
         )
         combo_exists = len(c.fetchall())
@@ -905,7 +908,7 @@ class SqliteDriver:
                 '''
                 UPDATE user_aliases SET most_recent=0
                 WHERE user_id=? AND type=? AND weight=0
-                      ''',
+                ''',
                 (user, nick_type),
             )
         c.execute(
@@ -913,7 +916,7 @@ class SqliteDriver:
             INSERT OR REPLACE INTO user_aliases
                   (user_id, alias, type, weight, most_recent)
             VALUES ( ? , ? , ? , ? , ? )
-                  ''',
+            ''',
             (
                 user,
                 alias,
@@ -935,7 +938,7 @@ class SqliteDriver:
             '''
             SELECT user_id FROM user_aliases
             WHERE user_id=? AND alias=?
-                  ''',
+            ''',
             (user, alias),
         )
         combo_exists = len(c.fetchall())
@@ -944,7 +947,7 @@ class SqliteDriver:
         c.execute(
             '''
             DELETE FROM user_aliases WHERE user_id=? AND alias=?
-                  ''',
+            ''',
             (user, alias),
         )
         self.conn.commit()
@@ -960,7 +963,7 @@ class SqliteDriver:
             '''
             SELECT user_id FROM user_aliases
             WHERE alias=?
-                  ''',
+            ''',
             (old,),
         )
         old_result = c.fetchall()
@@ -979,7 +982,7 @@ class SqliteDriver:
             '''
             SELECT user_id FROM user_aliases
             WHERE alias=?
-                  ''',
+            ''',
             (new,),
         )
         new_result = c.fetchall()
@@ -1017,7 +1020,7 @@ class SqliteDriver:
                     '''
                     INSERT INTO user_aliases (user_id, alias, type)
                     VALUES ( ? , ? , ? )
-                          ''',
+                    ''',
                     (old_result, new, 'irc'),
                 )
                 self.conn.commit()
@@ -1037,14 +1040,14 @@ class SqliteDriver:
                         '''
                         DELETE FROM user_aliases
                         WHERE alias=?
-                              ''',
+                        ''',
                         (new,),
                     )
                     c.execute(
                         '''
                         INSERT INTO user_aliases (user_id, alias, type)
                         VALUES ( ? , ? , ? )
-                              ''',
+                        ''',
                         (new_result, new, 'irc'),
                     )
                     self.conn.commit()
@@ -1068,7 +1071,7 @@ class SqliteDriver:
                 SELECT MAX(weight) FROM user_aliases
                 WHERE alias=?
             )
-                  ''',
+            ''',
             (old_nick, old_nick),
         )
         old_id = c.fetchall()
@@ -1093,7 +1096,7 @@ class SqliteDriver:
                 SELECT MAX(weight) FROM user_aliases
                 WHERE alias=?
             )
-                  ''',
+            ''',
             (new_nick, new_nick),
         )
         new_id = c.fetchall()
@@ -1146,9 +1149,8 @@ class SqliteDriver:
         chname = "private" if msg['channel'] is None else msg['channel']
         if msg['kind'] == 'NICK':
             chname = None
-        assert msg['kind'] in ['PRIVMSG', 'JOIN', 'PART', 'NICK', 'QUIT'], msg[
-            'kind'
-        ]
+        if not msg['kind'] in ['PRIVMSG', 'JOIN', 'PART', 'NICK', 'QUIT']:
+            raise ValueError("unknown kind {}".format(msg['kind']))
         if msg['kind'] == 'PRIVMSG':
             msgiscmd = msg['message'].startswith((".", "!", "?", "^"))
         else:
@@ -1160,7 +1162,7 @@ class SqliteDriver:
                 '''
                 SELECT id FROM channels
                 WHERE channel_name=?
-                      ''',
+                ''',
                 (chname,),
             )
             channel = norm(c.fetchone())
@@ -1172,7 +1174,7 @@ class SqliteDriver:
             INSERT INTO messages
                 (channel_id, kind, sender, timestamp, message, command)
             VALUES ( ? , ? , ? , ? , ? , ? )
-                  ''',
+            ''',
             (
                 channel if msg['kind'] != 'NICK' else None,
                 msg['kind'],
@@ -1193,7 +1195,7 @@ class SqliteDriver:
             '''
             SELECT user_id FROM user_aliases
             WHERE alias=?
-                  ''',
+            ''',
             (msg['nick'],),
         )
         user = c.fetchall()
@@ -1211,7 +1213,7 @@ class SqliteDriver:
             UPDATE user_aliases
             SET most_recent=0
             WHERE type='irc' AND user_id=?
-                  ''',
+            ''',
             (user,),
         )
         c.execute(
@@ -1219,7 +1221,7 @@ class SqliteDriver:
             UPDATE user_aliases
             SET most_recent=1
             WHERE type='irc' AND user_id=? AND alias=?
-                  ''',
+            ''',
             (user, msg['nick']),
         )
         self.conn.commit()
@@ -1240,15 +1242,25 @@ class SqliteDriver:
                     SELECT user_id FROM user_aliases
                     WHERE alias=?))
             ORDER BY timestamp
-                  ''',
+            ''',
             (channel, nick),
         )
         return c.fetchall()
 
     def add_article(self, article, commit=True):
         """Adds an article and its data to the db.
-        article should be a dict as the response from API.get_meta.
+        article should be a dict of article info.
         Set commit=False for mass addition, then commit afterwards."""
+        # article = dict(
+        # int? ups
+        # int? downs
+        # int rating
+        # str fullname
+        # str title
+        # str created_at: ISO-8601
+        # str? created_by
+        # str? parent_fullname
+        # str[] tags
         # 1. add to articles
         # 1.1. make a new entry if it's a new article
         # 1.2. update the existing entry if the article already exists
@@ -1285,12 +1297,12 @@ class SqliteDriver:
         }
         c.execute(
             '''
-            SELECT id FROM articles WHERE url=?
-                  ''',
+            SELECT * FROM articles WHERE url=?
+            ''',
             (article['url'],),
         )
-        article_data['id'] = norm(c.fetchone())
-        if article_data['id'] is None:
+        existing_article_data = c.fetchone()
+        if existing_article_data is None:
             # the article does not already exist
             # replace shouldn't actually happen but hey can't hurt
             c.execute(
@@ -1300,51 +1312,77 @@ class SqliteDriver:
                      rating, ups, downs, date_posted)
                 VALUES (:url, :category, :title, :scp_num, :parent,
                         :rating, :ups, :downs, :date_posted)
-                      ''',
+                ''',
                 article_data,
             )
             article_data['id'] = c.lastrowid
         else:
             # the article already exists and must be updated
             dbprint("This article already exists", True)
+            article_data['id'] = existing_article_data['id']
             # ignore ups/downs
             c.execute(
                 '''
                 UPDATE articles
-                SET url=:url, category=:category, title=:title,
-                    scp_num=:scp_num, parent=:parent, rating=:rating,
+                SET url=:url, category=:category,
+                    parent=:parent, rating=:rating,
                     date_posted=:date_posted
                 WHERE id=:id
-                      ''',
+                ''',
                 article_data,
             )
+            # If the article is an SCP, though, the old title must not be
+            # thrown away in favour of the new one!
+            if existing_article_data['scp_num'] is None:
+                c.execute(
+                    '''
+                    UPDATE articles
+                    SET title=:title, scp_num=:scp_num
+                    WHERE id=:id
+                    ''',
+                    article_data,
+                )
         # update tags and authors
         c.execute(
             '''
             DELETE FROM articles_tags WHERE article_id=?
-                  ''',
+            ''',
             (article_data['id'],),
         )
         c.executemany(
             '''
             INSERT INTO articles_tags (article_id, tag)
             VALUES ( ? , ? )
-                      ''',
+            ''',
             [(article_data['id'], t) for t in article['tags']],
         )
         c.execute(
             '''
             DELETE FROM articles_authors
             WHERE article_id=? AND metadata=0
-                  ''',
+            ''',
             (article_data['id'],),
         )
         c.execute(
             '''
             INSERT INTO articles_authors (article_id, author)
             VALUES ( ? , ? )
-                  ''',
+            ''',
             (article_data['id'], article['created_by']),
+        )
+        if commit:
+            self.conn.commit()
+
+    def delete_article(self, url, commit=True):
+        """Delete an article by slug"""
+        dbprint("Adding article {}".format(url))
+        c = self.conn.cursor()
+        c.execute(
+            '''
+            DELETE FROM articles
+            WHERE url=?
+            ''',
+            (url,),
         )
         if commit:
             self.conn.commit()
@@ -1361,7 +1399,7 @@ class SqliteDriver:
             UPDATE articles
             SET title=?, scp_num=?
             WHERE url=?
-                  ''',
+            ''',
             (title, num, url),
         )
         if commit:
@@ -1373,7 +1411,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT id FROM articles WHERE url=?
-                  ''',
+            ''',
             (url,),
         )
         page_id = c.fetchone()
@@ -1384,14 +1422,14 @@ class SqliteDriver:
             '''
             DELETE FROM articles_authors
             WHERE article_id=?
-                  ''',
+            ''',
             (page_id,),
         )
         c.executemany(
             '''
             INSERT INTO articles_authors (article_id, author)
             VALUES ( ? , ? )
-                      ''',
+            ''',
             ((page_id, author) for author in authors),
         )
         if commit:
@@ -1405,7 +1443,7 @@ class SqliteDriver:
             '''
             SELECT category,url,title,scp_num,rating,date_posted
             FROM articles WHERE id=?
-                  ''',
+            ''',
             (id,),
         )
         result = c.fetchone()
@@ -1420,7 +1458,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT tag FROM articles_tags WHERE article_id=?
-                  ''',
+            ''',
             (id,),
         )
         for row in c.fetchall():
@@ -1429,7 +1467,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT author FROM articles_authors WHERE article_id=?
-                  ''',
+            ''',
             (id,),
         )
         for row in c.fetchall():
@@ -1550,7 +1588,7 @@ class SqliteDriver:
             '''
             SELECT id FROM channels
             WHERE channel_name=?
-                  ''',
+            ''',
             (channel_name,),
         )
         channel_id = c.fetchone()['id']
@@ -1559,14 +1597,14 @@ class SqliteDriver:
             '''
             DELETE FROM showmore_list
             WHERE channel_id=?
-                  ''',
+            ''',
             (channel_id,),
         )
         c.executemany(
             '''
             INSERT INTO showmore_list (channel_id, article_id)
             VALUES ( ? , ? )
-                      ''',
+            ''',
             ((channel_id, p_id) for p_id in page_ids),
         )
         self.conn.commit()
@@ -1582,7 +1620,7 @@ class SqliteDriver:
             WHERE channel_id=(
                 SELECT id FROM channels
                 WHERE channel_name=?)
-                  ''',
+            ''',
             (channel_name,),
         )
         return [row['article_id'] for row in c.fetchall()]

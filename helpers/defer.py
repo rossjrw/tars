@@ -16,12 +16,18 @@ class defer:
         """Check whether the given bots are in the channel"""
         # bots should be a list of bot names?
         defer.get_users(cmd.context, cmd.channel)
-        if cmd.ping:
+        if cmd.pinged:
             return False
         if cmd.force:
             return False
         members = DB.get_channel_members(cmd.channel)
         return set(members) & set(bots)
+
+    @staticmethod
+    def report(cmd, message):
+        cmd.context.RAW(
+            "PRIVMSG {} {}".format(CONFIG['channels']['home'], message)
+        )
 
     @classmethod
     def controller(cls, cmd):

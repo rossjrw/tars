@@ -51,7 +51,7 @@ required to run:
 TARS requires at least Python 3.5.2.
 
 TARS requires a set of API keys to function correctly. These should be stored
-in `keys.secret.txt`. More details can be found in `helpers/api.py`.
+in `keys.secret.toml`. More details can be found in `helpers/api.py`.
 
 TARS will use the config file given as the command line argument. If none is
 provided, it will default to `tars.conf`.

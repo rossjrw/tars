@@ -13,13 +13,24 @@ COMMANDS = {
 from ._command import Command
 
 COMMANDS = {
+    # Searching
     "search": {
-        "Search": {"search", "sea", "s", "??"},
+        "Search": {"search", "sea", "s"},
         "Regexsearch": {"regexsearch", "rsearch", "rsea", "rs"},
         "Tags": {"tags"},
         "Lastcreated": {"lastcreated", "lc", "l"},
     },
     "showmore": {"Showmore": {"showmore", "sm", "pick"},},
+    "shortest": {"Shortest": {"shortest"}},
+    # Database manipulation
+    "propagate": {"Propagate": {"propagate", "prop"},},
+    "dbq": {"Query": {"query", "dbq"}, "Seen": {"seen", "lastseen"},},
+    "refactor": {"Refactor": {"refactor"},},
+    "nick": {"Alias": {"alias"},},
+    # Staff tools
+    "record": {"Record": {"record"}, "Pingall": {"pingall"},},
+    "promote": {"Promote": {"promote"},},
+    # Internal commands
     "admin": {
         "Kill": {"kys"},
         "Join": {"join", "rejoin"},
@@ -32,8 +43,8 @@ COMMANDS = {
         "Update": {"update"},
         "Helenhere": {"checkhelen", "helenhere"},
     },
-    "refactor": {"Refactor": {"refactor"},},
-    "chevron": {"Chevron": {"chevron"},},
+    "converse": {"Converse": {"converse"},},
+    # Information retrieval
     "info": {
         "Help": {"help"},
         "Status": {"tars", "version", "status", "uptime"},
@@ -41,7 +52,6 @@ COMMANDS = {
         "User": {"user"},
         "Tag": {"tag"},
     },
-    "promote": {"Promote": {"promote"},},
     "gimmick": {
         "Reptile": {"reptile", "rep"},
         "Fish": {"fish", "reptile+", "rep+"},
@@ -53,14 +63,9 @@ COMMANDS = {
         "Fiction": {"isthisreal"},
         "Idea": {"idea"},
     },
-    "converse": {"Converse": {"converse"},},
-    "dbq": {"Query": {"query", "dbq"}, "Seen": {"seen", "lastseen"},},
-    "record": {"Record": {"record"}, "Pingall": {"pingall"},},
-    "prop": {"Propagate": {"propagate", "prop"},},
-    "analytic": {"Analyse_wiki": {"analyse_wiki"},},
+    # Other
+    "chevron": {"Chevron": {"chevron"},},
     "gib": {"Gib": {"gibber", "gib", "big", "goob", "boog", "gob", "bog"},},
-    "nick": {"Alias": {"alias"},},
-    "shortest": {"Shortest": {"shortest"}},
 }
 
 from helpers.error import CommandNotExistError

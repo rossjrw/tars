@@ -7,7 +7,7 @@ import string
 
 from pyaib.signals import await_signal
 
-from helpers.api import Topia
+# from helpers.api import Topia
 from helpers.database import DB
 from helpers.defer import defer
 from helpers.error import CommandError, MyFaultError
@@ -113,6 +113,7 @@ class record:
         """Record and broadcast messages"""
         if not defer.controller(cmd):
             raise CommandError("You're not authorised to do that")
+        raise MyFaultError("The .record command is currently disabled.")
         cmd.expandargs(["output o", "format f", "restrict-channel-name"])
         # get the action - start, stop or status
         if len(cmd.args['root']) == 0:
@@ -269,14 +270,7 @@ class record:
                 okchars = string.printable + "→←"
                 content = "".join(filter(lambda x: x in okchars, content))
                 # then format for wikidot
-                Topia.save_page(
-                    {
-                        'page': "tars:recording-output",
-                        'content': content,
-                        'revision_comment': "New recording",
-                        'notify_watchers': "true",
-                    }
-                )
+                # TODO save the content somewhere
                 msg.reply(
                     "Done! http://topia.wikidot.com/tars:recording-output"
                 )

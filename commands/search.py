@@ -10,8 +10,8 @@ Commands:
 from random import random
 
 from commands import Command
-from commands.gib import gib
-from commands.showmore import showmore
+from commands.gib import Gib
+from commands.showmore import Showmore
 
 from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
@@ -20,7 +20,7 @@ from googleapiclient.discovery import build
 import pendulum as pd
 
 from helpers.defer import defer
-from helpers.api import google_api_key, cse_key
+from helpers.api import GOOGLE_CSE_API_KEY, GOOGLE_CSE_ID
 from helpers.error import CommandError, isint
 from helpers.database import DB
 
@@ -197,6 +197,8 @@ class Search(Command):
     ]
 
     def execute(self, irc_c, msg, cmd):
+        if defer.check(cmd, 'jarvis', 'Secretary_Helen'):
+            return
         # check to see if there are any arguments
         if len(self) == 1 and len(self['title']) == 0:
             raise CommandError("Must specify at least one search term")
@@ -445,7 +447,7 @@ class Search(Command):
         if len(pages) > 3:
             msg.reply(
                 "{} results (use ..sm to choose): {}".format(
-                    len(pages), showmore.parse_multiple_titles(pages)
+                    len(pages), Showmore.parse_multiple_titles(pages)
                 )
             )
             DB.set_showmore_list(msg.raw_channel, [p['id'] for p in pages])
@@ -472,8 +474,8 @@ class Search(Command):
             return
         for page in pages:
             msg.reply(
-                gib.obfuscate(
-                    showmore.parse_title(page),
+                Gib.obfuscate(
+                    Showmore.parse_title(page),
                     DB.get_channel_members(msg.raw_channel),
                 )
             )
@@ -485,7 +487,7 @@ class Search(Command):
         order=None,
         limit=None,
         offset=0,
-        **wanted_filters
+        **wanted_filters,
     ):
         """Order the results of a search by `order`.
         If `order` is None, then order by fuzzywuzzy of the search term.
@@ -514,7 +516,7 @@ class Search(Command):
         return pages
 
 
-class regexsearch:
+class Regexsearch:
     @classmethod
     def execute(cls, irc_c, msg, cmd):
         self['regex'] = self['title']
@@ -522,7 +524,7 @@ class regexsearch:
         Search.command(irc_c, msg, cmd)
 
 
-class tags:
+class Tags:
     @classmethod
     def execute(cls, irc_c, msg, cmd):
         self['tags'] = self['title']
@@ -530,7 +532,7 @@ class tags:
         Search.command(irc_c, msg, cmd)
 
 
-class lastcreated:
+class Lastcreated:
     @classmethod
     def execute(cls, irc_c, msg, cmd):
         self['order'] = ['recent']
@@ -635,7 +637,7 @@ class DateRange:
         self.input = input_date
         self.min = None
         self.max = None
-        self.compare = None
+        self.compare = "="
         # possible values:
         # 1. absolute date
         # 2. relative date
@@ -700,12 +702,28 @@ class DateRange:
         if self.date_is_absolute():
             # the date is absolute
             # minimise the date
-            self.min = pd.datetime(*self.date.lower_strict()[:6])
-            self.min = self.min.set(hour=0, minute=0, second=0)
+            minimum = pd.datetime(*self.date.lower_strict()[:6])
+            minimum = minimum.set(hour=0, minute=0, second=0)
             # maximise the date
-            self.max = pd.datetime(*self.date.upper_strict()[:6])
-            self.max = self.max.set(hour=23, minute=59, second=59)
-            pass
+            maximum = pd.datetime(*self.date.upper_strict()[:6])
+            maximum = maximum.set(hour=23, minute=59, second=59)
+            if self.compare == "<":
+                self.max = minimum
+            elif self.compare == "<=":
+                self.max = maximum
+            elif self.compare == ">":
+                self.min = maximum
+            elif self.compare == ">=":
+                self.min = minimum
+            elif self.compare == "=":
+                # = means between maximum and minimum
+                self.min = minimum
+                self.max = maximum
+            else:
+                raise CommandError(
+                    "Unknown operator in absolute date "
+                    "comparison ({})".format(self.compare)
+                )
         elif re.match(r"([0-9]+[A-Za-z])+$", self.input):
             # the date is relative
             sel = [i for i in re.split(r"([0-9]+)", self.input) if i]
@@ -733,7 +751,7 @@ class DateRange:
             )
             if self.compare in ["<", "<="]:
                 self.min = self.date
-            elif self.compare in [">", ">="] or self.compare is None:
+            elif self.compare in [">", ">="]:
                 self.max = self.date
             elif self.compare == "=":
                 self.max = self.date
@@ -782,8 +800,10 @@ class DateRange:
 # TODO move this to helpers/api.py
 def google_search(search_term, **kwargs):
     """Performs a mismatch search via google"""
-    service = build("customsearch", "v1", developerKey=google_api_key)
-    res = service.cse().list(q=search_term, cx=cse_key, **kwargs).execute()
+    service = build("customsearch", "v1", developerKey=GOOGLE_CSE_API_KEY)
+    res = (
+        service.cse().list(q=search_term, cx=GOOGLE_CSE_ID, **kwargs).execute()
+    )
     if 'items' in res:
         return res['items']
     return [None]

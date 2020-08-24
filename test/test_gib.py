@@ -1,10 +1,10 @@
 from functools import partial
-from commands.gib import gib
+from commands.gib import Gib
 
 
 def test_bracketify():
     qubr = partial(
-        gib.bracketify, opening=(r"\"\b", "\""), closing=(r"\b[.!?]*\"", "\"")
+        Gib.bracketify, opening=(r"\"\b", "\""), closing=(r"\b[.!?]*\"", "\"")
     )
     assert qubr('aaa') == 'aaa'
     assert qubr('"aaa"') == '"aaa"'
@@ -25,7 +25,7 @@ def test_bracketify():
     assert qubr('aaa!!" "bbb!!"') == '"aaa!!" "bbb!!"'
     assert qubr('aaa!!!" bbb') == '"aaa!!!" bbb'
     assert qubr('aaa "!bbb') == 'aaa "!bbb'
-    pabr = partial(gib.bracketify, opening=(r"\(", "("), closing=(r"\)", ")"))
+    pabr = partial(Gib.bracketify, opening=(r"\(", "("), closing=(r"\)", ")"))
     assert pabr('aaa') == 'aaa'
     assert pabr('(aaa)') == '(aaa)'
     assert pabr('(aaa bbb)') == '(aaa bbb)'

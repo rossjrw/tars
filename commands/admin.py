@@ -7,7 +7,7 @@ import os
 import sys
 import re
 import git
-from commands.gib import gib
+from commands.gib import Gib
 from helpers.greetings import kill_bye
 from helpers.error import CommandError
 from helpers.api import SCPWiki
@@ -139,7 +139,7 @@ class say:
         else:
             message = " ".join(cmd.args['root'][1:])
             if 'obfuscate' in cmd and msg.raw_channel is not None:
-                message = gib.obfuscate(
+                message = Gib.obfuscate(
                     message, DB.get_aliases(None) + ["ops"]
                 )
             if 'colour' in cmd:
@@ -176,4 +176,4 @@ class debug:
     @classmethod
     def execute(cls, irc_c, msg, cmd):
         # msg.reply(", ".join("%s: %s" % item for item in vars(msg).items()))
-        msg.reply(SCPWiki.get_page_id(['scp-3939']))
+        pass

@@ -7,6 +7,7 @@ verify_ssl = true
 pylint = "*"
 jedi = "*"
 pytest = "*"
+black = "==19.10b0"
 
 [packages]
 edtf = "*"
@@ -28,3 +29,9 @@ python-Levenshtein = "*"
 GitPython = "*"
 pyaib = {git = "https://github.com/rossjrw/pyaib.git"}
 beautifulsoup4 = "*"
+toml = "*"
+python-scuttle = "*"
+pre-commit = "*"
+
+[requires]
+python_version = "3.8"

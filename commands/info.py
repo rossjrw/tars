@@ -74,7 +74,7 @@ class tag:
     def execute(cls, irc_c, msg, cmd):
         if len(cmd.args['root']) == 1:
             msg.reply(
-                "http://www.scp-wiki.net/system:page-tags/tag/{}".format(
+                "http://www.scp-wiki.wikidot.com/system:page-tags/tag/{}".format(
                     cmd.args['root'][0]
                 )
             )

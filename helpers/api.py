@@ -2,144 +2,66 @@
 
 Provides methods for accessing API.
 
-API keys should be kept in keys.secret.txt in the base directory. Lines must
-be in pairs. The first line must contain the key name and nothing else. The
-second line must contain the key value and nothing else. (Key names should only
-be on odd lines, key values should only be on even lines.)
+API keys should be kept in keys.secret.toml in the base directory. This is a
+TOML file containing a single table named 'keys' containing each key with its
+value as a string.
 
-Valid key names are:
+The keys are:
+    irc_password: The bots' IRC NickServ password.
+    google_cse_api: The API key for the mismatch search via Google CSE.
+    google_cse_id: The ID of the Google CSE.
+    scuttle_api: A Personal Access Token for SCUTTLE.
 """
-possible_keys = [
-    "irc_password",
-    "wikidot_api",
-    "google_cse_api",
-    "google_cse_id",
-    "scuttle_api",
-    "scuttle_oauth_id",
-    "scuttle_oauth_secret",
-]
+import pathlib
 
-import os.path
-from xmlrpc.client import ServerProxy
-import urllib3
-from pprint import pprint
-import json
+import tomlkit
 
-http = urllib3.PoolManager()
+from scuttle import scuttle
 
-with open(os.path.dirname(__file__) + "/../keys.secret.txt") as file:
-    si = iter(file.read().rstrip().splitlines())
-    keylist = dict(zip(si, si))
-    password = keylist['irc_password']
-    wikidot_api_key = keylist['wikidot_api']
-    google_api_key = keylist['google_cse_api']
-    cse_key = keylist['google_cse_id']
+with open(pathlib.Path.cwd() / "keys.secret.toml") as keys:
+    keys = tomlkit.parse(keys.read())['keys']
+
+GOOGLE_CSE_API_KEY = keys['google_cse_api']
+GOOGLE_CSE_ID = keys['google_cse_id']
+NICKSERV_PASSWORD = keys['irc_password']
 
 
-class WikidotAPI:
+class ScuttleAPI:
     """Wrapper for Wikidot API functions."""
 
-    def __init__(self, wikiname):
-        self.w = wikiname
-        self.s = ServerProxy(
-            "https://TARS:{}@www.wikidot.com/xml-rpc-api.php".format(
-                wikidot_api_key
-            )
-        )
-        self.access = keylist['scuttle_api']
-        self.oauth_id = keylist['scuttle_oauth_id']
-        self.oauth_secret = keylist['scuttle_oauth_secret']
+    def __init__(self, domain):
+        self.scuttle = scuttle(domain, keys['scuttle_api'], 1)
 
-    def select(self, selectors):
-        """Equivalent to pages.select"""
-        # TODO get site from config
-        selectors['site'] = self.w
-        return self.s.pages.select(selectors)
+    def get_one_page(self, slug):
+        """Gets all SCUTTLE data for a single page."""
+        return self.scuttle.page_by_slug(slug)
 
-    def get_meta(self, selectors):
-        """Equivalent to pages.get_meta. Limit 10 pages"""
-        selectors['site'] = self.w
-        return self.s.pages.get_meta(selectors)
+    def get_one_page_meta(self, slug):
+        """Gets wikidot metadata for a single page."""
+        return self.get_one_page(slug)['metadata']['wikidot_metadata']
 
-    def select_files(self, selectors):
-        """Equivalent to files.select. Limit 1 page"""
-        selectors['site'] = self.w
-        return self.s.files.select(selectors)
+    def get_one_page_html(self, slug):
+        """Gets the HTML for a single page."""
+        return self.get_one_page(slug)['latest_revision']
 
-    def get_files_meta(self, selectors):
-        """Equivalent to files.get_meta. Limit 10 files, 1 page"""
-        selectors['site'] = self.w
-        return self.s.files.get_meta(selectors)
-
-    def get_page(self, selectors):
-        """Equivalent to pages.get_one. Limit 1 page"""
-        selectors['site'] = self.w
-        return self.s.pages.get_one(selectors)
-
-    def save_page(self, selectors):
-        """Equivalent to pages.save_one Limit 1 page"""
-        selectors['site'] = self.w
-        return self.s.pages.save_one(selectors)
-
-    def get_page_id(self, pages):
-        """Get wikidot ID for a list of pages, or all"""
-        if self.w != 'scp-wiki':
-            raise ValueError(
-                "SCUTTLE only supports scp-wiki, not {}".format(self.w)
-            )
-        if isinstance(pages, str):
-            if pages == 'all':
-                fields = {'all': True}
-            elif pages == 'refresh':
-                fields = {
-                    'grant_type': "authorization_code",
-                    'client_id': self.oauth_id,
-                    'client_secret': self.oauth_secret,
-                }
-            else:
-                raise ValueError("get_page_id expects a list of pages or all")
-        elif isinstance(pages, list):
-            fields = {'pages': pages}
+    def get_all_pages(self, *, tags=None, categories=None):
+        """Gets a list of all slugs that satisfy the requirements."""
+        if tags is None:
+            tags = []
+        assert isinstance(tags, list)
+        if categories is None:
+            categories = []
         else:
-            raise ValueError("get_page_id expects a list of pages or all")
-        r = http.request(
-            'GET',
-            "http://scpfoundation.wiki/api/pages/get/wikidotid",
-            # 'GET',"http://scpfoundation.wiki/api/oauth/token",
-            fields=fields,
-            headers={
-                'Authorization': "Bearer {}".format(self.access),
-                'Accept': "application/json",
-                'User-Agent': "TARS",
-            },
-        )
-        return json.loads(r.data.decode('utf-8'))['message']
+            raise NotImplementedError
+        assert isinstance(categories, list)
+        # get info for all pages
+        if len(tags) == 1:
+            slugs = [page['slug'] for page in self.scuttle.tag_pages(tags[0])]
+        elif len(tags):
+            raise NotImplementedError
+        else:
+            slugs = [page['slug'] for page in self.scuttle.pages()]
+        return slugs
 
 
-SCPWiki = WikidotAPI("scp-wiki")
-Sandbox3 = WikidotAPI("scp-sandbox-3")
-Topia = WikidotAPI("topia")
-
-
-def get_ups(article):
-    r = http.request(
-        'GET',
-        "http://www.scp-wiki.net/ajax-module-connector.php",
-        headers={
-            'Cookie': "wikidot_udsession=1; {}; {};".format(cookie, token7),
-            'Origin': "http://www.scp-wiki.net",
-            'Referer': "http://www.scp-wiki.net/{}".format(article.url),
-            'Accept-Encoding': "gzip, deflate",
-            'Accept-Language': "en-US,en;q=0.8",
-            'User-Agent': "TARS",
-            'Content-Type': "application/x-www-form-urlencoded; charset=UTF-8",
-            'Accept': "*/*",
-            'X-Requested-With': "XMLHttpRequest",
-            'Connection': "keep-alive",
-        },
-    )
-
-
-def get_id(fullname):
-    """Gets the Wikidot ID of a page."""
-    pass
+SCPWiki = ScuttleAPI("en")

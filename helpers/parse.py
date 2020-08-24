@@ -11,6 +11,11 @@ from helpers.config import CONFIG
 from helpers.error import CommandError, ArgumentMessage
 
 
+def parseprint(message):
+    # print("[\x1b[1;32mParser\x1b[0m] " + str(message))
+    pass
+
+
 def parse_commands(irc_c, message):
     """Takes a message object and returns a list of parsed commands."""
     submessages = [m.strip() for m in message.message.split("&&")]
