@@ -94,6 +94,8 @@ class propagate:
             except KeyError:
                 # Raised when the page does not exist, for example if it has
                 # been deleted during propagation
+                reply("{} was deleted during propagation".format(slug))
+                DB.delete_article(slug)
                 continue
             DB.add_article(page, commit=False)
             if 'metadata' in page['tags']:
