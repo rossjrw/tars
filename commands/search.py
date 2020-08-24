@@ -38,6 +38,7 @@ class Search(Command):
     criteria. Searching is never case-sensitive."""
 
     command_name = "search"
+    defers_to = ["jarvis", "Secretary_Helen"]
     arguments = [
         dict(
             flags=['title'],
@@ -197,8 +198,6 @@ class Search(Command):
     ]
 
     def execute(self, irc_c, msg, cmd):
-        if defer.check(cmd, 'jarvis', 'Secretary_Helen'):
-            return
         # check to see if there are any arguments
         if len(self) == 1 and len(self['title']) == 0:
             raise CommandError("Must specify at least one search term")
