@@ -110,3 +110,9 @@ class fiction:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         msg.reply("https://www.youtube.com/watch?v=ioGoPOAxkCg")
+
+
+class punctuation:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        msg.reply("dot: · en: – em: —")
