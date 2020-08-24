@@ -42,7 +42,6 @@ class propagate:
                 'scp-4205',
                 'omega-k',
                 'component:ar-theme',
-                'fragment:scp-3939-64',
             ]
             msg.reply("Adding sample data...")
             propagate.get_wiki_data_for(samples, reply=msg.reply)
