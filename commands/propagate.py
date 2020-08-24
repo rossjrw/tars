@@ -137,7 +137,7 @@ class propagate:
                 break
             reply("Unknown metadata page {}".format(slug))
             return
-        titles = soup.select()
+        titles = soup.select(selector)
         # <li><a href="/scp-xxx">SCP-xxx</a> - Title</li>
         for title in titles:
             # take the scp number from the URL, not the URL link
