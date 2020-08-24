@@ -146,7 +146,7 @@ class propagate:
                   (.*?)        # page's meta title
                 )?             # end post-link group; select if present
                 </li>          # end of the "title"
-            """,
+                """,
                 re.VERBOSE,
             )
             match = pattern.search(title)

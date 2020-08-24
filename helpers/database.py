@@ -1295,12 +1295,12 @@ class SqliteDriver:
         }
         c.execute(
             '''
-            SELECT id FROM articles WHERE url=?
+            SELECT * FROM articles WHERE url=?
             ''',
             (article['url'],),
         )
-        article_data['id'] = norm(c.fetchone())
-        if article_data['id'] is None:
+        existing_article_data = c.fetchone()
+        if existing_article_data is None:
             # the article does not already exist
             # replace shouldn't actually happen but hey can't hurt
             c.execute(
@@ -1317,17 +1317,29 @@ class SqliteDriver:
         else:
             # the article already exists and must be updated
             dbprint("This article already exists", True)
+            article_data['id'] = existing_article_data['id']
             # ignore ups/downs
             c.execute(
                 '''
                 UPDATE articles
-                SET url=:url, category=:category, title=:title,
-                    scp_num=:scp_num, parent=:parent, rating=:rating,
+                SET url=:url, category=:category,
+                    parent=:parent, rating=:rating,
                     date_posted=:date_posted
                 WHERE id=:id
                 ''',
                 article_data,
             )
+            # If the article is an SCP, though, the old title must not be
+            # thrown away in favour of the new one!
+            if existing_article_data['scp_num'] is None:
+                c.execute(
+                    '''
+                    UPDATE articles
+                    SET title=:title, scp_num=:scp_num
+                    WHERE id=:id
+                    ''',
+                    article_data,
+                )
         # update tags and authors
         c.execute(
             '''
