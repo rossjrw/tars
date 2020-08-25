@@ -554,27 +554,26 @@ class Regexsearch(Search):
     """
 
     command_name = "regexsearch"
-    arguments_prepend = "-x"
+    arguments_prepend = "--regex"
 
 
-class Tags:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
-        self['tags'] = self['title']
-        self['title'] = []
-        Search.command(irc_c, msg, cmd)
+class Tags(Search):
+    """Search by tags. Equivalent to `.s -t [tag]`.
+    """
+
+    command_name = "tags"
+    arguments_prepend = "--tags"
 
 
-class Lastcreated:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
-        self['order'] = ['recent']
-        if len(self['title']) > 0:
-            self['limit'] = self['title']
-            self['title'] = []
-        else:
-            self['limit'] = [3]
-        Search.command(irc_c, msg, cmd)
+class Lastcreated(Search):
+    """Generates a list of the 3 most recently created pages.
+
+    @example(.lc -a Croquembouche)(shows the last 3 articles posted by
+    Croquembouche.)
+    """
+
+    command_name = "lastcreated"
+    arguments_prepend = "--order recent --limit 3"
 
 
 class MinMax:

@@ -64,7 +64,7 @@ class Command:
         # self.args will become the parsed Namespace object.
 
         # For command aliases, add the prepend string
-        message = self.arguments_prepend + message
+        message = "{} {}".format(self.arguments_prepend, message)
 
         parser = self.get_parser()
         message = message.replace("'", "<<APOS>>")

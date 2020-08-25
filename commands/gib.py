@@ -257,17 +257,17 @@ class Gib:
         if match:
             sentence = match.group(2).strip()
         # second: modify any words that match the names of channel members
-        sentence = gib.obfuscate(
+        sentence = Gib.obfuscate(
             sentence, DB.get_channel_members(msg.raw_channel)
         )
         # match any unmatched pairs
-        sentence = gib.bracketify(
+        sentence = Gib.bracketify(
             sentence, (r"\"\b", "\""), (r"\b[.!?]*\"", "\"")
         )
-        sentence = gib.bracketify(sentence, (r"`\b", "`"), (r"\b[.!?]*`", "`"))
-        sentence = gib.bracketify(sentence, (r"\(", "("), (r"\)", ")"))
-        sentence = gib.bracketify(sentence, (r"\[", "["), (r"\}", "]"))
-        sentence = gib.bracketify(sentence, (r"\{", "{"), (r"\}", "}"))
+        sentence = Gib.bracketify(sentence, (r"`\b", "`"), (r"\b[.!?]*`", "`"))
+        sentence = Gib.bracketify(sentence, (r"\(", "("), (r"\)", ")"))
+        sentence = Gib.bracketify(sentence, (r"\[", "["), (r"\}", "]"))
+        sentence = Gib.bracketify(sentence, (r"\{", "{"), (r"\}", "}"))
 
         cmd.command = cmd.command.lower()
         if "oo" in cmd.command:
@@ -376,7 +376,7 @@ class Gib:
         # If the channel is None (PM), then the only ping is "ops"
         # If this were not the case, then the nicks regex would be an empty
         # string, which would match and therefore obfuscate all words
-        return nicks.sub(gib.obfuscate_word, sentence)
+        return nicks.sub(Gib.obfuscate_word, sentence)
 
     @classmethod
     def obfuscate_word(cls, match):
