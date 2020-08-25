@@ -43,16 +43,29 @@ class HelpFormatter(argparse.HelpFormatter):
 
 
 class Command:
+    # The canonical name of this command, lowercase
     command_name = None
+
+    # List of arguments that can be passed to this command; argparse syntax
     arguments = []
+
+    # The names of the bots that this command defers to
     defers_to = []
+
+    # A string to prepend to the start of the arguments (useful for aliases)
+    arguments_prepend = ""
 
     def __init__(self, message):
         self.args = None
         # This method is called for all commands when they are instantiated.
         # Commands must not define their own __init__.
         # message is a string representing the message arguments.
+        # The message does not contain the command name.
         # self.args will become the parsed Namespace object.
+
+        # For command aliases, add the prepend string
+        message = self.arguments_prepend + message
+
         parser = self.get_parser()
         message = message.replace("'", "<<APOS>>")
         message = message.replace('\\"', "<<QUOT>>")  # explicit \"

@@ -541,14 +541,20 @@ class Search(Command):
         return pages
 
 
-class Regexsearch:
-    """Searches the wiki for pages that match a regex."""
+class Regexsearch(Search):
+    """Searches the wiki for pages that match a regex. Exactly the same as
+    @command(search), except your search terms are parsed as regular
+    expressions. Not case-sensitive.
 
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
-        self['regex'] = self['title']
-        self['title'] = []
-        Search.command(irc_c, msg, cmd)
+    @example(.rs ^SCP- -t -scp)(searches for articles starting with "SCP-" but
+    that are not tagged 'scp'.)
+
+    @example(.rs ^((?!the).)*$)(searches for articles that don't contain
+    'the'.)
+    """
+
+    command_name = "regexsearch"
+    arguments_prepend = "-x"
 
 
 class Tags:
