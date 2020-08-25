@@ -541,7 +541,7 @@ class Search(Command):
         return pages
 
 
-class Regexsearch(Search):
+class Regexsearch:
     """Searches the wiki for pages that match a regex."""
 
     @classmethod

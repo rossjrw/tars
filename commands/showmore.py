@@ -38,7 +38,7 @@ class Showmore:
         if number == 0:
             msg.reply(
                 "{} saved results (use ..sm to choose): {}".format(
-                    len(pages), showmore.parse_multiple_titles(pages)
+                    len(pages), Showmore.parse_multiple_titles(pages)
                 )
             )
         else:
@@ -46,7 +46,7 @@ class Showmore:
                 "{}/{} · {}".format(
                     number,
                     len(page_ids),
-                    showmore.parse_title(pages[number - 1]),
+                    Showmore.parse_title(pages[number - 1]),
                 )
             )
 
@@ -54,7 +54,7 @@ class Showmore:
     def parse_title(page):
         """Makes a pretty string containing page info."""
         title_preview = "\x02{}\x0F"
-        if showmore.page_is_scp(page):
+        if Showmore.page_is_scp(page):
             if page['scp_num']:
                 title_preview = title_preview.format(page['scp_num'].upper())
                 if page['title']:
@@ -79,7 +79,7 @@ class Showmore:
                 "\x02{}\x0F {}".format(
                     i + 1,
                     p['title']
-                    if not showmore.page_is_scp(p)
+                    if not Showmore.page_is_scp(p)
                     else "{}: {}".format(p['scp_num'].upper(), p['title']),
                 )
                 for i, p in enumerate(pages[:10])

@@ -16,6 +16,7 @@ import commands
 
 from fuzzywuzzy import fuzz
 
+from commands import Command
 from helpers.config import CONFIG
 from helpers.database import DB
 from helpers.defer import defer
@@ -28,15 +29,26 @@ def chunks(array, length):
         yield array[i : i + length]
 
 
-class Converse:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
+class Converse(Command):
+    """An internal command used to respond to non-command messages."""
+
+    command_name = "search"
+    arguments = [
+        dict(
+            flags=['message'],
+            type=str,
+            nargs='*',
+            help="""The message to respond to.""",
+        ),
+    ]
+
+    def execute(self, irc_c, msg, cmd):
 
         ##### ping matches #####
 
-        if cmd.pinged:
+        if cmd.ping:
             if any(
-                x in cmd.unping.lower()
+                x in cmd.message.lower()
                 for x in ["fuck you", "piss off", "fuck off",]
             ):
                 msg.reply("{}: no u".format(msg.nick))
@@ -44,7 +56,7 @@ class Converse:
 
         ##### ping-optional text matches #####
 
-        if cmd.unping.startswith("?? "):
+        if cmd.message.startswith("?? "):
             # CROM compatibility
             getattr(commands.COMMANDS, 'search').command(irc_c, msg, cmd)
         if msg.message.lower() == "{}!".format(CONFIG.nick.lower()):

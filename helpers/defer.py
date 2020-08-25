@@ -16,7 +16,7 @@ class defer:
         """Check whether the given bots are in the channel"""
         # bots should be a list of bot names?
         defer.get_users(cmd.context, cmd.channel)
-        if cmd.pinged:
+        if cmd.ping:
             return False
         if cmd.force:
             return False

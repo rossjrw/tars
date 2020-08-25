@@ -60,7 +60,7 @@ class Command:
             message = shlex.split(message, posix=False)
             # posix=False does not remove quotes
             message = [m.strip('"') for m in message]
-        except ValueError:
+        except ValueError as e:
             # raised if shlex detects fucked up quotemarks
             # message = message.split()
             raise CommandError(
