@@ -35,7 +35,33 @@ class Search(Command):
     """Searches the wiki for pages.
 
     Provides URLs and basic info for the page(s) that match your search
-    criteria. Searching is never case-sensitive."""
+    criteria. Searching is never case-sensitive.
+
+    If TARS finds more than one article that matches your criteria (and if you
+    didn't specify @argument(random), @argument(summary) or
+    @argument(recommend)), it will provide a list of matches and ask if you
+    meant any of them. To pick your article from the list, see
+    @command(showmore).
+
+    @command(regexsearch), @command(tags), @command(random) and
+    @command(lastcreated) are aliases of this command.
+
+    @example(TARS: search -t +scp +meta -r >100 -c 2014)(matches pages tagged
+    both "scp" and "meta", with a rating of more than 100, posted in 2014.)
+
+    @example(.s Insurgency --rating 20..80 --created 2018-06..2018)(matches
+    pages that contain the word "Insurgency" in the title, which have a rating
+    of between 20 and 80, and were created between June 1st 2018 and the end of
+    2018.)
+
+    @example(.s Unexplained Location -f -c 20d..40W3d --random)(matches pages
+    whose name is exactly "Unexplained Location" created between 20 days and
+    [40 weeks + 3 days] ago, and returns a random one.)
+
+    @example(.s -x ^SCP-\d*2$ -m)(matches articles that start with "SCP-"
+    followed by any amount of numbers so long as that number ends in a 2, and
+    returns the one that most needs extra attention.)
+    """
 
     command_name = "search"
     defers_to = ["jarvis", "Secretary_Helen"]
@@ -46,12 +72,12 @@ class Search(Command):
             nargs='*',
             help="""Search for pages whose title contains all of these words.
 
-             Words are space-separated. Like all commands, anything wrapped in
-             quotemarks (``'``) will be treated as a single word. If you leave
-             **title** empty, then it will match all pages, and you'll need to
-             specify more criteria. If you actually need to search for
-             quotemarks, escape them with a backslash - e.g. ``.s \\'The
-             Administrator\\'``.""",
+            Words are space-separated. Like all commands, anything wrapped in
+            quotemarks (`"`) will be treated as a single word. If you leave
+            @argument(title) empty, then it will match all pages, and you'll
+            need to specify more criteria. If you actually need to search for
+            quotemarks, escape them with a backslash - e.g. `.s \\'The
+            Administrator\\'`.""",
         ),
         dict(
             flags=['--regex', '-x'],
@@ -59,10 +85,10 @@ class Search(Command):
             nargs='+',
             help="""Filter pages by a regular expression.
 
-             You may use more than one regex in a single search, still
-             delimited by a space. If you want to include a literal space in
-             the regex, you should either wrap the whole regex in quotes or use
-             ``\\s`` instead.""",
+            You may use more than one regex in a single search, still
+            delimited by a space. If you want to include a literal space in
+            the regex, you should either wrap the whole regex in quotes or use
+            `\\s` instead.""",
         ),
         dict(
             flags=['--tags', '--tag', '--tagged', '-t'],
@@ -70,9 +96,9 @@ class Search(Command):
             nargs='+',
             help="""Filter pages by tags.
 
-             The matched pages must have all the tags that you specified,
-             unless that tag starts with ``-``, in which case they must not
-             have that tag.""",
+            The matched pages must have all the tags that you specified,
+            unless that tag starts with `-`, in which case they must not
+            have that tag.""",
         ),
         dict(
             flags=['--author', '--au', '--by', '-a'],
@@ -80,9 +106,9 @@ class Search(Command):
             nargs='+',
             help="""Filter pages by exact author name.
 
-             The matched pages must have all the authors that you specified,
-             unless that author starts with ``-``, in which case they must not
-             have that author.""",
+            The matched pages must have all the authors that you specified,
+            unless that author starts with `-`, in which case they must not
+            have that author.""",
         ),
         dict(
             flags=['--rating', '-r'],
@@ -90,31 +116,31 @@ class Search(Command):
             nargs='+',
             help="""Filter pages by rating.
 
-             Prefix the number with any of ``<``, ``>``, ``=``. Default is
-             ``>``. Can also specify a range of ratings with two dots, e.g.
-             ``20..50``. Ranges are always inclusive.""",
+            Prefix the number with any of `<`, `>`, `=`. Default is
+            `>`. Can also specify a range of ratings with two dots, e.g.
+            `20..50`. Ranges are always inclusive.""",
         ),
         dict(
             flags=['--created', '--date', '-c'],
             type=str,
             nargs='+',
-            help="""Filter pages by date of creation. Accepts both absolute
-             and relative dates.
+            help="""Filter pages by date of creation. Accepts both absolute and
+            relative dates.
 
-             Absolute dates must be in ISO-8601 format (YYYY-MM-DD, YYYY-MM or
-             YYYY). Relative dates must be a number followed by a letter to
-             specify how many units of time ago; valid units are ``s m h d w M
-             y``. These units are not case-sensitive, **except for m/M!** Use
-             ``m`` for minutes and ``M`` for Months.
+            Absolute dates must be in ISO-8601 format (YYYY-MM-DD, YYYY-MM or
+            YYYY). Relative dates must be a number followed by a letter to
+            specify how many units of time ago; valid units are `s m h d w M
+            y`. These units are not case-sensitive, **except for m/M!** Use `m`
+            for minutes and `M` for Months.
 
-             Can use the same prefixes as **rating** (``>`` = 'older than',
-             ``<`` = 'younger than', ``=`` = exact match). ``=`` is the default
-             prefix if not specified, though this is pretty much guaranteed to
-             never match a relative date.
+            Can use the same prefixes as @argument(rating) (`>` = 'older
+            than', `<` = 'younger than', `=` = exact match). `=` is the default
+            prefix if not specified, though this is pretty much guaranteed to
+            never match a relative date.
 
-             Also supports ranges of dates with two dots e.g. ``2018..2019``.
-             Ranges are always inclusive, and you can mix relative dates and
-             absolute dates.""",
+            Also supports ranges of dates with two dots e.g. `2018..2019`.
+            Ranges are always inclusive, and you can mix relative dates and
+            absolute dates.""",
         ),
         dict(
             flags=['--category', '--cat', '-y'],
@@ -122,9 +148,9 @@ class Search(Command):
             nargs='+',
             help="""Filter pages by Wikidot category.
 
-             By default, all categories are searched. If you include this
-             argument but don't specify any categories, TARS will only search
-             '_default'.""",
+            By default, all categories are searched. If you include this
+            argument but don't specify any categories, TARS will only search
+            '_default'.""",
         ),
         dict(
             flags=['--parent', '-p'],
@@ -132,36 +158,36 @@ class Search(Command):
             nargs=None,
             help="""Filter pages by their parent page's slug.
 
-             The parent page's slug must be given exactly (e.g. ``-p
-             antimemetics-division-hub``). The entire parent tree will be
-             checked - the page will be found even if it's a great-grandchild
-             of the **--parent**.""",
+            The parent page's slug must be given exactly (e.g. `-p
+            antimemetics-division-hub`). The entire parent tree will be
+            checked - the page will be found even if it's a great-grandchild
+            of the **--parent**.""",
         ),
         dict(
             flags=['--summary', '--summarise', '-u'],
             type=bool,
             help="""Summarise search results.
 
-             Instead of providing a link to a single article, TARS will
-             summarise all articles that match the search criteria.""",
+            Instead of providing a link to a single article, TARS will
+            summarise all articles that match the search criteria.""",
         ),
         dict(
             flags=['--random', '--rand', '--ran', '-d'],
             type=bool,
             help="""If your search matches more than one article, return a
-             random one.""",
+            random one.""",
         ),
         dict(
             flags=['--recommend', '--rec', '-m'],
             type=bool,
             help="""If your search matches more than one article, return the
-             one that most needs attention.""",
+            one that most needs attention.""",
         ),
         dict(
             flags=['--newest', '--new', '-n'],
             type=bool,
             help="""If your search matches more than one article, return the
-             newest one.""",
+            newest one.""",
         ),
         dict(
             flags=['--order', '-o'],
@@ -515,7 +541,9 @@ class Search(Command):
         return pages
 
 
-class Regexsearch:
+class Regexsearch(Search):
+    """Searches the wiki for pages that match a regex."""
+
     @classmethod
     def execute(cls, irc_c, msg, cmd):
         self['regex'] = self['title']
