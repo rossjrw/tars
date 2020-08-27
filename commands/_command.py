@@ -15,11 +15,17 @@ class ArgumentParser(argparse.ArgumentParser):
     """A new argparser that has all the custom stuff TARS needs."""
 
     def error(self, message):
+        """Instead of crashing on error, reply a message"""
         raise ArgumentMessage(message)
 
     def exit(self, status=0, message=None):
+        """Instead of crashing on error, reply a message"""
         if message is not None:
             raise ArgumentMessage(message)
+
+    def print_help(self):
+        """Reply with help instead of printing to console"""
+        raise ArgumentMessage(self.format_usage())
 
 
 class HelpFormatter(argparse.HelpFormatter):
@@ -40,6 +46,11 @@ class HelpFormatter(argparse.HelpFormatter):
         """Change the default metavar for optional arguments to the long name
         of that argument instead of its uppercase"""
         return action.dest
+
+
+def help_formatter(prog):
+    """Override argparse's help formatter instantiation"""
+    return HelpFormatter(prog, width=999)
 
 
 class Command:
@@ -83,14 +94,18 @@ class Command:
         message = [w.replace("<<APOS>>", "'") for w in message]
         message = [w.replace("<<QUOT>>", '"') for w in message]
         try:
+            # Can throw ArgumentError
             self.args = parser.parse_args(message)
         except ArgumentMessage as e:
             raise CommandError(str(e))
 
     def get_parser(self):
         """Returns the argument parser for this command."""
+
         parser = ArgumentParser(
-            prog=type(self).command_name, formatter_class=HelpFormatter
+            prog=type(self).command_name,
+            description=type(self).__doc__,
+            formatter_class=help_formatter,
         )
         # arguments is a list of dicts
         # flags[], type, nargs, mode, help, choices
@@ -127,7 +142,7 @@ class Command:
         # Add a hidden argument that takes the remainder of the command
         # these will be later added to the root argument
         parser.add_argument(
-            "_REMAINDER_", nargs=argparse.REMAINDER, help=argparse.SUPPRESS
+            "_REMAINDER_", nargs=argparse.REMAINDER, help=argparse.SUPPRESS,
         )
         return parser
 
