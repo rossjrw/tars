@@ -27,6 +27,13 @@ class ArgumentParser(argparse.ArgumentParser):
         """Reply with help instead of printing to console"""
         raise ArgumentMessage(self.format_usage())
 
+    def format_usage(self):
+        formatter = self._get_formatter()
+        formatter.add_usage(
+            self.usage, self._actions, self._mutually_exclusive_groups, "",
+        )
+        return formatter.format_help()
+
 
 class HelpFormatter(argparse.HelpFormatter):
     """A new --help formatter."""
@@ -37,15 +44,16 @@ class HelpFormatter(argparse.HelpFormatter):
         over"""
         get_metavar = self._metavar_formatter(action, default_metavar)
         if action.nargs is argparse.ZERO_OR_MORE:
-            return "[{}...]".format(get_metavar(1)[0])
+            return "[{}[]]".format(get_metavar(1)[0])
         if action.nargs is argparse.ONE_OR_MORE:
-            return "{}...".format(get_metavar(1)[0])
+            return "{}[]".format(get_metavar(1)[0])
         return super()._format_args(action, default_metavar)
 
     def _get_default_metavar_for_optional(self, action):
         """Change the default metavar for optional arguments to the long name
         of that argument instead of its uppercase"""
-        return action.dest
+        # return action.dest
+        return action.type.__name__
 
 
 def help_formatter(prog):
