@@ -6,7 +6,10 @@ A bunch of commands for Controllers to use.
 import os
 import sys
 import re
+
 import git
+
+from commands import Command
 from commands.gib import Gib
 from helpers.greetings import kill_bye
 from helpers.error import CommandError
@@ -87,12 +90,13 @@ class reload:
         pass
 
 
-class reboot:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
-        if defer.check(cmd, 'jarvis', 'Secretary_Helen'):
-            return
-        # reboot the bot completely
+class Reboot(Command):
+    """Reboots the whole bot."""
+
+    command_name = "reboot"
+    defers_to = ["jarvis", "Secretary_Helen"]
+
+    def execute(self, irc_c, msg, cmd):
         if not defer.controller(cmd):
             raise CommandError("I'm afriad I can't let you do that.")
             return
