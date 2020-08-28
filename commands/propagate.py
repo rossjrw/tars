@@ -9,7 +9,7 @@ import re
 from bs4 import BeautifulSoup
 import numpy as np
 
-from commands import Command
+from helpers.command import Command
 from helpers.api import SCPWiki
 from helpers.error import CommandError
 from helpers.parse import nickColor

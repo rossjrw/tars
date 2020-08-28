@@ -10,7 +10,10 @@ COMMANDS = {
 }
 """
 
-from ._command import Command
+import sys
+from importlib import import_module, reload
+
+from helpers.error import CommandNotExistError
 
 COMMANDS = {
     # Searching
@@ -68,10 +71,8 @@ COMMANDS = {
     "gib": {"Gib": {"gibber", "gib", "big", "goob", "boog", "gob", "bog"},},
 }
 
-from helpers.error import CommandNotExistError
 
-
-class Commands_Directory:
+class CommandsDirectory:
     def __init__(self, directory):
         self.COMMANDS = directory
 
@@ -93,10 +94,6 @@ class Commands_Directory:
         raise CommandNotExistError(name)
 
 
-from importlib import import_module, reload
-import sys
-
-
 def cmdprint(text, error=False):
     bit = "[\x1b[38;5;75mCommands\x1b[0m] "
     if error:
@@ -104,7 +101,7 @@ def cmdprint(text, error=False):
     print(bit + str(text))
 
 
-COMMANDS = Commands_Directory(COMMANDS)
+COMMANDS = CommandsDirectory(COMMANDS)
 
 for file in COMMANDS.get():
     if "commands.{}".format(file) in sys.modules:

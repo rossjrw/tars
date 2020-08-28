@@ -5,12 +5,11 @@ A bunch of commands for Controllers to use.
 
 import os
 import sys
-import re
 
 import git
 
-from commands import Command
 from commands.gib import Gib
+from helpers.command import Command
 from helpers.greetings import kill_bye
 from helpers.error import CommandError
 from helpers.api import SCPWiki

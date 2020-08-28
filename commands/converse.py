@@ -16,7 +16,7 @@ import commands
 
 from fuzzywuzzy import fuzz
 
-from commands import Command
+from helpers.command import Command
 from helpers.config import CONFIG
 from helpers.database import DB
 from helpers.defer import defer

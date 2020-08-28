@@ -9,16 +9,15 @@ Commands:
 
 from random import random
 
-from commands import Command
-from commands.gib import Gib
-from commands.showmore import Showmore
-
 from edtf import parse_edtf
 from edtf.parser.edtf_exceptions import EDTFParseException
 from fuzzywuzzy import fuzz
 from googleapiclient.discovery import build
 import pendulum as pd
 
+from commands.gib import Gib
+from commands.showmore import Showmore
+from helpers.command import Command
 from helpers.defer import defer
 from helpers.api import GOOGLE_CSE_API_KEY, GOOGLE_CSE_ID
 from helpers.error import CommandError, isint
