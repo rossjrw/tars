@@ -7,6 +7,7 @@ Provides the base Command class that all commands inherit from.
 import argparse
 import copy
 import shlex
+import re
 
 from helpers.error import (
     CommandParsingError,
@@ -14,6 +15,17 @@ from helpers.error import (
     CommandParsingHelp,
     CommandUsageMessage,
 )
+
+
+def regex_type(validation_regex, validation_reason):
+    """Generates an argument type for a string matching a regex expression."""
+
+    def rtype(arg_value, pattern=re.compile(validation_regex)):
+        if not pattern.match(arg_value):
+            raise argparse.ArgumentTypeError(validation_reason)
+        return arg_value
+
+    return rtype
 
 
 class ArgumentParser(argparse.ArgumentParser):
