@@ -67,7 +67,6 @@ COMMANDS = {
         "Idea": {"idea"},
     },
     # Other
-    "chevron": {"Chevron": {"chevron"},},
     "gib": {"Gib": {"gibber", "gib", "big", "goob", "boog", "gob", "bog"},},
 }
 
