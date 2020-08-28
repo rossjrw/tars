@@ -5,13 +5,19 @@ More commands can be added by request.
 """
 
 from random import choice
+
 from emoji import emojize
 import requests
 
+from helpers.command import Command
 
-class idea:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
+
+class Idea(Command):
+    """Generates a random SCP idea."""
+
+    command_name = "idea"
+
+    def execute(self, irc_c, msg, cmd):
         msg.reply(
             "{} · {}".format(
                 "http://scp.bz/idea",
@@ -22,9 +28,10 @@ class idea:
         )
 
 
-class hug:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
+class Hug(Command):
+    """Show your appreciation for TARS physically."""
+
+    def execute(self, irc_c, msg, cmd):
         if msg.sender == "Jazstar":
             msg.reply("Not in front of the children!")
         elif msg.sender == "ROUNDERHOUSE":
@@ -33,9 +40,10 @@ class hug:
             msg.reply("*hugs*")
 
 
-class reptile:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
+class Reptile(Command):
+    """rawr"""
+
+    def execute(self, irc_c, msg, cmd):
         repeat = 31 if msg.sender == "CuteGirl" else 2
         output = ""
         for _ in range(0, repeat):
@@ -43,9 +51,10 @@ class reptile:
         msg.reply(output)
 
 
-class fish:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
+class Fish(Command):
+    """blub blub"""
+
+    def execute(self, irc_c, msg, cmd):
         repeat = 2
         output = ""
         for _ in range(0, repeat):
@@ -53,9 +62,10 @@ class fish:
         msg.reply(output)
 
 
-class bear:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
+class Bear(Command):
+    """grrr"""
+
+    def execute(self, irc_c, msg, cmd):
         repeat = 2
         output = ""
         for _ in range(0, repeat):
@@ -63,9 +73,10 @@ class bear:
         msg.reply(output)
 
 
-class cat:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
+class Cat(Command):
+    """nyao"""
+
+    def execute(self, irc_c, msg, cmd):
         repeat = 2
         output = ""
         for _ in range(0, repeat):
@@ -89,9 +100,10 @@ class cat:
         msg.reply(output)
 
 
-class narcissism:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
+class Narcissism(Command):
+    """Awful requests by awful people"""
+
+    def execute(self, irc_c, msg, cmd):
         if cmd.command == "rounderhouse":
             msg.reply(emojize(":red_circle::house:"))
         if cmd.command == "jazstar":
@@ -100,13 +112,16 @@ class narcissism:
             msg.reply(emojize(":muscle::flag-ie::bee:"))
 
 
-class password:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
+class Password(Command):
+    """Helpful hints for newbies for finding the passcode."""
+
+    def execute(self, irc_c, msg, cmd):
         msg.reply("look harder fuckwit")
 
 
-class fiction:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
+class Fiction(Command):
+    """Links to a useful repository for newbies who are wondering if SCP is
+    actually real."""
+
+    def execute(self, irc_c, msg, cmd):
         msg.reply("https://www.youtube.com/watch?v=ioGoPOAxkCg")
