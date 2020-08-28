@@ -11,7 +11,12 @@ import commands
 
 from helpers import parse
 from helpers.config import CONFIG
-from helpers.error import CommandError, CommandNotExistError, MyFaultError
+from helpers.error import (
+    CommandError,
+    CommandNotExistError,
+    MyFaultError,
+    CommandUsageMessage,
+)
 
 
 def try_command(irc_c, msg, cmd, command_name=None):
@@ -37,6 +42,9 @@ def try_command(irc_c, msg, cmd, command_name=None):
         return 1
     except MyFaultError as e:
         msg.reply("\x02Sorry!\x0F {}".format(str(e)))
+        return 1
+    except CommandUsageMessage as e:
+        msg.reply("\x02Command usage:\x0F {}".format(str(e)))
         return 1
     except Exception as e:
         if msg.raw_channel != CONFIG.channels.home:

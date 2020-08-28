@@ -8,7 +8,12 @@ import argparse
 import copy
 import shlex
 
-from helpers.error import ArgumentMessage, CommandError
+from helpers.error import (
+    CommandParsingError,
+    CommandError,
+    CommandParsingHelp,
+    CommandUsageMessage,
+)
 
 
 class ArgumentParser(argparse.ArgumentParser):
@@ -16,16 +21,16 @@ class ArgumentParser(argparse.ArgumentParser):
 
     def error(self, message):
         """Instead of crashing on error, reply a message"""
-        raise ArgumentMessage(message)
+        raise CommandParsingError(message)
 
     def exit(self, status=0, message=None):
         """Instead of crashing on error, reply a message"""
         if message is not None:
-            raise ArgumentMessage(message)
+            raise CommandParsingError(message)
 
     def print_help(self):
         """Reply with help instead of printing to console"""
-        raise ArgumentMessage(self.format_usage())
+        raise CommandParsingHelp(self.format_usage())
 
     def format_usage(self):
         formatter = self._get_formatter()
@@ -86,6 +91,7 @@ class Command:
         message = "{} {}".format(self.arguments_prepend, message)
 
         parser = self.get_parser()
+
         message = message.replace("'", "<<APOS>>")
         message = message.replace('\\"', "<<QUOT>>")  # explicit \"
         try:
@@ -98,14 +104,39 @@ class Command:
             raise CommandError(
                 "Unmatched quotemark. Use \\\" to escape a "
                 "literal quotemark."
-            )
+            ) from e
         message = [w.replace("<<APOS>>", "'") for w in message]
         message = [w.replace("<<QUOT>>", '"') for w in message]
         try:
             # Can throw ArgumentError
             self.args = parser.parse_args(message)
-        except ArgumentMessage as e:
-            raise CommandError(str(e))
+        except CommandParsingError as e:
+            raise CommandError(
+                "{}. {}".format(
+                    str(e),
+                    "Use '..help' for full documentation."
+                    if self.command_name == Command.command_name
+                    else "Use '..help {}' for this command's documentation.".format(
+                        self.command_name
+                    ),
+                )
+            ) from e
+        except CommandParsingHelp as e:
+            raise CommandUsageMessage(
+                "{}{}".format(
+                    "{}".format(str(e)),
+                    ""
+                    if self.__doc__ is None
+                    else " — {} {}".format(
+                        self.__doc__.splitlines()[0],
+                        "Use '..help' for full documentation."
+                        if self.command_name == Command.command_name
+                        else "Use '..help {}' for this command's documentation.".format(
+                            self.command_name
+                        ),
+                    ),
+                )
+            ) from e
 
     def get_parser(self):
         """Returns the argument parser for this command."""

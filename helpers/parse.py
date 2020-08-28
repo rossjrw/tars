@@ -8,7 +8,7 @@ import re
 import shlex
 
 from helpers.config import CONFIG
-from helpers.error import CommandError, ArgumentMessage
+from helpers.error import CommandError
 
 
 def parseprint(message):

@@ -16,8 +16,16 @@ class MyFaultError(Exception):
     """Used for when a command succeeds but the output is failure"""
 
 
-class ArgumentMessage(Exception):
+class CommandParsingError(Exception):
     """Used for when argparse emits an error"""
+
+
+class CommandParsingHelp(Exception):
+    """Used when argparse emits an intentional help message"""
+
+
+class CommandUsageMessage(Exception):
+    """Used when argparse emits an intentional help message"""
 
 
 def isint(integer):
