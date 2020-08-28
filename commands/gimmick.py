@@ -14,7 +14,7 @@ class idea:
     def execute(cls, irc_c, msg, cmd):
         msg.reply(
             "{} · {}".format(
-                "http://bit.ly/scp-gen",
+                "http://scp.bz/idea",
                 requests.get(
                     "https://scp-generator.herokuapp.com/newscp"
                 ).text,
