@@ -258,7 +258,7 @@ class Search(Command):
                     "'{}' isn't a valid regular expression: {}".format(
                         regex, e
                     )
-                )
+                ) from e
             regexes.append(regex)
             # don't append compiled regex - SQL doesn't like that
         searches.extend([{'term': r, 'type': 'regex'} for r in regexes])
@@ -294,21 +294,23 @@ class Search(Command):
                     raise CommandError("Too many ratings in range")
                 try:
                     rating = [int(x) for x in rating]
-                except ValueError:
-                    raise CommandError("Ratings in a range must be ints")
+                except ValueError as e:
+                    raise CommandError(
+                        "Ratings in a range must be ints"
+                    ) from e
                 try:
                     ratings >= min(rating)
                     ratings <= max(rating)
                 except MinMaxError as e:
-                    raise CommandError(str(e).format("rating"))
+                    raise CommandError(str(e).format("rating")) from e
             elif rating[0] in [">", "<", "="]:
                 pattern = r"^(?P<comp>[<>=]{1,2})(?P<value>[0-9]+)"
                 match = re.search(pattern, rating)
                 if match:
                     try:
                         rating = int(match.group('value'))
-                    except ValueError:
-                        raise CommandError("Invalid rating comparison")
+                    except ValueError as e:
+                        raise CommandError("Invalid rating comparison") from e
                     comp = match.group('comp')
                     try:
                         if comp == ">=":
@@ -325,16 +327,16 @@ class Search(Command):
                         else:
                             raise CommandError("Unknown rating comparison")
                     except MinMaxError as e:
-                        raise CommandError(str(e).format("rating"))
+                        raise CommandError(str(e).format("rating")) from e
                 else:
                     raise CommandError("Invalid rating comparison")
             else:
                 try:
                     rating = int(rating)
-                except ValueError:
+                except ValueError as e:
                     raise CommandError(
                         "Rating must be a range, comparison, " "or number"
-                    )
+                    ) from e
                 # Assume =, assign both
                 try:
                     ratings >= rating
@@ -668,7 +670,7 @@ class DateRange:
         self.input = input_date
         self.min = None
         self.max = None
-        self.compare = "="
+        self.compare = None
         # possible values:
         # 1. absolute date
         # 2. relative date
@@ -746,7 +748,7 @@ class DateRange:
                 self.min = maximum
             elif self.compare == ">=":
                 self.min = minimum
-            elif self.compare == "=":
+            elif self.compare in ["=", None]:
                 # = means between maximum and minimum
                 self.min = minimum
                 self.max = maximum
@@ -782,12 +784,11 @@ class DateRange:
             )
             if self.compare in ["<", "<="]:
                 self.min = self.date
-            elif self.compare in [">", ">="]:
+            elif self.compare in [">", ">=", None]:
                 self.max = self.date
             elif self.compare == "=":
                 self.max = self.date
                 self.min = self.date
-                # possible broken - may match to the second
             else:
                 raise CommandError(
                     "Unknown operator in relative date "
