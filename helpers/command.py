@@ -17,6 +17,9 @@ from helpers.error import (
 )
 
 
+Empty = object()
+
+
 def regex_type(validation_regex, validation_reason):
     """Generates an argument type for a string matching a regex expression."""
 
@@ -189,6 +192,14 @@ class Command:
                 if arg['nargs'] in ['*', '+']:
                     # default to empty list instead of None
                     arg['default'] = []
+                # For optional arguments, the default value is taken from const
+                # (otherwise it's None, which falsely indicates the argument is
+                # not present
+                if arg['nargs'] == '?':
+                    if 'const' not in arg:
+                        raise ValueError("must provide const with nargs '?'")
+                    if arg['const'] is None:
+                        raise TypeError("optional const may not be None")
             parser.add_argument(*flags, **arg)
         # Add a hidden argument that takes the remainder of the command
         # these will be later added to the root argument
@@ -198,8 +209,17 @@ class Command:
         return parser
 
     def __contains__(self, arg):
-        """Checks for argument presence via `in` operator"""
-        return arg in self.args
+        """Checks for argument presence"""
+        if arg in self.args and isinstance(getattr(self.args, arg), bool):
+            print(arg, self)
+            raise AttributeError(
+                "Using 'in' to check for presence of boolean argument"
+            )
+        return (
+            arg in self.args
+            and getattr(self.args, arg) is not None
+            and getattr(self.args, arg) != []
+        )
 
     def __getitem__(self, arg):
         """Retrieves argument value via getitem operator"""
