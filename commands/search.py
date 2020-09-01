@@ -155,6 +155,7 @@ class Search(Command):
             flags=['--parent', '-p'],
             type=str,
             nargs=None,
+            default=None,
             help="""Filter pages by their parent page's slug.
 
             The parent page's slug must be given exactly (e.g. `-p
@@ -207,6 +208,7 @@ class Search(Command):
             flags=['--limit', '-l'],
             type=int,
             nargs=None,
+            default=None,
             help="""Limit the number of results.""",
         ),
         dict(
