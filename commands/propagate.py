@@ -140,6 +140,14 @@ class propagate:
             return
         titles = soup.select(selector)
         # <li><a href="/scp-xxx">SCP-xxx</a> - Title</li>
+
+        # I don't want to reply on every single anomaly - that would cause an
+        # overflow and get TARS kicked - so I will compile all the anomalies to
+        # a list and reply just once
+        unknown_link_formats = []
+        assumed_titles = []
+        pages_without_title = []
+
         for title in titles:
             # take the scp number from the URL, not the URL link
             # take the scp name from the text
@@ -162,7 +170,7 @@ class propagate:
             )
             match = pattern.search(title)
             if not match:
-                reply("Unknown link format: {}".format(title))
+                unknown_link_formats.append(title)
                 continue
             num = match.group(2)
             meta_title = match.group(4)
@@ -171,9 +179,9 @@ class propagate:
             if meta_title is None:
                 if num.lower() != match.group(3).lower():
                     meta_title = match.group(3)
-                    reply("Assuming title '{}' for {}".format(meta_title, num))
+                    assumed_titles.append([num, meta_title])
                 else:
-                    reply("{} has no title".format(num))
+                    pages_without_title.append(num)
                     # don't add title but also don't delete
             # then add these numbers and names to the DB
             # if "<" in meta_title: print(num, meta_title)
@@ -183,6 +191,33 @@ class propagate:
             else:
                 DB.add_article_title(num, num, meta_title, False)
         DB.commit()
+        if len(unknown_link_formats) > 0:
+            reply(
+                "Unknown link formats: {}".format(
+                    ", ".join(["{}".format(t) for t in unknown_link_formats])
+                )
+            )
+        if len(assumed_titles) > 0:
+            reply(
+                "Assumed titles: {}".format(
+                    ", ".join(
+                        [
+                            "'{}' for {}".format(t[1], t[0])
+                            for t in assumed_titles
+                        ]
+                    )
+                )
+            )
+        if len(pages_without_title) > 100:
+            reply("No titles found for more than 100 pages.")
+        elif len(pages_without_title) > 0:
+            reply(
+                "No titles found for: {}".format(
+                    ", ".join(
+                        ["{}".format(num) for num in pages_without_title]
+                    )
+                )
+            )
 
     @staticmethod
     def get_attribution_metadata(slug, soup, **kwargs):
@@ -221,6 +256,7 @@ class propagate:
             pages[match.group(1)][match.group(3)].append(
                 {'name': match.group(2), 'date': match.group(4)}
             )
+        pages_not_existing = []
         for slug, page in pages.items():
             if ':' in slug:
                 # we don't store other categories
@@ -228,6 +264,18 @@ class propagate:
             for type_ in page:
                 try:
                     actions[type_](slug, page[type_])
-                except Exception as e:
-                    reply(str(e))
+                except ValueError:
+                    # Raised when the page doesn't exist in the DB when trying
+                    # to set the page authors
+                    pages_not_existing.append(slug)
         DB.commit()
+        if len(pages_not_existing) > 100:
+            reply("More than 100 pages found that aren't in the database.")
+        elif len(pages_not_existing) > 0:
+            reply(
+                "Pages with metadata not in database: {}".format(
+                    ", ".join(
+                        ["{}".format(slug) for slug in pages_not_existing]
+                    )
+                )
+            )
