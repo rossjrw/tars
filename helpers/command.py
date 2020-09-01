@@ -124,7 +124,7 @@ class Command:
         message = [w.replace("<<QUOT>>", '"') for w in message]
         try:
             # Can throw ArgumentError
-            self.args = parser.parse_args(message)
+            self.args = parser.parse_intermixed_args(message)
         except CommandParsingError as e:
             raise CommandError(
                 "{}. {}".format(
@@ -201,11 +201,6 @@ class Command:
                     if arg['nargs'] in ['*', '+']:
                         assert isinstance(arg['default'], list)
             parser.add_argument(*flags, **arg)
-        # Add a hidden argument that takes the remainder of the command
-        # these will be later added to the root argument
-        parser.add_argument(
-            "_REMAINDER_", nargs=argparse.REMAINDER, help=argparse.SUPPRESS,
-        )
         return parser
 
     def __contains__(self, arg):
