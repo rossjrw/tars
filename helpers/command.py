@@ -46,14 +46,7 @@ class ArgumentParser(argparse.ArgumentParser):
 
     def print_help(self):
         """Reply with help instead of printing to console"""
-        raise CommandParsingHelp(self.format_usage())
-
-    def format_usage(self):
-        formatter = self._get_formatter()
-        formatter.add_usage(
-            self.usage, self._actions, self._mutually_exclusive_groups, "",
-        )
-        return formatter.format_help()
+        raise CommandParsingHelp(self.format_usage()[7:])
 
 
 class HelpFormatter(argparse.HelpFormatter):
@@ -65,9 +58,9 @@ class HelpFormatter(argparse.HelpFormatter):
         over"""
         get_metavar = self._metavar_formatter(action, default_metavar)
         if action.nargs is argparse.ZERO_OR_MORE:
-            return "[{}[]]".format(get_metavar(1)[0])
+            return "[{}...]".format(get_metavar(1)[0])
         if action.nargs is argparse.ONE_OR_MORE:
-            return "{}[]".format(get_metavar(1)[0])
+            return "{}...".format(get_metavar(1)[0])
         return super()._format_args(action, default_metavar)
 
     def _get_default_metavar_for_optional(self, action):
@@ -78,7 +71,9 @@ class HelpFormatter(argparse.HelpFormatter):
 
 def help_formatter(prog):
     """Override argparse's help formatter instantiation"""
-    return HelpFormatter(prog, width=999)
+    return HelpFormatter(
+        prog, indent_increment=0, max_help_position=999, width=999
+    )
 
 
 class Command:
@@ -214,6 +209,12 @@ class Command:
         # there is no default
         if getattr(self.args, arg) is NoArgument:
             return False
+
+        if isinstance(getattr(self.args, arg), list):
+            raise AttributeError(
+                "tried to check for presence of arg {} on {}, which is a "
+                "list".format(arg, self.args)
+            )
 
         return True
 
