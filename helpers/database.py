@@ -989,6 +989,21 @@ class SqliteDriver:
             return None
         return row['alias']
 
+    def get_wikiname_owner(self, wikiname):
+        """Check who owns a wikiname. Returns their ID or None."""
+        c = self.conn.cursor()
+        c.execute(
+            '''
+            SELECT user_id FROM user_aliases
+            WHERE alias=? AND type='wiki'
+            ''',
+            (wikiname,),
+        )
+        row = c.fetchone()
+        if row is None:
+            return None
+        return row['user_id']
+
     def __rename_user(self, old, new, force=False):
         """Adds a new alias for a user"""
         # when a user renames, add the new nick at weight 0
