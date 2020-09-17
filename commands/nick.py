@@ -113,9 +113,13 @@ class alias:
                 "I've seen {} go by the names: {}. {}".format(
                     nick if nick != msg.sender else "you",
                     ", ".join(aliases),
-                    "I don't know their Wikidot username."
+                    "I don't know {} Wikidot username.".format(
+                        "their" if nick != msg.sender else "your",
+                    )
                     if wikiname is None
-                    else "Their Wikidot username is {}.".format(wikiname),
+                    else "{} Wikidot username is {}.".format(
+                        "Their" if nick != msg.sender else "Your", wikiname,
+                    ),
                 )
             )
         if not any(
