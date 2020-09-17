@@ -12,10 +12,10 @@ import json
 import re
 import string
 
-import commands
 
 from fuzzywuzzy import fuzz
 
+from commands import COMMANDS
 from helpers.command import Command
 from helpers.config import CONFIG
 from helpers.database import DB
@@ -32,7 +32,6 @@ def chunks(array, length):
 class Converse(Command):
     """An internal command used to respond to non-command messages."""
 
-    command_name = "search"
     arguments = [
         dict(
             flags=['message'],
@@ -58,7 +57,7 @@ class Converse(Command):
 
         if cmd.message.startswith("?? "):
             # CROM compatibility
-            getattr(commands.COMMANDS, 'search').command(irc_c, msg, cmd)
+            getattr(COMMANDS, 'search').command(irc_c, msg, cmd)
         if msg.message.lower() == "{}!".format(CONFIG.nick.lower()):
             msg.reply("{}!".format(msg.nick))
             return
