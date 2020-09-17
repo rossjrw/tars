@@ -69,6 +69,8 @@ class alias:
             )
         if not any(['add' in cmd, 'remove' in cmd, 'list' in cmd]):
             raise CommandError(
-                "Add or remove aliases to a nick with --add "
-                "and --remove. See all nicks with --list"
+                "Usage: "
+                "Add/remove aliases to a nick with --add/--remove [nick(s)]. "
+                "Update your Wikidot name with --wiki [username]. "
+                "See all your known aliases with --list."
             )
