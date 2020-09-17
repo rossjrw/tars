@@ -43,7 +43,10 @@ class alias:
             msg.reply(
                 "Added aliases to {}: {}".format(nick, ", ".join(aliases))
             )
-            irc_c.PRIVMSG(CONFIG.home, "{} added alias {}".format(nick, alias))
+            irc_c.PRIVMSG(
+                CONFIG['channels']['home'],
+                "{} added alias {}".format(nick, alias),
+            )
         if 'remove' in cmd:
             if nick.lower() != msg.sender.lower() and not defer.controller(
                 cmd
@@ -104,6 +107,10 @@ class alias:
                         else "from {} ".format(current_wikiname),
                         wikiname,
                     )
+                )
+                irc_c.PRIVMSG(
+                    CONFIG['channels']['home'],
+                    "{} set wikiname {}".format(nick, wikiname),
                 )
         if 'list' in cmd:
             # get all aliases associated with the user
