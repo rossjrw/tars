@@ -20,13 +20,6 @@ if __name__ == '__main__':
     id = sys.argv[1]
     wiki = scuttle('en', keys['scuttle_api'], 1)
     threads = wiki.forum_threads(36)
-    pprint(
-        [
-            thread
-            for thread in threads
-            if thread['wd_thread_id'].startswith('1373')
-        ]
-    )
     try:
         thread = [
             thread for thread in threads if thread['wd_thread_id'] == id
