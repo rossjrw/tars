@@ -604,7 +604,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT alias FROM user_aliases
-            WHERE user_id IN ({})
+            WHERE user_id IN ({}) AND type='irc'
             '''.format(
                 ','.join(['?'] * len(ids))
             ),
@@ -728,6 +728,7 @@ class SqliteDriver:
             SELECT alias FROM user_aliases
             WHERE user_id IN (SELECT id FROM users
                               WHERE controller=1)
+                  AND type='irc'
             '''
         )
         return [row['alias'] for row in c.fetchall()]
@@ -753,7 +754,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT user_id FROM user_aliases
-            WHERE alias=?
+            WHERE alias=? AND type='irc'
             ''',
             (alias,),
         )
@@ -838,7 +839,8 @@ class SqliteDriver:
         c = self.conn.cursor()
         c.execute(
             '''
-            SELECT user_id FROM user_aliases WHERE alias=? AND type=?
+            SELECT user_id FROM user_aliases
+            WHERE alias=? AND type=?
             ''',
             (alias, type),
         )
@@ -890,9 +892,9 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT user_id FROM user_aliases
-            WHERE user_id=? AND alias=? AND weight=?
+            WHERE user_id=? AND alias=? AND weight=? AND type=?
             ''',
-            (user, alias, weight),
+            (user, alias, weight, nick_type),
         )
         combo_exists = len(c.fetchall())
         # things to do:
@@ -933,18 +935,19 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT user_id FROM user_aliases
-            WHERE user_id=? AND alias=?
+            WHERE user_id=? AND alias=? AND type=?
             ''',
-            (user, alias),
+            (user, alias, nick_type),
         )
         combo_exists = len(c.fetchall())
         # things to do:
         # scrap the alias
         c.execute(
             '''
-            DELETE FROM user_aliases WHERE user_id=? AND alias=?
+            DELETE FROM user_aliases
+            WHERE user_id=? AND alias=? AND type=?
             ''',
-            (user, alias),
+            (user, alias, nick_type),
         )
         self.conn.commit()
         return combo_exists
@@ -957,7 +960,7 @@ class SqliteDriver:
             '''
             INSERT OR REPLACE INTO user_aliases
                   (user_id, alias, type)
-            VALUES ( ? , ? , ? ))
+            VALUES ( ? , ? , ? )
             ''',
             (user, wikiname, 'wiki',),
         )
@@ -1081,7 +1084,7 @@ class SqliteDriver:
                     # prompt the user for confirmation?
                     pass
 
-    def rename_user(self, old_nick, new_nick):
+    def rename_user(self, old_nick, new_nick, nick_type='irc'):
         """Handle a user changing their name.
         This process operates at weight 0."""
         dbprint("Renaming {} to {}".format(old_nick, new_nick))
@@ -1096,9 +1099,9 @@ class SqliteDriver:
             WHERE alias=? AND weight=(
                 SELECT MAX(weight) FROM user_aliases
                 WHERE alias=?
-            )
+            ) AND type=?
             ''',
-            (old_nick, old_nick),
+            (old_nick, old_nick, nick_type),
         )
         old_id = c.fetchall()
         # old_id should be a single row (multiple if the nick is ambiguous)
@@ -1121,9 +1124,9 @@ class SqliteDriver:
             WHERE alias=? AND weight=(
                 SELECT MAX(weight) FROM user_aliases
                 WHERE alias=?
-            )
+            ) AND type=?
             ''',
-            (new_nick, new_nick),
+            (new_nick, new_nick, nick_type),
         )
         new_id = c.fetchall()
         if len(new_id) == 0:
@@ -1220,7 +1223,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT user_id FROM user_aliases
-            WHERE alias=?
+            WHERE alias=? AND type='irc'
             ''',
             (msg['nick'],),
         )
@@ -1264,7 +1267,7 @@ class SqliteDriver:
                 WHERE channel_name=?)
             AND sender IN (
                 SELECT alias FROM user_aliases
-                WHERE user_id=(
+                WHERE user_id IN (
                     SELECT user_id FROM user_aliases
                     WHERE alias=?))
             ORDER BY timestamp
