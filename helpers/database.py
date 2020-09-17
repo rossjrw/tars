@@ -958,11 +958,18 @@ class SqliteDriver:
         c = self.conn.cursor()
         c.execute(
             '''
+            DELETE FROM user_aliases
+            WHERE user_id=? AND type='wiki'
+            ''',
+            (user,),
+        )
+        c.execute(
+            '''
             INSERT OR REPLACE INTO user_aliases
                   (user_id, alias, type)
-            VALUES ( ? , ? , ? )
+            VALUES ( ? , ? , 'wiki' )
             ''',
-            (user, wikiname, 'wiki',),
+            (user, wikiname,),
         )
         self.conn.commit()
 
