@@ -845,10 +845,6 @@ class SqliteDriver:
         result = c.fetchall()
         if result:
             # this alias already exists
-            # c.execute('''
-            #     UPDATE user_aliases SET most_recent=0
-            #     WHERE alias=? AND type='irc'
-            #           ''', (
             if len(result) == 1:
                 # dbprint("User {} already exists as ID {}"
                 #         .format(nickColor(alias), norm(result)[0]))
@@ -952,6 +948,36 @@ class SqliteDriver:
         )
         self.conn.commit()
         return combo_exists
+
+    def set_wikiname(self, user, wikiname):
+        """Sets a user's wikiname."""
+        assert isinstance(user, int)
+        c = self.conn.cursor()
+        c.execute(
+            '''
+            INSERT OR REPLACE INTO user_aliases
+                  (user_id, alias, type)
+            VALUES ( ? , ? , ? ))
+            ''',
+            (user, wikiname, 'wiki',),
+        )
+        self.conn.commit()
+
+    def get_wikiname(self, user):
+        """Gets a user's wikiname or None."""
+        assert isinstance(user, int)
+        c = self.conn.cursor()
+        c.execute(
+            '''
+            SELECT alias FROM user_aliases
+            WHERE user_id=? AND type='wiki'
+            ''',
+            (user,),
+        )
+        row = c.fetchone()
+        if row is None:
+            return None
+        return row['alias']
 
     def __rename_user(self, old, new, force=False):
         """Adds a new alias for a user"""
