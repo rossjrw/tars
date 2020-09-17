@@ -140,32 +140,3 @@ A few other important pieces of information:
   function in helpers/database.py
 * `from helpers.config import CONFIG` then `CONFIG.xxx` to access property xxx
   of the configuration file
-
-## Database Structure
-
-<p align="center">
-    <img src="https://raw.githubusercontent.com/rossjrw/tars/master/database.png">
-</p>
-
-* `user_aliases.type` - 'wiki', 'irc' or 'discord'
-* `user_aliases.weight` - 0 by default, 1 if the alias is both an IRC name and
-  has been set by `.alias` instead of `/nick`.
-* `messages.sender` is the IRC name of the user at the time of the message.
-* `articles_authors.metadata` - whether or not this value is derived from the
-  page itself or from Attribution Metadata.
-
-`user_aliases` and `articles_authors` are not linked, although aliases of type
-'wiki' are be searchable in `articles_authors`.
-
-If `articles.downs` is NULL then this indicates that `articles.ups` is the
-net rating, and not the number of upvotes. The ratings have yet to be looked at
-in more detail. If `articles.downs` is 0 then the article really does have no
-downvotes. This is because the Wikidot API does not provide a method for
-distinguishing between upvotes and downvotes.
-
-`articles.rating` is an article's rating. `articles.downs` subtracted from
-`articles.ups` is expected to be equal to the rating, but this is not
-guaranteed, as ups and downs are the result of a separate, less frequent
-query.
-
-`channels.autojoin` ≡ whether or not TARS is currently in a channel.
