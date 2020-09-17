@@ -171,7 +171,9 @@ class SqliteDriver:
                 id INTEGER PRIMARY KEY,
                 controller BOOLEAN NOT NULL
                     CHECK (controller IN (0,1))
-                    DEFAULT 0
+                    DEFAULT 0,
+                date_checked_comments INTEGER NOT NULL
+                    DEFAULT (CAST(STRFTIME('%s','now') AS INT))
             );
             CREATE TABLE IF NOT EXISTS channels_users (
                 channel_id INTEGER NOT NULL
