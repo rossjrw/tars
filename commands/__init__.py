@@ -50,6 +50,7 @@ COMMANDS = {
         "user": {"user"},
         "tag": {"tag"},
     },
+    "checkcomments": {"checkcomments": {"checkcomments", "cc"},},
     "gimmick": {
         "reptile": {"reptile", "rep"},
         "fish": {"fish", "reptile+", "rep+"},
