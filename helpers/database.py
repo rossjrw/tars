@@ -286,7 +286,7 @@ class SqliteDriver:
                     REFERENCES threads(id),
                 UNIQUE(forum_id, thread_id)
             );
-            CREATE TABLE IF NOT EXISTS thread_posts (
+            CREATE TABLE IF NOT EXISTS threads (
                 id INTEGER PRIMARY KEY,
                 wikidot_id INTEGER NOT NULL,
                 scuttle_id INTEGER NOT NULL,
@@ -302,7 +302,7 @@ class SqliteDriver:
                     REFERENCES threads(id),
                 post_id INTEGER
                     REFERENCES posts(id),
-                UNIQUE(forum_id, thread_id)
+                UNIQUE(thread_id, post_id)
             );
             CREATE TABLE IF NOT EXISTS posts (
                 id INTEGER PRIMARY KEY,
