@@ -161,7 +161,8 @@ class SqliteDriver:
                     DEFAULT 0,
                 UNIQUE (channel_name COLLATE NOCASE)
             );
-            INSERT OR REPLACE INTO channels (id, channel_name, autojoin)
+            INSERT OR REPLACE INTO channels
+                (id, channel_name, autojoin)
                 VALUES (
                     (SELECT id FROM channels WHERE channel_name='private'),
                     'private',
@@ -266,10 +267,57 @@ class SqliteDriver:
                 id INTEGER PRIMARY KEY,
                 message TEXT NOT NULL,
                 UNIQUE(message)
-                )
-                '''
+            );
+            CREATE TABLE IF NOT EXISTS forums (
+                id INTEGER PRIMARY KEY,
+                wikidot_id INTEGER NOT NULL,
+                scuttle_id INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                date_posted INTEGER NOT NULL,
+                date_checked INTEGER NOT NULL
+                    DEFAULT (CAST(STRFTIME('%s','now') AS INT)),
+                UNIQUE(wikidot_id),
+                UNIQUE(scuttle_id)
+            );
+            CREATE TABLE IF NOT EXISTS forum_threads (
+                forum_id INTEGER
+                    REFERENCES forums(id),
+                thread_id INTEGER
+                    REFERENCES threads(id),
+                UNIQUE(forum_id, thread_id)
+            );
+            CREATE TABLE IF NOT EXISTS thread_posts (
+                id INTEGER PRIMARY KEY,
+                wikidot_id INTEGER NOT NULL,
+                scuttle_id INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                date_posted INTEGER NOT NULL,
+                date_checked INTEGER NOT NULL
+                    DEFAULT (CAST(STRFTIME('%s','now') AS INT)),
+                UNIQUE(wikidot_id),
+                UNIQUE(scuttle_id)
+            );
+            CREATE TABLE IF NOT EXISTS thread_posts (
+                thread_id INTEGER
+                    REFERENCES threads(id),
+                post_id INTEGER
+                    REFERENCES posts(id),
+                UNIQUE(forum_id, thread_id)
+            );
+            CREATE TABLE IF NOT EXISTS posts (
+                id INTEGER PRIMARY KEY,
+                wikidot_id INTEGER NOT NULL,
+                scuttle_id INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                wikiname TEXT,
+                date_posted INTEGER NOT NULL,
+                date_checked INTEGER NOT NULL
+                    DEFAULT (CAST(STRFTIME('%s','now') AS INT)),
+                UNIQUE(wikidot_id),
+                UNIQUE(scuttle_id)
+            )
+            '''
         )
-        # Will also need a messages table for each channel
         self.conn.commit()
 
     def issue(self, query, callback=None, **kwargs):
