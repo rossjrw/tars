@@ -25,4 +25,5 @@ CONFIG.owner = CONFIG.IRC.owner
 
 # Grab the additional online config
 print("Getting additional config from external source...")
-CONFIG.update(toml_url(CONFIG.config.location))
+CONFIG.external = toml_url(CONFIG.config.location)
+print(CONFIG.external.test.message)
