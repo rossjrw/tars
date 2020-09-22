@@ -3,9 +3,12 @@
 Exports a schedule object which is used to schedule looping tasks
 """
 
+from functools import partial
+
 from apscheduler.schedulers.gevent import GeventScheduler
 from pyaib.plugins import plugin_class
 
+from commands.propagate import propagate
 from helpers.config import CONFIG
 
 
@@ -21,8 +24,24 @@ class Schedule:
 
         self._scheduler_greenlet = self.scheduler.start()
 
+        log_propagation_message = partial(
+            irc_c.PRIVMSG,
+            CONFIG.external['propagation']['logging']['channel'],
+        )
+
         self.scheduler.add_job(
-            send_a_message_to_home, 'cron', args=[irc_c], second="0,30"
+            send_a_message_to_home,
+            'cron',
+            args=[irc_c],
+            **self.cron_to_kwargs(CONFIG.external['test']['often']),
+        )
+        self.scheduler.add_job(
+            propagate.get_all_pages,
+            'cron',
+            kwargs={'reply': log_propagation_message},
+            **self.cron_to_kwargs(
+                CONFIG.external['propagation']['all_articles']['often']
+            ),
         )
 
     @staticmethod

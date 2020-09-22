@@ -54,7 +54,6 @@ class propagate:
         elif 'all' in cmd:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
-            msg.reply("Propagating all pages...")
             propagate.get_all_pages(reply=msg.reply)
         elif 'metadata' in cmd:
             metadata_slugs = SCPWiki.get_all_pages(tags=['metadata'])
@@ -70,6 +69,7 @@ class propagate:
     @classmethod
     def get_all_pages(cls, **kwargs):
         reply = kwargs.get('reply', lambda x: None)
+        reply("Propagating all pages...")
         # 1. get a list of articles
         # 2. get data for each article
         # 2.5. put that data in the db
