@@ -7,7 +7,7 @@ Exports CONFIG, equal to irc_c.config (probably)
 import sys
 import yaml
 
-from munch import munchify
+from munch import Munch
 
 from helpers.api import toml_url
 
@@ -16,7 +16,7 @@ configfile = argv[0] if argv else 'tars.conf'
 
 with open(configfile, 'r') as file:
     print("Getting config object...")
-    CONFIG = munchify(yaml.safe_load(file))
+    CONFIG = Munch.fromDict(yaml.safe_load(file))
 
 # might save me a few keystrokes
 CONFIG.nick = CONFIG.IRC.nick
@@ -25,5 +25,6 @@ CONFIG.owner = CONFIG.IRC.owner
 
 # Grab the additional online config
 print("Getting additional config from external source...")
-CONFIG.external = toml_url(CONFIG.config.location)
-print(CONFIG.external.test.message)
+external_config = toml_url(CONFIG.config.location)
+CONFIG.external = external_config
+print(CONFIG.external['test']['message'])
