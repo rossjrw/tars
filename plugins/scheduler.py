@@ -24,3 +24,19 @@ class Schedule:
         self.scheduler.add_job(
             send_a_message_to_home, 'cron', args=[irc_c], second="0,30"
         )
+
+    @staticmethod
+    def cron_to_kwargs(cronstring):
+        """Converts a cron string to cron kwargs"""
+        crons = cronstring.split(" ")
+        if len(crons) != 5:
+            raise ValueError("Invalid cron {}".format(cronstring))
+        crons = [cron.replace("_", " ") for cron in crons]
+        kwargs = {
+            'minute': crons[0],
+            'hour': crons[1],
+            'day': crons[2],
+            'month': crons[3],
+            'day_of_week': crons[4],
+        }
+        return kwargs
