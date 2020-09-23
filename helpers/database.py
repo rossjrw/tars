@@ -273,7 +273,6 @@ class SqliteDriver:
                 wikidot_id INTEGER NOT NULL,
                 scuttle_id INTEGER NOT NULL,
                 title TEXT NOT NULL,
-                date_posted INTEGER NOT NULL,
                 date_checked INTEGER NOT NULL,
                 UNIQUE(wikidot_id),
                 UNIQUE(scuttle_id)
@@ -290,7 +289,6 @@ class SqliteDriver:
                 wikidot_id INTEGER NOT NULL,
                 scuttle_id INTEGER NOT NULL,
                 title TEXT NOT NULL,
-                date_posted INTEGER NOT NULL,
                 date_checked INTEGER NOT NULL,
                 UNIQUE(wikidot_id),
                 UNIQUE(scuttle_id)
