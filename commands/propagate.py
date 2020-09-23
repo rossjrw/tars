@@ -101,6 +101,10 @@ class propagate:
                 reply("{} does not exist".format(slug))
                 DB.delete_article(slug)
                 continue
+            if slug.startswith("fragment:"):
+                # Don't want to track fragments
+                DB.delete_article(slug)
+                continue
             DB.add_article(page, commit=False)
             if 'metadata' in page['tags']:
                 metadata_slugs.append(slug)
