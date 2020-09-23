@@ -4,7 +4,7 @@ For handling aliases and stuff like that.
 """
 
 from helpers.database import DB
-from helpers.error import CommandError
+from helpers.error import CommandError, MyFaultError
 from helpers.defer import defer
 from helpers.config import CONFIG
 
@@ -43,7 +43,10 @@ class alias:
             msg.reply(
                 "Added aliases to {}: {}".format(nick, ", ".join(aliases))
             )
-            irc_c.PRIVMSG(CONFIG.home, "{} added alias {}".format(nick, alias))
+            irc_c.PRIVMSG(
+                CONFIG['channels']['home'],
+                "{} added alias {}".format(nick, alias),
+            )
         if 'remove' in cmd:
             if nick.lower() != msg.sender.lower() and not defer.controller(
                 cmd
@@ -76,25 +79,38 @@ class alias:
                 )
             # Wikidot names can contain spaces, and there can only be one
             # wikiname in the database, so it is safe to concatenate
-            alias = " ".join(aliases)
+            wikiname = " ".join(aliases)
+            # The wikiname might be taken by another user
+            wikiname_owner = DB.get_wikiname_owner(wikiname)
+            if wikiname_owner is not None and wikiname_owner != user_id:
+                raise MyFaultError(
+                    "Another user has claimed that Wikidot username. "
+                    "If you think this was in error, contact {} "
+                    "immediately.".format(CONFIG['IRC']['owner'])
+                )
+
             current_wikiname = DB.get_wikiname(user_id)
-            if current_wikiname == alias:
+            if current_wikiname == wikiname:
                 msg.reply(
                     "{} Wikidot username is already {}!".format(
                         "{}'s".format(nick) if nick != msg.sender else "Your",
-                        alias,
+                        wikiname,
                     )
                 )
             else:
-                DB.set_wikiname(user_id, alias)
+                DB.set_wikiname(user_id, wikiname)
                 msg.reply(
                     "Updated {} Wikidot username {}to {}.".format(
                         "{}'s".format(nick) if nick != msg.sender else "your",
                         ""
                         if current_wikiname is None
                         else "from {} ".format(current_wikiname),
-                        alias,
+                        wikiname,
                     )
+                )
+                irc_c.PRIVMSG(
+                    CONFIG['channels']['home'],
+                    "{} set wikiname {}".format(nick, wikiname),
                 )
         if 'list' in cmd:
             # get all aliases associated with the user
@@ -104,9 +120,13 @@ class alias:
                 "I've seen {} go by the names: {}. {}".format(
                     nick if nick != msg.sender else "you",
                     ", ".join(aliases),
-                    "I don't know their Wikidot username."
+                    "I don't know {} Wikidot username.".format(
+                        "their" if nick != msg.sender else "your",
+                    )
                     if wikiname is None
-                    else "Their Wikidot username is {}.".format(wikiname),
+                    else "{} Wikidot username is {}.".format(
+                        "Their" if nick != msg.sender else "Your", wikiname,
+                    ),
                 )
             )
         if not any(

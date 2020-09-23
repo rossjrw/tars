@@ -3,11 +3,16 @@
 Commands that output basic information about the bot.
 """
 
+from datetime import timedelta
+import time
+
+import platform, distro
+
 from helpers.error import CommandError
 from helpers.greetings import acronym
-from helpers.scheduler import uptime
 from helpers.defer import defer
-import platform, distro
+
+start_time = time.time()
 
 
 class help:
@@ -31,7 +36,7 @@ class status:
                 " ".join(
                     distro.linux_distribution(full_distribution_name=True)[:2]
                 ),
-                uptime(),
+                timedelta(seconds=round(time.time() - start_time)),
             )
         )
 

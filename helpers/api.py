@@ -14,8 +14,10 @@ The keys are:
 """
 import json
 import pathlib
+import time
 
 import tomlkit
+import requests
 
 from scuttle import scuttle
 
@@ -25,6 +27,12 @@ with open(pathlib.Path.cwd() / "keys.secret.toml") as keys:
 GOOGLE_CSE_API_KEY = keys['google_cse_api']
 GOOGLE_CSE_ID = keys['google_cse_id']
 NICKSERV_PASSWORD = keys['irc_password']
+
+
+def toml_url(url):
+    """Grab a TOML file from URL and return the parsed object"""
+    response = requests.get(url)
+    return tomlkit.parse(response.text)
 
 
 class ScuttleAPI:
@@ -58,11 +66,16 @@ class ScuttleAPI:
         # get info for all pages
         if len(tags) == 1:
             slugs = [page['slug'] for page in self.scuttle.tag_pages(tags[0])]
-        elif len(tags):
+        elif len(tags) != 0:
             raise NotImplementedError
         else:
             slugs = [page['slug'] for page in self.scuttle.pages()]
         return slugs
+
+    def get_recent_pages(self, seconds):
+        """Gets data for pages created in the last n seconds."""
+        pages = self.scuttle.pages_since(int(time.time() - seconds))
+        return [page['slug'] for page in pages]
 
 
 SCPWiki = ScuttleAPI("en")
