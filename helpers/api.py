@@ -77,5 +77,29 @@ class ScuttleAPI:
         pages = self.scuttle.pages_since(int(time.time() - seconds))
         return [page['slug'] for page in pages]
 
+    def get_all_forums(self):
+        """Gets all forums."""
+        return self.scuttle.forums()
+
+    def get_threads_in_forum_since(self, scuttle_forum_id, since):
+        """Gets all threads in a forum created since a timestamp.
+        Returns the verbose generator with 100 threads per page."""
+        return self.scuttle.verbose(
+            self.scuttle.forum_threads_since,
+            scuttle_forum_id,
+            since,
+            limit=100,
+        )
+
+    def get_all_posts_in_thread(self, scuttle_thread_id, since):
+        """Gets all posts in a thread created since a timestamp.
+        Returns the verbose generator with 100 posts per page."""
+        return self.scuttle.verbose(
+            self.scuttle.thread_posts_since,
+            scuttle_thread_id,
+            since,
+            limit=100,
+        )
+
 
 SCPWiki = ScuttleAPI("en")
