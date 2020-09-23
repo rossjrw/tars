@@ -54,7 +54,6 @@ class propagate:
         elif 'all' in cmd:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
-            msg.reply("Propagating all pages...")
             propagate.get_all_pages(reply=msg.reply)
         elif 'metadata' in cmd:
             metadata_slugs = SCPWiki.get_all_pages(tags=['metadata'])
@@ -70,10 +69,15 @@ class propagate:
     @classmethod
     def get_all_pages(cls, **kwargs):
         reply = kwargs.get('reply', lambda x: None)
-        # 1. get a list of articles
-        # 2. get data for each article
-        # 2.5. put that data in the db
+        reply("Propagating all pages...")
         pages = SCPWiki.get_all_pages()
+        propagate.get_wiki_data_for(pages, reply=reply)
+
+    @classmethod
+    def get_recent_pages(cls, **kwargs):
+        reply = kwargs.get('reply', lambda x: None)
+        reply("Propagating recent pages...")
+        pages = SCPWiki.get_recent_pages(259200)
         propagate.get_wiki_data_for(pages, reply=reply)
 
     @classmethod
@@ -97,10 +101,15 @@ class propagate:
                 reply("{} does not exist".format(slug))
                 DB.delete_article(slug)
                 continue
+            if slug.startswith("fragment:"):
+                # Don't want to track fragments
+                DB.delete_article(slug)
+                continue
             DB.add_article(page, commit=False)
             if 'metadata' in page['tags']:
                 metadata_slugs.append(slug)
                 continue
+        reply("Propagated {} of {}".format(len(slugs), len(slugs)))
         for slug in metadata_slugs:
             propagate.get_metadata(slug, reply=reply)
         DB.commit()
