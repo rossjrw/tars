@@ -14,6 +14,7 @@ The keys are:
 """
 import json
 import pathlib
+import time
 
 import tomlkit
 import requests
@@ -70,6 +71,11 @@ class ScuttleAPI:
         else:
             slugs = [page['slug'] for page in self.scuttle.pages()]
         return slugs
+
+    def get_recent_pages(self, seconds):
+        """Gets data for pages created in the last n seconds."""
+        pages = self.scuttle.pages_since(int(time.time() - seconds))
+        return [page['slug'] for page in pages]
 
 
 SCPWiki = ScuttleAPI("en")

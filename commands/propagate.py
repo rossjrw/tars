@@ -70,10 +70,14 @@ class propagate:
     def get_all_pages(cls, **kwargs):
         reply = kwargs.get('reply', lambda x: None)
         reply("Propagating all pages...")
-        # 1. get a list of articles
-        # 2. get data for each article
-        # 2.5. put that data in the db
         pages = SCPWiki.get_all_pages()
+        propagate.get_wiki_data_for(pages, reply=reply)
+
+    @classmethod
+    def get_recent_pages(cls, **kwargs):
+        reply = kwargs.get('reply', lambda x: None)
+        reply("Propagating recent pages...")
+        pages = SCPWiki.get_recent_pages(259200)
         propagate.get_wiki_data_for(pages, reply=reply)
 
     @classmethod
@@ -101,6 +105,7 @@ class propagate:
             if 'metadata' in page['tags']:
                 metadata_slugs.append(slug)
                 continue
+        reply("Propagated {} of {}".format(len(slugs), len(slugs)))
         for slug in metadata_slugs:
             propagate.get_metadata(slug, reply=reply)
         DB.commit()

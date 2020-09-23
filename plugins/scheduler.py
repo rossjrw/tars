@@ -12,10 +12,6 @@ from commands.propagate import propagate
 from helpers.config import CONFIG
 
 
-def send_a_message_to_home(irc_c):
-    irc_c.PRIVMSG(CONFIG.home, "hello!")
-
-
 @plugin_class("scheduler")
 class Schedule:
     def __init__(self, irc_c, config):
@@ -30,17 +26,19 @@ class Schedule:
         )
 
         self.scheduler.add_job(
-            send_a_message_to_home,
-            'cron',
-            args=[irc_c],
-            **self.cron_to_kwargs(CONFIG.external['test']['often']),
-        )
-        self.scheduler.add_job(
             propagate.get_all_pages,
             'cron',
             kwargs={'reply': log_propagation_message},
             **self.cron_to_kwargs(
                 CONFIG.external['propagation']['all_articles']['often']
+            ),
+        )
+        self.scheduler.add_job(
+            propagate.get_recent_pages,
+            'cron',
+            kwargs={'reply': log_propagation_message},
+            **self.cron_to_kwargs(
+                CONFIG.external['propagation']['new_articles']['often']
             ),
         )
 
