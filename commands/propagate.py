@@ -90,9 +90,8 @@ class propagate:
         reply("{} pages to propagate".format(len(slugs)))
         breakpoints = np.floor(np.linspace(0, 1, num=11) * len(slugs))
         for index, slug in enumerate(slugs):
-            if index in breakpoints:
+            if index in breakpoints and index > 100:
                 reply("Propagated {} of {}".format(index, len(slugs)))
-            prop_print("Updating {} in the database".format(slug))
             try:
                 page = SCPWiki.get_one_page_meta(slug)
             except KeyError:

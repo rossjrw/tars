@@ -1318,7 +1318,6 @@ class SqliteDriver:
         # 2. add to articles_tags
         # 3. add to articles_authors
         # 3.1 [allow metadata to overwrite articles_authors]
-        dbprint("Adding article {}".format(article['fullname']))
         c = self.conn.cursor()
         if 'ups' not in article:
             article['ups'] = None
@@ -1369,7 +1368,6 @@ class SqliteDriver:
             article_data['id'] = c.lastrowid
         else:
             # the article already exists and must be updated
-            dbprint("This article already exists", True)
             article_data['id'] = existing_article_data['id']
             # ignore ups/downs
             c.execute(
