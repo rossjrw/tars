@@ -89,6 +89,7 @@ class SqliteDriver:
         except sqlite3.OperationalError as e:
             dbprint("The database could not be opened", True)
             raise
+        self.conn.execute("PRAGMA foreign_keys = 1")
         self._create_database()
         self.conn.row_factory = sqlite3.Row
         self.conn.create_function("REGEXP", 2, _regexp)
