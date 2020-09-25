@@ -89,6 +89,7 @@ class SqliteDriver:
         except sqlite3.OperationalError as e:
             dbprint("The database could not be opened", True)
             raise
+        self.conn.execute("PRAGMA foreign_keys = 1")
         self._create_database()
         self.conn.row_factory = sqlite3.Row
         self.conn.create_function("REGEXP", 2, _regexp)
@@ -178,9 +179,13 @@ class SqliteDriver:
             );
             CREATE TABLE IF NOT EXISTS channels_users (
                 channel_id INTEGER NOT NULL
-                    REFERENCES channels(id),
+                    REFERENCES channels(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 user_id INTEGER NOT NULL
-                    REFERENCES users(id),
+                    REFERENCES users(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 user_mode CHARACTER(1),
                 date_checked INTEGER NOT NULL
                     DEFAULT (CAST(STRFTIME('%s','now') AS INT)),
@@ -188,7 +193,9 @@ class SqliteDriver:
             );
             CREATE TABLE IF NOT EXISTS user_aliases (
                 user_id INTEGER NOT NULL
-                    REFERENCES users(id),
+                    REFERENCES users(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 alias TEXT NOT NULL
                     COLLATE NOCASE,
                 type TEXT NOT NULL
@@ -223,14 +230,18 @@ class SqliteDriver:
             );
             CREATE TABLE IF NOT EXISTS articles_tags (
                 article_id INTEGER NOT NULL
-                    REFERENCES articles(id),
+                    REFERENCES articles(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 tag TEXT NOT NULL
                     COLLATE NOCASE,
                 UNIQUE(article_id, tag)
             );
             CREATE TABLE IF NOT EXISTS articles_authors (
                 article_id INTEGER NOT NULL
-                    REFERENCES articles(id),
+                    REFERENCES articles(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 author TEXT NOT NULL
                     COLLATE NOCASE,
                 metadata BOOLEAN NOT NULL
@@ -241,15 +252,21 @@ class SqliteDriver:
             CREATE TABLE IF NOT EXISTS showmore_list (
                 id INTEGER PRIMARY KEY,
                 channel_id INTEGER NOT NULL
-                    REFERENCES channels(id),
+                    REFERENCES channels(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 article_id INTEGER NOT NULL
-                    REFERENCES articles(id),
+                    REFERENCES articles(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 UNIQUE(channel_id, id)
             );
             CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY,
                 channel_id INTEGER
-                    REFERENCES channels(id),
+                    REFERENCES channels(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 kind TEXT NOT NULL
                     DEFAULT 'PRIVMSG',
                 sender TEXT NOT NULL
@@ -1360,7 +1377,6 @@ class SqliteDriver:
         # 2. add to articles_tags
         # 3. add to articles_authors
         # 3.1 [allow metadata to overwrite articles_authors]
-        dbprint("Adding article {}".format(article['fullname']))
         c = self.conn.cursor()
         if 'ups' not in article:
             article['ups'] = None
@@ -1411,7 +1427,6 @@ class SqliteDriver:
             article_data['id'] = c.lastrowid
         else:
             # the article already exists and must be updated
-            dbprint("This article already exists", True)
             article_data['id'] = existing_article_data['id']
             # ignore ups/downs
             c.execute(
