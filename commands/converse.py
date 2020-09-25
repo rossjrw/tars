@@ -85,6 +85,13 @@ class converse:
         ):
             msg.reply("big")
             return
+        if (
+            CONFIG.nick == "TARS"
+            and matches_any_of(msg.message, ["damn you to hell",])
+            and "TARS" in msg.message.upper()
+        ):
+            msg.reply("damn me to hell")
+            return
 
         ##### regex matches #####
 
