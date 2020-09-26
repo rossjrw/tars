@@ -55,6 +55,10 @@ class propagate:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
             propagate.get_all_pages(reply=msg.reply)
+        elif 'forum' in cmd:
+            if not defer.controller(cmd):
+                raise CommandError("I'm afriad I can't let you do that.")
+            propagate.get_forums(reply=msg.reply)
         elif 'metadata' in cmd:
             metadata_slugs = SCPWiki.get_all_pages(tags=['metadata'])
             msg.reply("Propagating metadata...")
@@ -292,9 +296,9 @@ class propagate:
     def get_forums(since=None, **kwargs):
         """Propagates all the forums since the last check."""
         reply = kwargs.get('reply', lambda x: None)
-        reply("Propagating forums since {}...".format(since))
         if since is None:
             since = DB.get_most_recent_post_timestamp()
+        reply("Propagating forums since {}...".format(since))
         forums = SCPWiki.get_all_forums()
         for forum in forums:
             reply("Propagating forum: {}".format(forum['title']))
