@@ -294,9 +294,9 @@ class SqliteDriver:
                 UNIQUE(scuttle_id)
             );
             CREATE TABLE IF NOT EXISTS forum_threads (
-                forum_id INTEGER
+                forum_id INTEGER NOT NULL
                     REFERENCES forums(id),
-                thread_id INTEGER
+                thread_id INTEGER NOT NULL
                     REFERENCES threads(id),
                 UNIQUE(forum_id, thread_id)
             );
@@ -309,9 +309,9 @@ class SqliteDriver:
                 UNIQUE(scuttle_id)
             );
             CREATE TABLE IF NOT EXISTS thread_posts (
-                thread_id INTEGER
+                thread_id INTEGER NOT NULL
                     REFERENCES threads(id),
-                post_id INTEGER
+                post_id INTEGER NOT NULL
                     REFERENCES posts(id),
                 UNIQUE(thread_id, post_id)
             );
