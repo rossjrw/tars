@@ -1915,7 +1915,11 @@ class SqliteDriver:
             SELECT MAX(date_posted) FROM posts
             '''
         )
-        return int(c.fetchone()['MAX(date_posted)'])
+        timestamp = c.fetchone()['MAX(date_posted)']
+        if timestamp is None:
+            return 0
+        else:
+            return int(timestamp)
 
 
 DB = SqliteDriver()
