@@ -295,9 +295,13 @@ class SqliteDriver:
             );
             CREATE TABLE IF NOT EXISTS forum_threads (
                 forum_id INTEGER NOT NULL
-                    REFERENCES forums(id),
+                    REFERENCES forums(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 thread_id INTEGER NOT NULL
-                    REFERENCES threads(id),
+                    REFERENCES threads(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 UNIQUE(forum_id, thread_id)
             );
             CREATE TABLE IF NOT EXISTS threads (
@@ -310,9 +314,13 @@ class SqliteDriver:
             );
             CREATE TABLE IF NOT EXISTS thread_posts (
                 thread_id INTEGER NOT NULL
-                    REFERENCES threads(id),
+                    REFERENCES threads(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 post_id INTEGER NOT NULL
-                    REFERENCES posts(id),
+                    REFERENCES posts(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 UNIQUE(thread_id, post_id)
             );
             CREATE TABLE IF NOT EXISTS posts (
@@ -324,7 +332,18 @@ class SqliteDriver:
                 date_posted INTEGER NOT NULL,
                 UNIQUE(wikidot_id),
                 UNIQUE(scuttle_id)
-            )
+            );
+            CREATE TABLE IF NOT EXISTS post_posts (
+                parent_id INTEGER NOT NULL
+                    REFERENCES posts(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
+                child_id INTEGER NOT NULL
+                    REFERENCES posts(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
+                UNIQUE(parent_id, child_id)
+            );
             '''
         )
         self.conn.commit()
