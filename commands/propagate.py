@@ -287,3 +287,43 @@ class propagate:
                     )
                 )
             )
+
+    @staticmethod
+    def get_forums(since=None, **kwargs):
+        """Propagates all the forums since the last check."""
+        reply = kwargs.get('reply', lambda x: None)
+        reply("Propagating forums since {}...".format(since))
+        if since is None:
+            since = DB.get_most_recent_post_timestamp()
+        forums = SCPWiki.get_all_forums()
+        for forum in forums:
+            reply("Propagating forum: {}".format(forum['title']))
+            forum_id = DB.add_forum(
+                int(forum['wd_forum_id']), forum['id'], forum['title'],
+            )
+            threads_generator = SCPWiki.get_threads_in_forum_since(
+                forum['id'], since,
+            )
+            for threads in threads_generator:
+                for thread in threads:
+                    thread_id = DB.add_thread(
+                        forum_id,
+                        int(thread['wd_thread_id']),
+                        thread['id'],
+                        thread['title'],
+                    )
+                    posts_generator = SCPWiki.get_all_posts_in_thread_since(
+                        thread['id'], since,
+                    )
+                    for posts in posts_generator:
+                        for post in posts:
+                            post_id = DB.add_post(
+                                thread_id,
+                                int(post['wd_post_id']),
+                                post['id'],
+                                post['subject'],
+                                post['metadata']['wd_username'],
+                                post['metadata']['wd_timestamp'],
+                                int(post['parent_id']),
+                            )
+        reply("Finished propagating forums.")

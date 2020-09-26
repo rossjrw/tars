@@ -1843,7 +1843,7 @@ class SqliteDriver:
         title,
         wikiname,
         date_posted,
-        parent_post_id=None,
+        parent_post_scuttle_id,
     ):
         """Add a post to a thread. Returns the post's ID."""
         assert isinstance(thread_id, int)
@@ -1851,8 +1851,8 @@ class SqliteDriver:
         assert isinstance(scuttle_id, int)
         assert isinstance(title, str)
         assert isinstance(wikiname, str)
-        assert isinstance(date_posted, str)  # ISO string
-        assert isinstance(parent_post_id, int) or parent_post_id is None
+        assert isinstance(date_posted, int)
+        assert isinstance(parent_post_scuttle_id, int)
         c = self.conn.cursor()
         post_data = {
             'thread_id': thread_id,
@@ -1860,7 +1860,7 @@ class SqliteDriver:
             'scuttle_id': scuttle_id,
             'title': title,
             'wikiname': wikiname,
-            'date_posted': pd.parse(date_posted).int_timestamp,
+            'date_posted': date_posted,
         }
         # Force update the mixture of IDs
         c.execute(
@@ -1895,14 +1895,14 @@ class SqliteDriver:
             ''',
             (thread_id, post_id),
         )
-        if parent_post_id is not None:
+        if parent_post_scuttle_id > 0:
             c.execute(
                 '''
                 INSERT OR REPLACE INTO post_posts
                     ( parent_id, child_id )
                 VALUES ( ? , ? )
                 ''',
-                (parent_post_id, post_id),
+                (parent_post_scuttle_id, post_id),
             )
         self.conn.commit()
         return post_id
