@@ -1835,5 +1835,77 @@ class SqliteDriver:
         self.conn.commit()
         return thread_id
 
+    def add_post(
+        self,
+        thread_id,
+        wikidot_id,
+        scuttle_id,
+        title,
+        wikiname,
+        date_posted,
+        parent_post_id=None,
+    ):
+        """Add a post to a thread. Returns the post's ID."""
+        assert isinstance(thread_id, int)
+        assert isinstance(wikidot_id, int)
+        assert isinstance(scuttle_id, int)
+        assert isinstance(title, str)
+        assert isinstance(wikiname, str)
+        assert isinstance(date_posted, str)  # ISO string
+        assert isinstance(parent_post_id, int) or parent_post_id is None
+        c = self.conn.cursor()
+        post_data = {
+            'thread_id': thread_id,
+            'wikidot_id': wikidot_id,
+            'scuttle_id': scuttle_id,
+            'title': title,
+            'wikiname': wikiname,
+            'date_posted': pd.parse(date_posted).int_timestamp,
+        }
+        # Force update the mixture of IDs
+        c.execute(
+            '''
+            INSERT INTO posts
+                ( wikidot_id, scuttle_id, title, wikiname, date_posted )
+            VALUES
+                ( :wikidot_id, :scuttle_id, :title, :wikiname, :date_posted )
+            ON CONFLICT DO UPDATE
+            SET wikidot_id=:wikidot_id, scuttle_id=:scuttle_id, title=:title,
+                wikiname=:wikiname, date_posted=:date_posted
+            WHERE wikidot_id=:wikidot_id OR scutle_id=:scuttle_id
+            ''',
+            post_data,
+        )
+        # Get the ID
+        c.execute(
+            '''
+            SELECT id FROM posts
+            WHERE wikidot_id=:wikidot_id AND scuttle_id=:scuttle_id
+            ''',
+            post_data,
+        )
+        post_id = c.fetchone()['id']
+        assert isinstance(post_id, int)
+        # Set the parent-child relationships
+        c.execute(
+            '''
+            INSERT OR REPLACE INTO thread_posts
+                ( thread_id, post_id )
+            VALUES ( ? , ? )
+            ''',
+            (thread_id, post_id),
+        )
+        if parent_post_id is not None:
+            c.execute(
+                '''
+                INSERT OR REPLACE INTO post_posts
+                    ( parent_id, child_id )
+                VALUES ( ? , ? )
+                ''',
+                (parent_post_id, post_id),
+            )
+        self.conn.commit()
+        return post_id
+
 
 DB = SqliteDriver()
