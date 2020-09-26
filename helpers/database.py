@@ -1907,5 +1907,15 @@ class SqliteDriver:
         self.conn.commit()
         return post_id
 
+    def get_most_recent_post_timestamp(self):
+        """Gets the timestamp of the most recent post in the database."""
+        c = self.conn.cursor()
+        c.execute(
+            '''
+            SELECT MAX(date_posted) FROM posts
+            '''
+        )
+        return int(c.fetchone()['MAX(date_posted)'])
+
 
 DB = SqliteDriver()
