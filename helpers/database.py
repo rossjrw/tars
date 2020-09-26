@@ -1733,5 +1733,88 @@ class SqliteDriver:
         )
         return [row['article_id'] for row in c.fetchall()]
 
+    def add_forum(self, wikidot_id, scuttle_id, title):
+        """Add a forum. Returns the forum's ID."""
+        assert isinstance(wikidot_id, int)
+        assert isinstance(scuttle_id, int)
+        assert isinstance(title, str)
+        c = self.conn.cursor()
+        forum_data = {
+            'wikidot_id': wikidot_id,
+            'scuttle_id': scuttle_id,
+            'title': title,
+        }
+        # Force update the mixture of IDs
+        c.execute(
+            '''
+            INSERT INTO forums
+                ( wikidot_id, scuttle_id, title )
+            VALUES ( :wikidot_id , :scuttle_id , :title )
+            ON CONFLICT DO UPDATE
+            SET wikidot_id=:wikidot_id, scuttle_id=:scuttle_id, title=:title
+            WHERE wikidot_id=:wikidot_id OR scutle_id=:scuttle_id
+            ''',
+            forum_data,
+        )
+        # Get the ID
+        c.execute(
+            '''
+            SELECT id FROM forums
+            WHERE wikidot_id=:wikidot_id AND scuttle_id=:scuttle_id
+            ''',
+            forum_data,
+        )
+        forum_id = c.fetchone()['id']
+        assert isinstance(forum_id, int)
+        self.conn.commit()
+        return forum_id
+
+    def add_thread(self, forum_id, wikidot_id, scuttle_id, title):
+        """Add a thread to a forum. Returns the thread's ID."""
+        assert isinstance(forum_id, int)
+        assert isinstance(wikidot_id, int)
+        assert isinstance(scuttle_id, int)
+        assert isinstance(title, str)
+        c = self.conn.cursor()
+        thread_data = {
+            'forum_id': forum_id,
+            'wikidot_id': wikidot_id,
+            'scuttle_id': scuttle_id,
+            'title': title,
+        }
+        # Force update the mixture of IDs
+        c.execute(
+            '''
+            INSERT INTO threads
+                ( wikidot_id, scuttle_id, title )
+            VALUES ( :wikidot_id , :scuttle_id , :title )
+            ON CONFLICT DO UPDATE
+            SET wikidot_id=:wikidot_id, scuttle_id=:scuttle_id, title=:title
+            WHERE wikidot_id=:wikidot_id OR scutle_id=:scuttle_id
+            ''',
+            thread_data,
+        )
+        # Get the ID
+        c.execute(
+            '''
+            SELECT id FROM threads
+            WHERE wikidot_id=:wikidot_id AND scuttle_id=:scuttle_id
+            ''',
+            thread_data,
+        )
+        thread_id = c.fetchone()['id']
+        assert isinstance(thread_id, int)
+        # Set the parent-child relationship
+        c.execute(
+            '''
+            INSERT OR REPLACE INTO forum_threads
+                ( forum_id, thread_id )
+            VALUES ( ? , ? )
+            ''',
+            (forum_id, thread_id),
+        )
+        self.conn.commit()
+        return thread_id
+
 
 DB = SqliteDriver()
