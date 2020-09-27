@@ -303,7 +303,7 @@ class propagate:
         for forum in forums:
             reply("Propagating forum: {}".format(forum['title']))
             forum_id = DB.add_forum(
-                int(forum['wd_forum_id']), forum['id'], forum['title'],
+                int(forum['wd_forum_id']), forum['id'], forum['title'], False,
             )
             threads_generator = SCPWiki.get_threads_in_forum_since(
                 forum['id'], since,
@@ -315,6 +315,7 @@ class propagate:
                         int(thread['wd_thread_id']),
                         thread['id'],
                         thread['title'],
+                        False,
                     )
                     posts_generator = SCPWiki.get_all_posts_in_thread_since(
                         thread['id'], since,
@@ -329,5 +330,7 @@ class propagate:
                                 post['metadata']['wd_username'],
                                 post['metadata']['wd_timestamp'],
                                 int(post['parent_id']),
+                                False,
                             )
+            DB.commit()
         reply("Finished propagating forums.")

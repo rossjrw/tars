@@ -1752,7 +1752,7 @@ class SqliteDriver:
         )
         return [row['article_id'] for row in c.fetchall()]
 
-    def add_forum(self, wikidot_id, scuttle_id, title):
+    def add_forum(self, wikidot_id, scuttle_id, title, commit=True):
         """Add a forum. Returns the forum's ID."""
         assert isinstance(wikidot_id, int)
         assert isinstance(scuttle_id, int)
@@ -1793,10 +1793,11 @@ class SqliteDriver:
                 ''',
                 forum_data,
             )
-        self.conn.commit()
+        if commit:
+            self.conn.commit()
         return forum_id
 
-    def add_thread(self, forum_id, wikidot_id, scuttle_id, title):
+    def add_thread(self, forum_id, wikidot_id, scuttle_id, title, commit=True):
         """Add a thread to a forum. Returns the thread's ID."""
         assert isinstance(forum_id, int)
         assert isinstance(wikidot_id, int)
@@ -1848,7 +1849,8 @@ class SqliteDriver:
             ''',
             (forum_id, thread_id),
         )
-        self.conn.commit()
+        if commit:
+            self.conn.commit()
         return thread_id
 
     def add_post(
@@ -1860,6 +1862,7 @@ class SqliteDriver:
         wikiname,
         date_posted,
         parent_post_scuttle_id,
+        commit=True,
     ):
         """Add a post to a thread. Returns the post's ID."""
         assert isinstance(thread_id, int)
@@ -1922,13 +1925,22 @@ class SqliteDriver:
         if parent_post_scuttle_id > 0:
             c.execute(
                 '''
+                SELECT id FROM posts
+                WHERE scuttle_id=?
+                ''',
+                (parent_post_scuttle_id,),
+            )
+            parent_post_id = c.fetchone()['id']
+            c.execute(
+                '''
                 INSERT OR REPLACE INTO post_posts
                     ( parent_id, child_id )
                 VALUES ( ? , ? )
                 ''',
-                (parent_post_scuttle_id, post_id),
+                (parent_post_id, post_id),
             )
-        self.conn.commit()
+        if commit:
+            self.conn.commit()
         return post_id
 
     def get_most_recent_post_timestamp(self):
