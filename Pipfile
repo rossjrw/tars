@@ -8,6 +8,7 @@ pylint = "*"
 jedi = "*"
 pytest = "*"
 black = "==19.10b0"
+python-scuttle = "*"
 
 [packages]
 edtf = "*"
@@ -30,7 +31,7 @@ GitPython = "*"
 pyaib = {git = "https://github.com/rossjrw/pyaib.git"}
 beautifulsoup4 = "*"
 toml = "*"
-python-scuttle = "*"
+python-scuttle = "0.3.1"
 pre-commit = "*"
 apscheduler = "*"
 
