@@ -58,7 +58,8 @@ class propagate:
         elif 'forum' in cmd:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
-            propagate.get_forums(reply=msg.reply)
+            since = None if len(cmd['forum']) == 0 else int(cmd['forum'][0])
+            propagate.get_forums(since, reply=msg.reply)
         elif 'metadata' in cmd:
             metadata_slugs = SCPWiki.get_all_pages(tags=['metadata'])
             msg.reply("Propagating metadata...")
