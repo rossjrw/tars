@@ -61,6 +61,7 @@ COMMANDS = {
         "fiction": {"isthisreal"},
         "idea": {"idea"},
         "punctuation": {"punctuation", "punc"},
+        "tell": {"tell"},
     },
     # Other
     "chevron": {"chevron": {"chevron"},},

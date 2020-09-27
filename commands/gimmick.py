@@ -8,6 +8,8 @@ from random import choice
 from emoji import emojize
 import requests
 
+from helpers.defer import defer
+
 
 class idea:
     @classmethod
@@ -116,3 +118,11 @@ class punctuation:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         msg.reply("dot: · en: – em: —")
+
+
+class tell:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        if defer.check(cmd, 'jarvis', 'Secretary_Helen'):
+            return
+        msg.reply("{}: dumbass".format(msg.sender))
