@@ -1789,7 +1789,7 @@ class SqliteDriver:
                 UPDATE forums
                 SET wikidot_id=:wikidot_id, scuttle_id=:scuttle_id,
                     title=:title
-                WHERE wikidot_id=:wikidot_id OR scutle_id=:scuttle_id
+                WHERE wikidot_id=:wikidot_id OR scuttle_id=:scuttle_id
                 ''',
                 forum_data,
             )
@@ -1835,7 +1835,7 @@ class SqliteDriver:
                 UPDATE threads
                 SET wikidot_id=:wikidot_id, scuttle_id=:scuttle_id,
                     title=:title
-                WHERE wikidot_id=:wikidot_id OR scutle_id=:scuttle_id
+                WHERE wikidot_id=:wikidot_id OR scuttle_id=:scuttle_id
                 ''',
                 thread_data,
             )
@@ -1906,7 +1906,7 @@ class SqliteDriver:
                 UPDATE posts
                 SET wikidot_id=:wikidot_id, scuttle_id=:scuttle_id,
                     title=:title, wikiname=:wikiname, date_posted=:date_posted
-                WHERE wikidot_id=:wikidot_id OR scutle_id=:scuttle_id
+                WHERE wikidot_id=:wikidot_id OR scuttle_id=:scuttle_id
                 ''',
                 post_data,
             )
