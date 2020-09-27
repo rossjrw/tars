@@ -1763,19 +1763,7 @@ class SqliteDriver:
             'scuttle_id': scuttle_id,
             'title': title,
         }
-        # Force update the mixture of IDs
-        c.execute(
-            '''
-            INSERT INTO forums
-                ( wikidot_id, scuttle_id, title )
-            VALUES ( :wikidot_id , :scuttle_id , :title )
-            ON CONFLICT DO UPDATE
-            SET wikidot_id=:wikidot_id, scuttle_id=:scuttle_id, title=:title
-            WHERE wikidot_id=:wikidot_id OR scutle_id=:scuttle_id
-            ''',
-            forum_data,
-        )
-        # Get the ID
+        # Update the forum if it exists; otherwise, add it
         c.execute(
             '''
             SELECT id FROM forums
@@ -1784,7 +1772,26 @@ class SqliteDriver:
             forum_data,
         )
         forum_id = c.fetchone()['id']
-        assert isinstance(forum_id, int)
+        if forum_id is None:
+            c.execute(
+                '''
+                INSERT INTO forums
+                    ( wikidot_id, scuttle_id, title )
+                VALUES ( :wikidot_id , :scuttle_id , :title )
+                ''',
+                forum_data,
+            )
+            forum_id = c.lastrowid
+        else:
+            c.execute(
+                '''
+                UPDATE forums
+                SET wikidot_id=:wikidot_id, scuttle_id=:scuttle_id,
+                    title=:title
+                WHERE wikidot_id=:wikidot_id OR scutle_id=:scuttle_id
+                ''',
+                forum_data,
+            )
         self.conn.commit()
         return forum_id
 
@@ -1801,19 +1808,7 @@ class SqliteDriver:
             'scuttle_id': scuttle_id,
             'title': title,
         }
-        # Force update the mixture of IDs
-        c.execute(
-            '''
-            INSERT INTO threads
-                ( wikidot_id, scuttle_id, title )
-            VALUES ( :wikidot_id , :scuttle_id , :title )
-            ON CONFLICT DO UPDATE
-            SET wikidot_id=:wikidot_id, scuttle_id=:scuttle_id, title=:title
-            WHERE wikidot_id=:wikidot_id OR scutle_id=:scuttle_id
-            ''',
-            thread_data,
-        )
-        # Get the ID
+        # Update the thread if it exists; otherwise, add it
         c.execute(
             '''
             SELECT id FROM threads
@@ -1822,7 +1817,26 @@ class SqliteDriver:
             thread_data,
         )
         thread_id = c.fetchone()['id']
-        assert isinstance(thread_id, int)
+        if thread_id is None:
+            c.execute(
+                '''
+                INSERT INTO threads
+                    ( wikidot_id, scuttle_id, title )
+                VALUES ( :wikidot_id , :scuttle_id , :title )
+                ''',
+                thread_data,
+            )
+            thread_id = c.lastrowid
+        else:
+            c.execute(
+                '''
+                UPDATE threads
+                SET wikidot_id=:wikidot_id, scuttle_id=:scuttle_id,
+                    title=:title
+                WHERE wikidot_id=:wikidot_id OR scutle_id=:scuttle_id
+                ''',
+                thread_data,
+            )
         # Set the parent-child relationship
         c.execute(
             '''
@@ -1862,21 +1876,7 @@ class SqliteDriver:
             'wikiname': wikiname,
             'date_posted': date_posted,
         }
-        # Force update the mixture of IDs
-        c.execute(
-            '''
-            INSERT INTO posts
-                ( wikidot_id, scuttle_id, title, wikiname, date_posted )
-            VALUES
-                ( :wikidot_id, :scuttle_id, :title, :wikiname, :date_posted )
-            ON CONFLICT DO UPDATE
-            SET wikidot_id=:wikidot_id, scuttle_id=:scuttle_id, title=:title,
-                wikiname=:wikiname, date_posted=:date_posted
-            WHERE wikidot_id=:wikidot_id OR scutle_id=:scuttle_id
-            ''',
-            post_data,
-        )
-        # Get the ID
+        # Update the thread if it exists; otherwise, add it
         c.execute(
             '''
             SELECT id FROM posts
@@ -1885,7 +1885,28 @@ class SqliteDriver:
             post_data,
         )
         post_id = c.fetchone()['id']
-        assert isinstance(post_id, int)
+        if post_id is None:
+            c.execute(
+                '''
+                INSERT INTO posts
+                    ( wikidot_id, scuttle_id, title, wikiname, date_posted )
+                VALUES
+                    ( :wikidot_id, :scuttle_id, :title, :wikiname,
+                      :date_posted )
+                ''',
+                post_data,
+            )
+            post_id = c.lastrowid
+        else:
+            c.execute(
+                '''
+                UPDATE posts
+                SET wikidot_id=:wikidot_id, scuttle_id=:scuttle_id,
+                    title=:title, wikiname=:wikiname, date_posted=:date_posted
+                WHERE wikidot_id=:wikidot_id OR scutle_id=:scuttle_id
+                ''',
+                post_data,
+            )
         # Set the parent-child relationships
         c.execute(
             '''
@@ -1918,8 +1939,7 @@ class SqliteDriver:
         timestamp = c.fetchone()['MAX(date_posted)']
         if timestamp is None:
             return 0
-        else:
-            return int(timestamp)
+        return int(timestamp)
 
 
 DB = SqliteDriver()
