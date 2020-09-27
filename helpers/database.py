@@ -1771,7 +1771,7 @@ class SqliteDriver:
             ''',
             forum_data,
         )
-        forum_id = c.fetchone()['id']
+        forum_id = c.fetchone()
         if forum_id is None:
             c.execute(
                 '''
@@ -1783,6 +1783,7 @@ class SqliteDriver:
             )
             forum_id = c.lastrowid
         else:
+            forum_id = forum_id['id']
             c.execute(
                 '''
                 UPDATE forums
@@ -1816,7 +1817,7 @@ class SqliteDriver:
             ''',
             thread_data,
         )
-        thread_id = c.fetchone()['id']
+        thread_id = c.fetchone()
         if thread_id is None:
             c.execute(
                 '''
@@ -1828,6 +1829,7 @@ class SqliteDriver:
             )
             thread_id = c.lastrowid
         else:
+            thread_id = thread_id['id']
             c.execute(
                 '''
                 UPDATE threads
@@ -1884,7 +1886,7 @@ class SqliteDriver:
             ''',
             post_data,
         )
-        post_id = c.fetchone()['id']
+        post_id = c.fetchone()
         if post_id is None:
             c.execute(
                 '''
@@ -1898,6 +1900,7 @@ class SqliteDriver:
             )
             post_id = c.lastrowid
         else:
+            post_id = post_id['id']
             c.execute(
                 '''
                 UPDATE posts
