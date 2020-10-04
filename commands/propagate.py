@@ -300,6 +300,13 @@ class propagate:
         if since is None:
             since = DB.get_most_recent_post_timestamp()
         reply("Propagating forums since {}...".format(since))
+        # Forum propagation happens in 3 stages:
+        #   1. Get/download list of forums
+        #   2. Download threads created since T
+        #   3. Download posts created since T for all threads (inc. old ones)
+        # This should always work, even accounting for weird shit like new
+        # forums being created, provided that a) history is never modified b)
+        # the propagation is always allowed to fully complete
         forums = SCPWiki.get_all_forums()
         for forum in forums:
             reply("Propagating forum: {}".format(forum['title']))
