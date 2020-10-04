@@ -243,7 +243,7 @@ class search:
                     except MinMaxError as e:
                         raise CommandError(str(e).format("rating"))
                 elif rating[0] in [">", "<", "="]:
-                    pattern = r"^(?P<comp>[<>=]{1,2})(?P<value>[0-9]+)"
+                    pattern = r"^(?P<comp>[<>=]{1,2})(?P<value>-?[0-9]+)"
                     match = re.search(pattern, rating)
                     if match:
                         try:
@@ -537,6 +537,7 @@ class lastcreated:
         search.expandargs(cmd)
         if set(cmd.args).issubset({'root', 'order', 'limit', 'verbose'}):
             cmd.args['created'] = ["<3d"]
+            cmd.args['rating'] = [">-10"]
         search.command(irc_c, msg, cmd)
 
 
