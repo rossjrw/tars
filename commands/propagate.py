@@ -307,6 +307,7 @@ class propagate:
         # This should always work, even accounting for weird shit like new
         # forums being created, provided that a) history is never modified b)
         # the propagation is always allowed to fully complete
+        reply("Forums: propgating forums")
         forums = SCPWiki.get_all_forums()
         for forum in forums:
             reply("Propagating forum: {}".format(forum['title']))
@@ -316,29 +317,33 @@ class propagate:
             threads_generator = SCPWiki.get_threads_in_forum_since(
                 forum['id'], since,
             )
-            for threads in threads_generator:
-                for thread in threads:
-                    thread_id = DB.add_thread(
-                        forum_id,
-                        int(thread['wd_thread_id']),
-                        thread['id'],
-                        thread['title'],
-                        False,
-                    )
-                    posts_generator = SCPWiki.get_all_posts_in_thread_since(
-                        thread['id'], since,
-                    )
-                    for posts in posts_generator:
-                        for post in posts:
-                            post_id = DB.add_post(
-                                thread_id,
-                                int(post['wd_post_id']),
-                                post['id'],
-                                post['subject'],
-                                post['metadata']['wd_username'],
-                                post['metadata']['wd_timestamp'],
-                                int(post['parent_id']),
-                                False,
-                            )
+        reply("Forums: propagating threads")
+        # TODO estimate how many threads to propagate
+        for threads in threads_generator:
+            for thread in threads:
+                thread_id = DB.add_thread(
+                    forum_id,
+                    int(thread['wd_thread_id']),
+                    thread['id'],
+                    thread['title'],
+                    False,
+                )
+                posts_generator = SCPWiki.get_all_posts_in_thread_since(
+                    thread['id'], since,
+                )
+        reply("Forums: propagating posts")
+        # TODO estimate how many posts to propgate
+        for posts in posts_generator:
+            for post in posts:
+                post_id = DB.add_post(
+                    thread_id,
+                    int(post['wd_post_id']),
+                    post['id'],
+                    post['subject'],
+                    post['metadata']['wd_username'],
+                    post['metadata']['wd_timestamp'],
+                    int(post['parent_id']),
+                    False,
+                )
             DB.commit()
         reply("Finished propagating forums.")
