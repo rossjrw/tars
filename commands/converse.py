@@ -130,7 +130,7 @@ class converse:
             and "slime" in msg.message
             and "XilasCrowe" in DB.get_channel_members(msg.raw_channel)
         ):
-            msg.reply("Oy xilas I heard you like slime!")
+            msg.reply("Oi xilas I heard you like slime!")
             return
 
         # after all attempts, must indicate failure if pinged
