@@ -91,14 +91,11 @@ class ScuttleAPI:
             limit=100,
         )
 
-    def get_all_posts_in_thread_since(self, scuttle_thread_id, since):
+    def get_all_posts_since(self, since):
         """Gets all posts in a thread created since a timestamp.
         Returns the verbose generator with 100 posts per page."""
         return self.scuttle.verbose(
-            self.scuttle.thread_posts_since,
-            scuttle_thread_id,
-            since,
-            limit=100,
+            self.scuttle.posts_since, since, limit=100,
         )
 
 
