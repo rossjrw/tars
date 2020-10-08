@@ -1853,6 +1853,18 @@ class SqliteDriver:
             self.conn.commit()
         return thread_id
 
+    def get_thread(self, thread_scuttle_id):
+        """Get a thread's ID from its SCUTTLE ID."""
+        c = self.conn.cursor()
+        c.execute(
+            '''
+            SELECT id FROM threads
+            WHERE scuttle_id=?
+            ''',
+            (thread_scuttle_id,),
+        )
+        return c.fetchone()['id']
+
     def add_post(
         self,
         thread_id,
@@ -1925,19 +1937,12 @@ class SqliteDriver:
         if parent_post_scuttle_id > 0:
             c.execute(
                 '''
-                SELECT id FROM posts
-                WHERE scuttle_id=?
-                ''',
-                (parent_post_scuttle_id,),
-            )
-            parent_post_id = c.fetchone()['id']
-            c.execute(
-                '''
                 INSERT OR REPLACE INTO post_posts
                     ( parent_id, child_id )
-                VALUES ( ? , ? )
+                SELECT id, ? FROM posts
+                WHERE scuttle_id=?
                 ''',
-                (parent_post_id, post_id),
+                (post_id, parent_post_scuttle_id),
             )
         if commit:
             self.conn.commit()
