@@ -1863,7 +1863,10 @@ class SqliteDriver:
             ''',
             (thread_scuttle_id,),
         )
-        return c.fetchone()['id']
+        thread = c.fetchone()
+        if thread is None:
+            return None
+        return thread['id']
 
     def add_post(
         self,

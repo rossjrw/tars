@@ -307,17 +307,22 @@ class propagate:
         # This should always work, even accounting for weird shit like new
         # forums being created, provided that a) history is never modified b)
         # the propagation is always allowed to fully complete
-        reply("Forums: propgating forums")
+
+        # Step 1: Download and update OR get list of forums
+        reply("Forums: propgating forums and threads")
         forums = SCPWiki.get_all_forums()
         for forum in forums:
             reply("Propagating forum: {}".format(forum['title']))
             forum_id = DB.add_forum(
                 int(forum['wd_forum_id']), forum['id'], forum['title'], False,
             )
+
+            #
             threads_generator = SCPWiki.get_threads_in_forum_since(
                 forum['id'], since,
             )
-        reply("Forums: propagating threads")
+
+        # Step 2: Download new threads created since T, for each forum
         # TODO estimate how many threads to propagate
         for threads in threads_generator:
             for thread in threads:
@@ -328,20 +333,26 @@ class propagate:
                     thread['title'],
                     False,
                 )
-                posts_generator = SCPWiki.get_all_posts_in_thread_since(
-                    thread['id'], since,
-                )
-        reply("Forums: propagating posts")
-        # TODO estimate how many posts to propgate
+
+        # Step 3: Download posts created since T
+        # Estimate how many posts there will be
+        post_count = len(SCPWiki.get_posts_since(since))
+        reply("Forums: propagating posts (~{})".format(post_count))
+        posts_generator = SCPWiki.get_all_posts_since(since)
         for posts in posts_generator:
             for post in posts:
+                thread_id = DB.get_thread(post['thread_id'])
+                if thread_id is None:
+                    # Thread was made during indexing
+                    # TODO
+                    pass
                 post_id = DB.add_post(
                     thread_id,
                     int(post['wd_post_id']),
                     post['id'],
                     post['subject'],
                     post['metadata']['wd_username'],
-                    post['metadata']['wd_timestamp'],
+                    int(post['metadata']['wd_timestamp']),
                     int(post['parent_id']),
                     False,
                 )
