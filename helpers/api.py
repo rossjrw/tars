@@ -36,7 +36,12 @@ def toml_url(url):
 
 
 class ScuttleAPI:
-    """Wrapper for Wikidot API functions."""
+    """Wrapper for Wikidot API functions.
+
+    get_one methods return detailed info for one item.
+    get_all methods return a non-detailed list of all items.
+    get_gen methods return a generator for detailed info of all items.
+    """
 
     def __init__(self, domain):
         self.scuttle = scuttle(domain, keys['scuttle_api'], 1)
@@ -72,7 +77,7 @@ class ScuttleAPI:
             slugs = [page['slug'] for page in self.scuttle.pages()]
         return slugs
 
-    def get_recent_pages(self, seconds):
+    def get_all_recent_pages(self, seconds):
         """Gets data for pages created in the last n seconds."""
         pages = self.scuttle.pages_since(int(time.time() - seconds))
         return [page['slug'] for page in pages]
@@ -81,7 +86,7 @@ class ScuttleAPI:
         """Gets all forums."""
         return self.scuttle.forums()
 
-    def get_threads_in_forum_since(self, scuttle_forum_id, since):
+    def get_gen_threads_in_forum_since(self, scuttle_forum_id, since):
         """Gets all threads in a forum created since a timestamp.
         Returns the verbose generator with 100 threads per page."""
         return self.scuttle.verbose(
@@ -91,12 +96,12 @@ class ScuttleAPI:
             limit=100,
         )
 
-    def get_posts_since(self, since):
+    def get_all_posts_since(self, since):
         """Gets all posts in a thread created since a timestamp.
         Returns the non-verbose, unpaginated post list."""
         return self.scuttle.posts_since(since)
 
-    def get_all_posts_since(self, since):
+    def get_gen_posts_since(self, since):
         """Gets all posts in a thread created since a timestamp.
         Returns the verbose generator with 100 posts per page."""
         return self.scuttle.verbose(

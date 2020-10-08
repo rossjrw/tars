@@ -82,7 +82,7 @@ class propagate:
     def get_recent_pages(cls, **kwargs):
         reply = kwargs.get('reply', lambda x: None)
         reply("Propagating recent pages...")
-        pages = SCPWiki.get_recent_pages(259200)
+        pages = SCPWiki.get_all_recent_pages(259200)
         propagate.get_wiki_data_for(pages, reply=reply)
 
     @classmethod
@@ -318,7 +318,7 @@ class propagate:
             )
 
             #
-            threads_generator = SCPWiki.get_threads_in_forum_since(
+            threads_generator = SCPWiki.get_gen_threads_in_forum_since(
                 forum['id'], since,
             )
 
@@ -336,9 +336,9 @@ class propagate:
 
         # Step 3: Download posts created since T
         # Estimate how many posts there will be
-        post_count = len(SCPWiki.get_posts_since(since))
+        post_count = len(SCPWiki.get_all_posts_since(since))
         reply("Forums: propagating posts (~{})".format(post_count))
-        posts_generator = SCPWiki.get_all_posts_since(since)
+        posts_generator = SCPWiki.get_gen_posts_since(since)
         for posts in posts_generator:
             for post in posts:
                 thread_id = DB.get_thread(post['thread_id'])
