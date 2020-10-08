@@ -55,6 +55,7 @@ COMMANDS = {
         "fish": {"fish", "reptile+", "rep+"},
         "bear": {"bear"},
         "cat": {"cat"},
+        "balls": {"balls"},
         "narcissism": {"rounderhouse", "jazstar", "themightymcb"},
         "password": {"password", "passcode"},
         "hug": {"hug", "hugtars"},
