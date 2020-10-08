@@ -358,11 +358,22 @@ class propagate:
                         thread['title'],
                         False,
                     )
+                # If there is no subject, use truncated body
+                post_title = post['subject']
+                if len(post_title) == 0:
+                    post_body = BeautifulSoup(post['text'])
+                    post_words = " ".join(post_body.stripped_strings).split(
+                        " "
+                    )
+                    post_words = (
+                        post_words[:7] if len(post_words) > 7 else post_words
+                    )
+                    post_title = "{}...".format(" ".join(post_words))
                 DB.add_post(
                     thread_id,
                     int(post['wd_post_id']),
                     post['id'],
-                    post['subject'],
+                    post_title,
                     post['metadata']['wd_username'],
                     int(post['metadata']['wd_timestamp']),
                     int(post['parent_id']),
