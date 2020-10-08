@@ -1797,6 +1797,21 @@ class SqliteDriver:
             self.conn.commit()
         return forum_id
 
+    def get_forum(self, forum_scuttle_id):
+        """Get a forum's ID from its SCUTTLE ID."""
+        c = self.conn.cursor()
+        c.execute(
+            '''
+            SELECT id FROM forums
+            WHERE scuttle_id=?
+            ''',
+            (forum_scuttle_id,),
+        )
+        forum = c.fetchone()
+        if forum is None:
+            return None
+        return forum['id']
+
     def add_thread(self, forum_id, wikidot_id, scuttle_id, title, commit=True):
         """Add a thread to a forum. Returns the thread's ID."""
         assert isinstance(forum_id, int)

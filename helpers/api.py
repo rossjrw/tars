@@ -86,6 +86,14 @@ class ScuttleAPI:
         """Gets all forums."""
         return self.scuttle.forums()
 
+    def get_one_thread(self, scuttle_thread_id):
+        """Get one thread by SCUTTLE ID."""
+        return self.scuttle.thread(scuttle_thread_id)
+
+    def get_all_threads_in_forum(self, scuttle_forum_id):
+        """Gets all threads in a forum."""
+        return self.scuttle.forum_threads(scuttle_forum_id)
+
     def get_gen_threads_in_forum_since(self, scuttle_forum_id, since):
         """Gets all threads in a forum created since a timestamp.
         Returns the verbose generator with 100 threads per page."""

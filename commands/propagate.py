@@ -300,39 +300,37 @@ class propagate:
         if since is None:
             since = DB.get_most_recent_post_timestamp()
         reply("Propagating forums since {}...".format(since))
-        # Forum propagation happens in 3 stages:
-        #   1. Get/download list of forums
-        #   2. Download threads created since T
-        #   3. Download posts created since T for all threads (inc. old ones)
-        # This should always work, even accounting for weird shit like new
-        # forums being created, provided that a) history is never modified b)
-        # the propagation is always allowed to fully complete
 
         # Step 1: Download and update OR get list of forums
         reply("Forums: propgating forums and threads")
         forums = SCPWiki.get_all_forums()
         for forum in forums:
-            reply("Propagating forum: {}".format(forum['title']))
+            thread_count = len(SCPWiki.get_all_threads_in_forum(forum['id']))
+            reply(
+                "Propagating forum '{}' with ~{} threads".format(
+                    forum['title'], thread_count,
+                )
+            )
             forum_id = DB.add_forum(
                 int(forum['wd_forum_id']), forum['id'], forum['title'], False,
             )
 
-            #
+            # Step 2: Download new threads in this forum created since T
+            # We should already have older threads stored
             threads_generator = SCPWiki.get_gen_threads_in_forum_since(
                 forum['id'], since,
             )
+            for threads in threads_generator:
+                for thread in threads:
+                    DB.add_thread(
+                        forum_id,
+                        int(thread['wd_thread_id']),
+                        thread['id'],
+                        thread['title'],
+                        False,
+                    )
 
-        # Step 2: Download new threads created since T, for each forum
-        # TODO estimate how many threads to propagate
-        for threads in threads_generator:
-            for thread in threads:
-                thread_id = DB.add_thread(
-                    forum_id,
-                    int(thread['wd_thread_id']),
-                    thread['id'],
-                    thread['title'],
-                    False,
-                )
+        DB.commit()
 
         # Step 3: Download posts created since T
         # Estimate how many posts there will be
@@ -344,9 +342,23 @@ class propagate:
                 thread_id = DB.get_thread(post['thread_id'])
                 if thread_id is None:
                     # Thread was made during indexing
-                    # TODO
-                    pass
-                post_id = DB.add_post(
+                    # Download it manaully from SCUTTLE
+                    thread = SCPWiki.get_one_thread(post['thread_id'])
+                    reply(
+                        "Adding missing thread: {}".format(
+                            "http://scp-wiki.wikidot.com/forum/t-{}".format(
+                                thread['wd_thread_id'],
+                            )
+                        )
+                    )
+                    thread_id = DB.add_thread(
+                        DB.get_forum(thread['forum_id']),
+                        int(thread['wd_thread_id']),
+                        thread['id'],
+                        thread['title'],
+                        False,
+                    )
+                DB.add_post(
                     thread_id,
                     int(post['wd_post_id']),
                     post['id'],
@@ -356,5 +368,6 @@ class propagate:
                     int(post['parent_id']),
                     False,
                 )
-            DB.commit()
+
+        DB.commit()
         reply("Finished propagating forums.")
