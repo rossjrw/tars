@@ -3,8 +3,12 @@
 Checks your posts for replies you may have missed.
 """
 
+import json
+
+import feedparser
 import inflect
 
+from helpers.config import CONFIG
 from helpers.database import DB
 from helpers.error import CommandError, MyFaultError, isint
 
@@ -119,3 +123,28 @@ class checkcomments:
             timestamp = int(cmd['timestamp'][0])
         else:
             timestamp = 0
+
+        # Job 1: Get subscriptions from RSS feed
+
+        try:
+            sub_feed = feedparser.parse(
+                CONFIG.external['cc']['subscriptions']['rss']
+            )
+            if 'bozo_exception' in sub_feed:
+                raise ValueError
+            # Cache these subscriptions to file
+            with open(CONFIG.cc.feedcache, 'w') as cache:
+                json.dump(sub_feed, cache)
+        except Exception:
+            msg.reply(
+                "There was a problem with fetching the subscription thread, "
+                "so I have used a cached version."
+            )
+            with open(CONFIG.cc.feedcache, 'r') as cache:
+                sub_feed = json.load(cache)
+
+        # Job 2: Compile an object that contains all the relevant posts
+
+        responses = {}
+
+        forums = DB.get_forums()
