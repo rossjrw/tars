@@ -1994,7 +1994,7 @@ class SqliteDriver:
         return post_id
 
     def get_thread_posts(self, thread_id):
-        """Get information on all posts in a thread."""
+        """Get information on all top-level posts in a thread."""
         c = self.conn.cursor()
         c.execute(
             '''
@@ -2002,9 +2002,26 @@ class SqliteDriver:
             WHERE id IN (
                 SELECT post_id FROM thread_posts
                 WHERE thread_id=?
+            ) AND id NOT IN (
+                SELECT child_id FROM post_posts
             )
             ''',
             (thread_id,),
+        )
+        return c.fetchall()
+
+    def get_post_posts(self, parent_post_id):
+        """Get information on all replies to the given post."""
+        c = self.conn.cursor()
+        c.execute(
+            '''
+            SELECT id, wikidot_id, title, wikiname, date_posted FROM posts
+            WHERE id IN (
+                SELECT child_id FROM post_posts
+                WHERE parent_id=?
+            )
+            ''',
+            (parent_post_id,),
         )
         return c.fetchall()
 
