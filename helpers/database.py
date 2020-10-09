@@ -63,6 +63,16 @@ def norm(thing):
     return thing
 
 
+def dict_from_row(row):
+    """Converts a Row object to a dict."""
+    return dict(zip(row.keys(), row))
+
+
+def dicts_from_rows(rows):
+    """Converts a list of Row objects to a list of dicts."""
+    return [dict_from_row(row) for row in rows]
+
+
 def _regexp(expr, item):
     """For evaluating db strings against a given regex."""
     if item is None:
@@ -1822,7 +1832,7 @@ class SqliteDriver:
             SELECT id, wikidot_id, title FROM forums
             '''
         )
-        return c.fetchall()
+        return dicts_from_rows(c.fetchall())
 
     def add_thread(self, forum_id, wikidot_id, scuttle_id, title, commit=True):
         """Add a thread to a forum. Returns the thread's ID."""
@@ -1908,7 +1918,7 @@ class SqliteDriver:
             ''',
             (forum_id,),
         )
-        return c.fetchall()
+        return dicts_from_rows(c.fetchall())
 
     def add_post(
         self,
@@ -2008,7 +2018,7 @@ class SqliteDriver:
             ''',
             (thread_id,),
         )
-        return c.fetchall()
+        return dicts_from_rows(c.fetchall())
 
     def get_post_posts(self, parent_post_id):
         """Get information on all replies to the given post."""
@@ -2023,7 +2033,7 @@ class SqliteDriver:
             ''',
             (parent_post_id,),
         )
-        return c.fetchall()
+        return dicts_from_rows(c.fetchall())
 
     def get_most_recent_post_timestamp(self):
         """Gets the timestamp of the most recent post in the database."""
