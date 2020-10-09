@@ -259,7 +259,7 @@ class propagate:
                 <td>(.*?)</td>\s*  # metadata type
                 <td>(.*?)</td>\s*  # date
                 </tr>
-            """,
+                """,
                 re.VERBOSE,
             )
             match = pattern.search(title)

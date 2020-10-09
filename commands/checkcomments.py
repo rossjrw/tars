@@ -4,7 +4,9 @@ Checks your posts for replies you may have missed.
 """
 
 import json
+import re
 
+from bs4 import BeautifulSoup
 import feedparser
 import inflect
 
@@ -50,6 +52,8 @@ This is a report to check comments for Wikidot user
 {time_context} {date}. This report was initiated by IRC user {init_nick}
 (`{init_hostmask}`) at {init_date}.
 \\n\\n
+{sub_parse_error}
+\\n\\n
 You are subscribed to {sub_thread_count} plural("thread", {sub_thread_count})
 and {sub_post_count} plural("post", {sub_post_count}),
 including {man_sub_count} plural("manual subscription", {man_sub_count})
@@ -59,6 +63,11 @@ in {thread_count} plural("thread", {thread_count})
 in {forum_count} plural("forum", {forum_count}).
 \\n\\n
 {forums}
+"""
+
+REPORT_PARSE_ERROR = """
+There was an error parsing your subscriptions.
+You may wish to fix them and then regenerate this report with `.cc -t {time}`.
 """
 
 REPORT_FORUM = """
@@ -124,7 +133,10 @@ class checkcomments:
         else:
             timestamp = 0
 
-        # Job 1: Get subscriptions from RSS feed
+        # Job 1: Get subscriptions and unsubscriptions from RSS feed
+
+        sub = {'subs': [], 'unsubs': []}
+        sub_parse_error = False
 
         try:
             sub_feed = feedparser.parse(
@@ -143,8 +155,47 @@ class checkcomments:
             with open(CONFIG.cc.feedcache, 'r') as cache:
                 sub_feed = json.load(cache)
 
+        sub_posts = [
+            entry
+            for entry in sub_feed['entries']
+            if entry['wikidot_authorname'].lower() == author.lower()
+        ]
+        if len(sub_posts) > 0:
+            # There should be one subscription post per user
+            sub_post = sub_posts[0]
+            sub_post_body = BeautifulSoup(sub_post['content'][0]['value'])
+            url_pattern = re.compile(
+                r"""
+                ^http://(www\.)?
+                (scpwiki\.com|scp-wiki\.wikidot\.com)/
+                forum/t-(?P<thread>[0-9]+)
+                (/.*)?$
+                """,
+                re.VERBOSE,
+            )
+            # If the post fails to parse, flag the error to be reported
+            try:
+                # Subscriptions are in bullet points
+                for command in sub_post_body.select("ul li"):
+                    action, href = tuple(command.children)
+                    action = action.strip().lower()
+                    url_match = url_pattern.search(href)
+                    if not url_match:
+                        # Probably a URL from an unsupported branch
+                        continue
+                    wd_thread_id = int(url_match.group('thread'))
+                    if action == "subscribe":
+                        sub['subs'].append(wd_thread_id)
+                    elif action == "unsubscribe":
+                        sub['unsubs'].append(wd_thread_id)
+                    else:
+                        raise ValueError("unknown action {}".format(action))
+            except Exception as e:
+                sub_parse_error = True
+
         # Job 2: Compile an object that contains all the relevant posts
 
-        responses = {}
-
         forums = DB.get_forums()
+
+        for forum in forums:
+            forum['threads'] = DB.get_forum_threads(forum['id'])
