@@ -3,8 +3,17 @@
 Checks your posts for replies you may have missed.
 """
 
+import re
+import string
+
+import inflect
+
 from helpers.database import DB
 from helpers.error import CommandError, MyFaultError
+
+plural = inflect.engine()
+plural.classical()
+# Templates should be parsed with e.g plural.inflect("".format(**{}))
 
 FORUM_URL = "http://scp-wiki.wikidot.com/forum"
 
@@ -25,11 +34,11 @@ REPORT_INTRO = """
 searches forum threads on SCP Wiki EN for replies you might have missed.
 \\n\\n
 This report will notify you of any replies to posts that you've made, or
-replies to threads that you started. You can also [manually subscribe and
-unsubscribe]({subscription_thread}) from threads. {botname} doesn't know which
-threads are the discussion pages of articles you've posted — hopefully you
-started that thread by making an author post. If not, you will need to manually
-subscribe to it.
+replies to threads that you started. You can also
+[manually subscribe and unsubscribe]({subscription_thread})
+from threads. {botname} doesn't know which threads are the discussion pages of
+articles you've posted — hopefully you started that thread by making an author
+post. If not, you will need to manually subscribe to it.
 """
 
 REPORT_INFO = """
@@ -40,10 +49,13 @@ This is a report to check comments for Wikidot user
 {time_context} {date}. This report was initiated by IRC user {init_nick}
 (`{init_hostmask}`) at {init_date}.
 \\n\\n
-You are subscribed to {sub_thread_count} threads and {sub_post_count} posts, including
-{man_sub_count} manual subscriptions and {man_unsub_count} manual
-unsubscriptions. You have {comment_count} new comments across {thread_count}
-threads in {forum_count} forums.
+You are subscribed to {sub_thread_count} plural("thread", {sub_thread_count})
+and {sub_post_count} plural("post", {sub_post_count}),
+including {man_sub_count} plural("manual subscription", {man_sub_count})
+and {man_unsub_count} plural("manual unsubscription", {man_unsub_count}).
+You have {comment_count} plural("new comment", {comment_count})
+in {thread_count} plural("thread", {thread_count})
+in {forum_count} plural("forum", {forum_count}).
 \\n\\n
 {forums}
 """
@@ -51,7 +63,8 @@ threads in {forum_count} forums.
 REPORT_FORUM = """
 ##### {forum}
 \\n\\n
-{comment_count} new comments across {thread_count} threads.
+{comment_count} plural("comment", {comment_count})
+in {thread_count} plural("thread", {thread_count}).
 \\n\\n
 {comments}
 """
@@ -75,15 +88,9 @@ REPORT_THREAD_POST = """
 {replies}
 """
 
-REPORT_THREAD_POST_REPLY = """
-    - :envelope: Reply:
-[{title}]({url}/t-{wd_thread_id}/#post-{wd_post_id})
-by {author} at {date} (page {pageno})
-"""
+REPORT_THREAD_POST_REPLY = "  {}".format(REPORT_THREAD_REPLY)
 
-REPORT_FOOTER = """
-# :mailbox_with_no_mail:
-"""
+REPORT_FOOTER = "# :mailbox_with_no_mail:"
 
 
 class checkcomments:
