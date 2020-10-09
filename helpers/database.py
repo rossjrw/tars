@@ -11,12 +11,14 @@ Provides functions for manipulating the database.
 
 import sqlite3
 import random
+
 import pandas
 import pendulum as pd
 from pypika import MySQLQuery, Table, Order
 from pypika.terms import ValueWrapper
 from pypika.functions import Max, Length
 from pyaib.irc import Message
+
 from helpers.config import CONFIG
 from helpers.error import nonelist, MyFaultError
 
@@ -1812,6 +1814,16 @@ class SqliteDriver:
             return None
         return forum['id']
 
+    def get_forums(self):
+        """Get information on all forums."""
+        c = self.conn.cursor()
+        c.execute(
+            '''
+            SELECT id, wikidot_id, title FROM forums
+            '''
+        )
+        return c.fetchall()
+
     def add_thread(self, forum_id, wikidot_id, scuttle_id, title, commit=True):
         """Add a thread to a forum. Returns the thread's ID."""
         assert isinstance(forum_id, int)
@@ -1882,6 +1894,21 @@ class SqliteDriver:
         if thread is None:
             return None
         return thread['id']
+
+    def get_forum_threads(self, forum_id):
+        """Get information on all threads in a forum."""
+        c = self.conn.cursor()
+        c.execute(
+            '''
+            SELECT id, wikidot_id, title FROM threads
+            WHERE id IN (
+                SELECT thread_id FROM forum_threads
+                WHERE forum_id=?
+            )
+            ''',
+            (forum_id,),
+        )
+        return c.fetchall()
 
     def add_post(
         self,
@@ -1965,6 +1992,21 @@ class SqliteDriver:
         if commit:
             self.conn.commit()
         return post_id
+
+    def get_thread_posts(self, thread_id):
+        """Get information on all posts in a thread."""
+        c = self.conn.cursor()
+        c.execute(
+            '''
+            SELECT id, wikidot_id, title, wikiname, date_posted FROM posts
+            WHERE id IN (
+                SELECT post_id FROM thread_posts
+                WHERE thread_id=?
+            )
+            ''',
+            (thread_id,),
+        )
+        return c.fetchall()
 
     def get_most_recent_post_timestamp(self):
         """Gets the timestamp of the most recent post in the database."""
