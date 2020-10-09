@@ -3,13 +3,10 @@
 Checks your posts for replies you may have missed.
 """
 
-import re
-import string
-
 import inflect
 
 from helpers.database import DB
-from helpers.error import CommandError, MyFaultError
+from helpers.error import CommandError, MyFaultError, isint
 
 plural = inflect.engine()
 plural.classical()
@@ -98,7 +95,7 @@ class checkcomments:
 
     @staticmethod
     def command(irc_c, msg, cmd):
-        cmd.expandargs(["author a"])
+        cmd.expandargs(["author a", "timestamp t"])
         if 'author' in cmd:
             if len(cmd['author']) < 1:
                 raise CommandError(
@@ -114,3 +111,11 @@ class checkcomments:
                     "I don't know your Wikidot username. Let me know what it "
                     "is with .alias --wiki [username]"
                 )
+        if 'timestamp' in cmd:
+            if len(cmd['timestamp']) != 1 or not isint(cmd['timestamp'][0]):
+                raise CommandError(
+                    "--timestamp/-t: Specify a numeric UNIX timestamp."
+                )
+            timestamp = int(cmd['timestamp'][0])
+        else:
+            timestamp = 0
