@@ -91,7 +91,8 @@ REPORT_FORUM = """
 )
 
 REPORT_THREAD = """
-1. **:mailbox_with_mail: Thread: [{title}]({url}/t-{wd_thread_id})**
+1. **:mailbox_with_mail: Thread:
+ [{title}]({url}/t-{wd_thread_id}) by {author}**
 \\n
 {replies}
 """.strip(
@@ -241,11 +242,15 @@ class checkcomments:
                 # If we're ignoring this thread, skip it entirely
                 if thread['wikidot_id'] in sub['unsubs']:
                     continue
-                sub_thread_count += 1
                 posts = DB.get_thread_posts(thread['id'])
                 thread['wikiname'] = (
-                    posts[0]['wikiname'] if len(posts) > 0 else None
+                    posts[0]['wikiname'] if len(posts) > 0 else ""
                 )
+                subscribed_to_thread = (
+                    thread['wikidot_id'] in sub['subs']
+                ) or (thread['wikiname'].lower() == author.lower())
+                if subscribed_to_thread:
+                    sub_thread_count += 1
                 for index, post in enumerate(posts):
                     # 3rd layer: posts
                     post['replies'] = get_replies(post)
@@ -277,11 +282,7 @@ class checkcomments:
                     # Add this post to the thread based on whether or not we
                     # are subscribed to it
                     if ('replies' in post and len(post['replies']) > 0) or (
-                        'replies' not in post
-                        and (
-                            (thread['wikidot_id'] in sub['subs'])
-                            or (thread['wikiname'].lower() == author.lower())
-                        )
+                        'replies' not in post and (subscribed_to_thread)
                     ):
                         thread['posts'].append(post)
                 thread['posts'].sort(key=lambda r: r['date_posted'])
@@ -400,6 +401,7 @@ class checkcomments:
                                     title=thread['title'],
                                     url=FORUM_URL,
                                     wd_thread_id=thread['wikidot_id'],
+                                    author=thread['wikiname'],
                                     replies="\\n".join(
                                         REPORT_THREAD_REPLY.format(
                                             title=post['title'],
@@ -455,9 +457,13 @@ class checkcomments:
 
         # Job 4: Upload the report
 
-        report_url = paste(report)
-        msg.reply(
-            "{} comments · full report: {}".format(
-                "New" if responses else "No new", report_url
+        if 'print' in cmd:
+            msg.reply("Printing report to console")
+            print(report, len(report))
+        else:
+            report_url = paste(report)
+            msg.reply(
+                "{} comments · full report: {}".format(
+                    "New" if responses else "No new", report_url
+                )
             )
-        )
