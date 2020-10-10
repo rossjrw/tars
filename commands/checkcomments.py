@@ -455,4 +455,8 @@ class checkcomments:
         # Job 4: Upload the report
 
         report_url = paste(report)
-        msg.reply("New comments report: {}".format(report_url))
+        msg.reply(
+            "{} comments · full report: {}".format(
+                "New" if responses else "No new", report_url
+            )
+        )
