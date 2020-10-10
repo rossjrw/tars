@@ -40,12 +40,15 @@ REPORT_INTRO = """
 `.checkcomments/.cc` is a [{botname}]({repo}) command that
  searches forum threads on SCP Wiki EN for replies you might have missed.
 \\n\\n
-This report will notify you of any replies to posts that you've made, or
- replies to threads that you started. You can also
+This report will inform you of any new replies to either posts you've made or
+ threads you've started. You can also
  [manually subscribe and unsubscribe]({subscription_thread})
- from threads. {botname} doesn't know which threads are the discussion pages of
- articles you've posted — hopefully you started that thread by making an author
- post. If not, you will need to manually subscribe to it.
+ to or from threads. {botname} doesn't know which threads are the discussion
+ pages of articles you've posted — hopefully you started that thread by making
+ an author post. If not, you will need to manually subscribe to it.
+\\n\\n
+All times are in UTC.
+\\n\\n
 """.strip(
     "\n"
 )
@@ -53,10 +56,15 @@ This report will notify you of any replies to posts that you've made, or
 REPORT_INFO = """
 ### Report for {username} :mailbox{mailbox_status}:
 \\n\\n
-This is a report to check comments for Wikidot user
- [{username}](https://www.wikidot.com/user:info/{wd_username}) made since
- {time_context} {date}. This report was initiated by IRC user {init_nick}
- (`{init_hostmask}`) at {init_date}.
+This comment report is for Wikidot user
+ [{username}](https://www.wikidot.com/user:info/{wd_username}), checking for
+ new replies made in the last {date_ago} (since {date}). This report was
+ initiated by IRC user {init_nick} (`{init_hostmask}`) at {init_date}.
+\\n\\n
+You can regenerate this report at any time by running
+ `.cc -a {username} -t {timestamp}`.
+\\n\\n
+The comment database was last updated approximately {update_ago}.
 \\n\\n
 {sub_parse_error}
 You are subscribed to {sub_thread_count} plural("thread", {sub_thread_count})
@@ -71,7 +79,7 @@ You are subscribed to {sub_thread_count} plural("thread", {sub_thread_count})
 )
 
 REPORT_PARSE_ERROR = """
-There was an error parsing your subscriptions.
+:warning: There was an error parsing your subscriptions.
  You may wish to fix them and then regenerate this report with `.cc -t {time}`,
  or contact the bot owner, {owner}, if you believe this is in error.
 \\n\\n
@@ -318,13 +326,21 @@ class checkcomments:
                         if len(responses) == 0
                         else "",
                         wd_username=author.replace(" ", "-"),
-                        time_context="the manually entered time of"
-                        if manual_time
-                        else "the last report, which was at",
-                        date=pd.from_timestamp(timestamp).to_datetime_string(),
+                        date_ago="infinity years"
+                        if timestamp == 0
+                        else pd.from_timestamp(timestamp).diff_for_humans(
+                            absolute=True
+                        ),
+                        date="the beginning of time"
+                        if timestamp == 0
+                        else pd.from_timestamp(timestamp).to_datetime_string(),
                         init_nick=msg.sender,
                         init_hostmask=msg.sender.usermask,
                         init_date=pd.now().to_datetime_string(),
+                        timestamp=timestamp,
+                        update_ago=pd.from_timestamp(
+                            DB.get_most_recent_post_timestamp()
+                        ).diff_for_humans(),
                         sub_parse_error=REPORT_PARSE_ERROR.format(
                             time=timestamp, owner=CONFIG.owner
                         )
