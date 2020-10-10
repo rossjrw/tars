@@ -223,9 +223,10 @@ class checkcomments:
                     continue
                 sub_thread_count += 1
                 posts = DB.get_thread_posts(thread['id'])
-                for post in posts:
+                for index, post in enumerate(posts):
                     # 3rd layer: posts
                     post['replies'] = get_replies(post['id'])
+                    post['pageno'] = (index - 1) // 12 + 1
                     # The 3rd layer should contain a flattened list of followed
                     # posts and general thread replies
                     # The 4th layer is only for replies to followed posts
@@ -378,7 +379,7 @@ class checkcomments:
                                         date=pd.from_timestamp(
                                             post['date_posted']
                                         ).to_datetime_string(),
-                                        pageno=post['pageno'],  # TODO
+                                        pageno=post['pageno'],
                                     )
                                     if 'replies' not in post
                                     else REPORT_THREAD_POST.format(
@@ -386,7 +387,7 @@ class checkcomments:
                                         url=FORUM_URL,
                                         wd_thread_id=thread['wikidot_id'],
                                         wd_post_id=post['wikidot_id'],
-                                        pageno=post['pageno'],  # TODO
+                                        pageno=post['pageno'],
                                         replies="\\n".join(
                                             REPORT_THREAD_POST_REPLY.format(
                                                 title=reply['title'],
