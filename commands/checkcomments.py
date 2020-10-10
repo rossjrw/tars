@@ -67,7 +67,8 @@ in {forum_count} plural("forum", {forum_count}).
 
 REPORT_PARSE_ERROR = """
 There was an error parsing your subscriptions.
-You may wish to fix them and then regenerate this report with `.cc -t {time}`.
+You may wish to fix them and then regenerate this report with `.cc -t {time}`,
+or contact the bot owner, {owner}, if you believe this is in error.
 """
 
 REPORT_FORUM = """
@@ -190,12 +191,76 @@ class checkcomments:
                         sub['unsubs'].append(wd_thread_id)
                     else:
                         raise ValueError("unknown action {}".format(action))
-            except Exception as e:
+            except Exception:
                 sub_parse_error = True
 
         # Job 2: Compile an object that contains all the relevant posts
 
-        forums = DB.get_forums()
+        def get_replies(post):
+            """Takes a post and returns the nested replies."""
+            replies = DB.get_post_posts(post['id'])
+            for reply in replies:
+                reply['replies'] = get_replies(reply['id'])
+            return replies
 
+        responses = []
+        forums = DB.get_forums()
         for forum in forums:
-            forum['threads'] = DB.get_forum_threads(forum['id'])
+            # 1st layer: forums
+            forum['threads'] = []
+            threads = DB.get_forum_threads(forum['id'])
+            for thread in threads:
+                # 2nd layer: threads
+                thread['posts'] = []
+                # If we're ignoring this thread, skip it entirely
+                if thread['wikidot_id'] in sub['unsubs']:
+                    continue
+                posts = DB.get_thread_posts(thread['id'])
+                for post in posts:
+                    # 3rd layer: posts
+                    post['replies'] = get_replies(post['id'])
+                    # The 3rd layer should contain a flattened list of followed
+                    # posts and general thread replies
+                    # The 4th layer is only for replies to followed posts
+                    if post['wikiname'].lower() == author.lower():
+                        # This is a followed post. Flatten its replies into a
+                        # 4th layer
+                        for reply in post['replies']:
+                            # 4th layer: post replies
+                            post['replies'].extend(reply.pop['replies'])
+                        post['replies'].sort(key=lambda r: r['date_posted'])
+                        post['replies'] = filter(
+                            lambda r: r['date_posted'] >= timestamp,
+                            post['replies'],
+                        )
+                    else:
+                        # This is not a followed post. Concat its replies into
+                        # the 3rd layer
+                        posts.extend(post.pop('replies'))
+                        # Those posts are now part of the 3rd layer, so they
+                        # will be iterated over in this loop - no need for
+                        # recursion
+                    # Add this post to the thread based on whether or not we
+                    # are subscribed to it
+                    if (
+                        thread['wikidot_id'] in sub['subs']
+                        or 'replies' in post
+                        or (
+                            len(thread['posts']) > 0
+                            and thread['posts'][0]['wikiname'].lower()
+                            == author.lower()
+                        )
+                    ):
+                        thread['posts'].append(post)
+                thread['posts'].sort(key=lambda r: r['date_posted'])
+                thread['posts'] = filter(
+                    lambda r: r['date_posted'] >= timestamp, thread['posts']
+                )
+                # Add this thread to the forum if it has any posts
+                if len(thread['posts']) > 0:
+                    forum['threads'].append(thread)
+            # Add this forum to the responses if it has any threads
+            if len(forum['threads']) > 0:
+                responses.append(forum)
+
+        # Job 3: Compile the report as a Markdown string
