@@ -44,7 +44,9 @@ This report will notify you of any replies to posts that you've made, or
  from threads. {botname} doesn't know which threads are the discussion pages of
  articles you've posted — hopefully you started that thread by making an author
  post. If not, you will need to manually subscribe to it.
-""".strip()
+""".strip(
+    "\n"
+)
 
 REPORT_INFO = """
 ### Report for {username} :mailbox{mailbox_status}:
@@ -62,14 +64,18 @@ You are subscribed to {sub_thread_count} plural("thread", {sub_thread_count})
  You have {comment_count} plural("new comment", {comment_count})
  in {thread_count} plural("thread", {thread_count})
  in {forum_count} plural("forum", {forum_count}).
-""".strip()
+""".strip(
+    "\n"
+)
 
 REPORT_PARSE_ERROR = """
 There was an error parsing your subscriptions.
  You may wish to fix them and then regenerate this report with `.cc -t {time}`,
  or contact the bot owner, {owner}, if you believe this is in error.
 \\n\\n
-""".strip()
+""".strip(
+    "\n"
+)
 
 REPORT_FORUM = """
 ##### {forum}
@@ -78,32 +84,42 @@ REPORT_FORUM = """
  in {thread_count} plural("thread", {thread_count}).
 \\n\\n
 {comments}
-""".strip()
+""".strip(
+    "\n"
+)
 
 REPORT_THREAD = """
 1. **:mailbox_with_mail: Thread: [{title}]({url}/t-{wd_thread_id})**
 \\n
 {replies}
-""".strip()
+""".strip(
+    "\n"
+)
 
 REPORT_THREAD_REPLY = """
   - :envelope: Reply:
  [{title}]({url}/t-{wd_thread_id}/#post-{wd_post_id})
  by {author} at {date} (page {pageno})
-""".strip()
+""".strip(
+    "\n"
+)
 
 REPORT_THREAD_POST = """
   - :package: Replies to your post:
  [{title}]({url}/t-{wd_thread_id}/#post-{wd_post_id}) (page {pageno})
 \\n
 {replies}
-""".strip()
+""".strip(
+    "\n"
+)
 
 REPORT_THREAD_POST_REPLY = """
     - :envelope: Reply:
  [{title}]({url}/t-{wd_thread_id}/#post-{wd_post_id})
  by {author} at {date}
-""".strip()
+""".strip(
+    "\n"
+)
 
 REPORT_FOOTER = "# :mailbox_with_no_mail:"
 
@@ -238,11 +254,13 @@ class checkcomments:
                         sub_post_count += 1
                         for reply in post['replies']:
                             # 4th layer: post replies
-                            post['replies'].extend(reply.pop['replies'])
+                            post['replies'].extend(reply.pop('replies'))
                         post['replies'].sort(key=lambda r: r['date_posted'])
-                        post['replies'] = filter(
-                            lambda r: r['date_posted'] >= timestamp,
-                            post['replies'],
+                        post['replies'] = list(
+                            filter(
+                                lambda r: r['date_posted'] >= timestamp,
+                                post['replies'],
+                            )
                         )
                     else:
                         # This is not a followed post. Concat its replies into
