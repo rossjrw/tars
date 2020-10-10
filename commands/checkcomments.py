@@ -36,74 +36,74 @@ REPORT_INTRO = """
 # .checkcomments/.cc report
 \\n\\n
 `.checkcomments/.cc` is a [{botname}]({repo}) command that
-searches forum threads on SCP Wiki EN for replies you might have missed.
+ searches forum threads on SCP Wiki EN for replies you might have missed.
 \\n\\n
 This report will notify you of any replies to posts that you've made, or
-replies to threads that you started. You can also
-[manually subscribe and unsubscribe]({subscription_thread})
-from threads. {botname} doesn't know which threads are the discussion pages of
-articles you've posted — hopefully you started that thread by making an author
-post. If not, you will need to manually subscribe to it.
-"""
+ replies to threads that you started. You can also
+ [manually subscribe and unsubscribe]({subscription_thread})
+ from threads. {botname} doesn't know which threads are the discussion pages of
+ articles you've posted — hopefully you started that thread by making an author
+ post. If not, you will need to manually subscribe to it.
+""".strip()
 
 REPORT_INFO = """
 ### Report for {username} :mailbox{mailbox_status}:
 \\n\\n
 This is a report to check comments for Wikidot user
-[{username}](https://www.wikidot.com/user:info/{wd_username}) made since
-{time_context} {date}. This report was initiated by IRC user {init_nick}
-(`{init_hostmask}`) at {init_date}.
+ [{username}](https://www.wikidot.com/user:info/{wd_username}) made since
+ {time_context} {date}. This report was initiated by IRC user {init_nick}
+ (`{init_hostmask}`) at {init_date}.
 \\n\\n
 {sub_parse_error}
 You are subscribed to {sub_thread_count} plural("thread", {sub_thread_count})
-and {sub_post_count} plural("post", {sub_post_count}),
-including {man_sub_count} plural("manual subscription", {man_sub_count})
-and {man_unsub_count} plural("manual unsubscription", {man_unsub_count}).
-You have {comment_count} plural("new comment", {comment_count})
-in {thread_count} plural("thread", {thread_count})
-in {forum_count} plural("forum", {forum_count}).
-"""
+ and {sub_post_count} plural("post", {sub_post_count}),
+ including {man_sub_count} plural("manual subscription", {man_sub_count})
+ and {man_unsub_count} plural("manual unsubscription", {man_unsub_count}).
+ You have {comment_count} plural("new comment", {comment_count})
+ in {thread_count} plural("thread", {thread_count})
+ in {forum_count} plural("forum", {forum_count}).
+""".strip()
 
 REPORT_PARSE_ERROR = """
 There was an error parsing your subscriptions.
-You may wish to fix them and then regenerate this report with `.cc -t {time}`,
-or contact the bot owner, {owner}, if you believe this is in error.
+ You may wish to fix them and then regenerate this report with `.cc -t {time}`,
+ or contact the bot owner, {owner}, if you believe this is in error.
 \\n\\n
-"""
+""".strip()
 
 REPORT_FORUM = """
 ##### {forum}
 \\n\\n
 {comment_count} plural("comment", {comment_count})
-in {thread_count} plural("thread", {thread_count}).
+ in {thread_count} plural("thread", {thread_count}).
 \\n\\n
 {comments}
-"""
+""".strip()
 
 REPORT_THREAD = """
 1. **:mailbox_with_mail: Thread: [{title}]({url}/t-{wd_thread_id})**
 \\n
 {replies}
-"""
+""".strip()
 
 REPORT_THREAD_REPLY = """
   - :envelope: Reply:
-[{title}]({url}/t-{wd_thread_id}/#post-{wd_post_id})
-by {author} at {date} (page {pageno})
-"""
+ [{title}]({url}/t-{wd_thread_id}/#post-{wd_post_id})
+ by {author} at {date} (page {pageno})
+""".strip()
 
 REPORT_THREAD_POST = """
   - :package: Replies to your post:
-[{title}]({url}/t-{wd_thread_id}/#post-{wd_post_id}) (page {pageno})
+ [{title}]({url}/t-{wd_thread_id}/#post-{wd_post_id}) (page {pageno})
 \\n
 {replies}
-"""
+""".strip()
 
 REPORT_THREAD_POST_REPLY = """
     - :envelope: Reply:
-[{title}]({url}/t-{wd_thread_id}/#post-{wd_post_id})
-by {author} at {date}
-"""
+ [{title}]({url}/t-{wd_thread_id}/#post-{wd_post_id})
+ by {author} at {date}
+""".strip()
 
 REPORT_FOOTER = "# :mailbox_with_no_mail:"
 
