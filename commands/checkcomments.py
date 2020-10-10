@@ -3,12 +3,14 @@
 Checks your posts for replies you may have missed.
 """
 
+from functools import reduce
 import json
 import re
 
 from bs4 import BeautifulSoup
 import feedparser
 import inflect
+import pendulum as pd
 
 from helpers.config import CONFIG
 from helpers.database import DB
@@ -53,7 +55,6 @@ This is a report to check comments for Wikidot user
 (`{init_hostmask}`) at {init_date}.
 \\n\\n
 {sub_parse_error}
-\\n\\n
 You are subscribed to {sub_thread_count} plural("thread", {sub_thread_count})
 and {sub_post_count} plural("post", {sub_post_count}),
 including {man_sub_count} plural("manual subscription", {man_sub_count})
@@ -61,14 +62,13 @@ and {man_unsub_count} plural("manual unsubscription", {man_unsub_count}).
 You have {comment_count} plural("new comment", {comment_count})
 in {thread_count} plural("thread", {thread_count})
 in {forum_count} plural("forum", {forum_count}).
-\\n\\n
-{forums}
 """
 
 REPORT_PARSE_ERROR = """
 There was an error parsing your subscriptions.
 You may wish to fix them and then regenerate this report with `.cc -t {time}`,
 or contact the bot owner, {owner}, if you believe this is in error.
+\\n\\n
 """
 
 REPORT_FORUM = """
@@ -99,7 +99,11 @@ REPORT_THREAD_POST = """
 {replies}
 """
 
-REPORT_THREAD_POST_REPLY = "  {}".format(REPORT_THREAD_REPLY)
+REPORT_THREAD_POST_REPLY = """
+    - :envelope: Reply:
+[{title}]({url}/t-{wd_thread_id}/#post-{wd_post_id})
+by {author} at {date}
+"""
 
 REPORT_FOOTER = "# :mailbox_with_no_mail:"
 
@@ -131,8 +135,10 @@ class checkcomments:
                     "--timestamp/-t: Specify a numeric UNIX timestamp."
                 )
             timestamp = int(cmd['timestamp'][0])
+            manual_time = True
         else:
             timestamp = 0
+            manual_time = False
 
         # Job 1: Get subscriptions and unsubscriptions from RSS feed
 
@@ -140,9 +146,7 @@ class checkcomments:
         sub_parse_error = False
 
         try:
-            sub_feed = feedparser.parse(
-                CONFIG.external['cc']['subscriptions']['rss']
-            )
+            sub_feed = feedparser.parse(CONFIG.external['cc']['subs']['rss'])
             if 'bozo_exception' in sub_feed:
                 raise ValueError
             # Cache these subscriptions to file
@@ -203,6 +207,8 @@ class checkcomments:
                 reply['replies'] = get_replies(reply['id'])
             return replies
 
+        sub_thread_count = 0
+        sub_post_count = 0
         responses = []
         forums = DB.get_forums()
         for forum in forums:
@@ -215,6 +221,7 @@ class checkcomments:
                 # If we're ignoring this thread, skip it entirely
                 if thread['wikidot_id'] in sub['unsubs']:
                     continue
+                sub_thread_count += 1
                 posts = DB.get_thread_posts(thread['id'])
                 for post in posts:
                     # 3rd layer: posts
@@ -225,6 +232,7 @@ class checkcomments:
                     if post['wikiname'].lower() == author.lower():
                         # This is a followed post. Flatten its replies into a
                         # 4th layer
+                        sub_post_count += 1
                         for reply in post['replies']:
                             # 4th layer: post replies
                             post['replies'].extend(reply.pop['replies'])
@@ -259,8 +267,156 @@ class checkcomments:
                 # Add this thread to the forum if it has any posts
                 if len(thread['posts']) > 0:
                     forum['threads'].append(thread)
+            forum['threads'].sort(key=lambda t: t['posts'][0]['date_posted'])
             # Add this forum to the responses if it has any threads
             if len(forum['threads']) > 0:
                 responses.append(forum)
 
         # Job 3: Compile the report as a Markdown string
+
+        report = (
+            REPORT_BODY.format(
+                intro=REPORT_INTRO.format(
+                    botname=CONFIG.nick,
+                    repo=CONFIG.repository,
+                    subscription_thread=CONFIG.external['cc']['subs'][
+                        'thread'
+                    ],
+                ),
+                info=REPORT_INFO.format(
+                    username=author,
+                    mailbox_status="_closed" if len(responses) == 0 else "",
+                    wd_username=author.replace(" ", "-"),
+                    time_context="the manually entered time of"
+                    if manual_time
+                    else "the last report, which was at",
+                    date=pd.from_timestamp(timestamp).to_datetime_string(),
+                    init_nick=msg.sender,
+                    init_hostmask=msg.sender.usermask,
+                    init_date=pd.now().to_datetime_string(),
+                    sub_parse_error=REPORT_PARSE_ERROR.format(
+                        time=timestamp, owner=CONFIG.owner
+                    )
+                    if sub_parse_error
+                    else "",
+                    sub_thread_count=sub_thread_count + len(sub['subs']),
+                    sub_post_count=sub_post_count,
+                    man_sub_count=len(sub['subs']),
+                    man_unsub_count=len(sub['unsubs']),
+                    forum_count=len(responses),
+                    thread_count=reduce(
+                        lambda count, forum: count + len(forum['threads']),
+                        responses,
+                        0,
+                    ),
+                    comment_count=reduce(
+                        lambda count, forum: count
+                        + reduce(
+                            lambda count, thread: count
+                            + len(
+                                [
+                                    p
+                                    for p in thread['posts']
+                                    if 'replies' not in p
+                                ]
+                            )
+                            + reduce(
+                                lambda count, post: count
+                                + (
+                                    len(post['replies'])
+                                    if 'replies' in post
+                                    else 0
+                                ),
+                                thread['posts'],
+                                0,
+                            ),
+                            forum['threads'],
+                            0,
+                        ),
+                        responses,
+                        0,
+                    ),
+                ),
+                forums="\\n\\n".join(
+                    REPORT_FORUM.format(
+                        forum=forum['title'],
+                        thread_count=len(forum['threads']),
+                        comment_count=reduce(
+                            lambda count, thread: count
+                            + len(
+                                [
+                                    p
+                                    for p in thread['posts']
+                                    if 'replies' not in p
+                                ]
+                            )
+                            + reduce(
+                                lambda count, post: count
+                                + (
+                                    len(post['replies'])
+                                    if 'replies' in post
+                                    else 0
+                                ),
+                                thread['posts'],
+                                0,
+                            ),
+                            forum['threads'],
+                            0,
+                        ),
+                        comments="\\n\\n".join(
+                            REPORT_THREAD.format(
+                                title=thread['title'],
+                                url=FORUM_URL,
+                                wd_thread_id=thread['wikidot_id'],
+                                replies="\\n".join(
+                                    REPORT_THREAD_REPLY.format(
+                                        title=post['title'],
+                                        url=FORUM_URL,
+                                        wd_thread_id=thread['wikidot_id'],
+                                        wd_post_id=post['wikidot_id'],
+                                        author=post['wikiname'],
+                                        date=pd.from_timestamp(
+                                            post['date_posted']
+                                        ).to_datetime_string(),
+                                        pageno=post['pageno'],  # TODO
+                                    )
+                                    if 'replies' not in post
+                                    else REPORT_THREAD_POST.format(
+                                        title=post['title'],
+                                        url=FORUM_URL,
+                                        wd_thread_id=thread['wikidot_id'],
+                                        wd_post_id=post['wikidot_id'],
+                                        pageno=post['pageno'],  # TODO
+                                        replies="\\n".join(
+                                            REPORT_THREAD_POST_REPLY.format(
+                                                title=reply['title'],
+                                                url=FORUM_URL,
+                                                wd_thread_id=thread[
+                                                    'wikidot_id'
+                                                ],
+                                                wd_post_id=reply['wikidot_id'],
+                                                author=reply['wikiname'],
+                                                date=pd.from_timestamp(
+                                                    reply['date_posted']
+                                                ).to_datetime_string(),
+                                            )
+                                            for reply in post['replies']
+                                        ),
+                                    )
+                                    for post in thread['posts']
+                                ),
+                            )
+                            for thread in forum['threads']
+                        ),
+                    )
+                    for forum in responses
+                ),
+                footer=REPORT_FOOTER,
+            )
+            .replace("\n", "")
+            .replace("\\n", "\n")
+        )
+
+        # Job 4: Upload the report
+
+        print(report)
