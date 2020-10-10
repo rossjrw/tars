@@ -8,6 +8,7 @@ import json
 import re
 
 from bs4 import BeautifulSoup
+from emoji import emojize
 import feedparser
 import inflect
 import pendulum as pd
@@ -15,9 +16,10 @@ import pendulum as pd
 from helpers.config import CONFIG
 from helpers.database import DB
 from helpers.error import CommandError, MyFaultError, isint
+from helpers.paste import paste
 
 plural = inflect.engine()
-plural.classical()
+plural.classical(zero=False)
 # Templates should be parsed with e.g plural.inflect("".format(**{}))
 
 FORUM_URL = "http://scp-wiki.wikidot.com/forum"
@@ -307,131 +309,139 @@ class checkcomments:
                         'thread'
                     ],
                 ),
-                info=REPORT_INFO.format(
-                    username=author,
-                    mailbox_status="_closed" if len(responses) == 0 else "",
-                    wd_username=author.replace(" ", "-"),
-                    time_context="the manually entered time of"
-                    if manual_time
-                    else "the last report, which was at",
-                    date=pd.from_timestamp(timestamp).to_datetime_string(),
-                    init_nick=msg.sender,
-                    init_hostmask=msg.sender.usermask,
-                    init_date=pd.now().to_datetime_string(),
-                    sub_parse_error=REPORT_PARSE_ERROR.format(
-                        time=timestamp, owner=CONFIG.owner
-                    )
-                    if sub_parse_error
-                    else "",
-                    sub_thread_count=sub_thread_count + len(sub['subs']),
-                    sub_post_count=sub_post_count,
-                    man_sub_count=len(sub['subs']),
-                    man_unsub_count=len(sub['unsubs']),
-                    forum_count=len(responses),
-                    thread_count=reduce(
-                        lambda count, forum: count + len(forum['threads']),
-                        responses,
-                        0,
-                    ),
-                    comment_count=reduce(
-                        lambda count, forum: count
-                        + reduce(
-                            lambda count, thread: count
-                            + len(
-                                [
-                                    p
-                                    for p in thread['posts']
-                                    if 'replies' not in p
-                                ]
-                            )
-                            + reduce(
-                                lambda count, post: count
-                                + (
-                                    len(post['replies'])
-                                    if 'replies' in post
-                                    else 0
-                                ),
-                                thread['posts'],
-                                0,
-                            ),
-                            forum['threads'],
+                info=plural.inflect(
+                    REPORT_INFO.format(
+                        username=author,
+                        mailbox_status="_closed"
+                        if len(responses) == 0
+                        else "",
+                        wd_username=author.replace(" ", "-"),
+                        time_context="the manually entered time of"
+                        if manual_time
+                        else "the last report, which was at",
+                        date=pd.from_timestamp(timestamp).to_datetime_string(),
+                        init_nick=msg.sender,
+                        init_hostmask=msg.sender.usermask,
+                        init_date=pd.now().to_datetime_string(),
+                        sub_parse_error=REPORT_PARSE_ERROR.format(
+                            time=timestamp, owner=CONFIG.owner
+                        )
+                        if sub_parse_error
+                        else "",
+                        sub_thread_count=sub_thread_count + len(sub['subs']),
+                        sub_post_count=sub_post_count,
+                        man_sub_count=len(sub['subs']),
+                        man_unsub_count=len(sub['unsubs']),
+                        forum_count=len(responses),
+                        thread_count=reduce(
+                            lambda count, forum: count + len(forum['threads']),
+                            responses,
                             0,
                         ),
-                        responses,
-                        0,
-                    ),
+                        comment_count=reduce(
+                            lambda count, forum: count
+                            + reduce(
+                                lambda count, thread: count
+                                + len(
+                                    [
+                                        p
+                                        for p in thread['posts']
+                                        if 'replies' not in p
+                                    ]
+                                )
+                                + reduce(
+                                    lambda count, post: count
+                                    + (
+                                        len(post['replies'])
+                                        if 'replies' in post
+                                        else 0
+                                    ),
+                                    thread['posts'],
+                                    0,
+                                ),
+                                forum['threads'],
+                                0,
+                            ),
+                            responses,
+                            0,
+                        ),
+                    )
                 ),
                 forums="\\n\\n".join(
-                    REPORT_FORUM.format(
-                        forum=forum['title'],
-                        thread_count=len(forum['threads']),
-                        comment_count=reduce(
-                            lambda count, thread: count
-                            + len(
-                                [
-                                    p
-                                    for p in thread['posts']
-                                    if 'replies' not in p
-                                ]
-                            )
-                            + reduce(
-                                lambda count, post: count
-                                + (
-                                    len(post['replies'])
-                                    if 'replies' in post
-                                    else 0
+                    plural.inflect(
+                        REPORT_FORUM.format(
+                            forum=forum['title'],
+                            thread_count=len(forum['threads']),
+                            comment_count=reduce(
+                                lambda count, thread: count
+                                + len(
+                                    [
+                                        p
+                                        for p in thread['posts']
+                                        if 'replies' not in p
+                                    ]
+                                )
+                                + reduce(
+                                    lambda count, post: count
+                                    + (
+                                        len(post['replies'])
+                                        if 'replies' in post
+                                        else 0
+                                    ),
+                                    thread['posts'],
+                                    0,
                                 ),
-                                thread['posts'],
+                                forum['threads'],
                                 0,
                             ),
-                            forum['threads'],
-                            0,
-                        ),
-                        comments="\\n\\n".join(
-                            REPORT_THREAD.format(
-                                title=thread['title'],
-                                url=FORUM_URL,
-                                wd_thread_id=thread['wikidot_id'],
-                                replies="\\n".join(
-                                    REPORT_THREAD_REPLY.format(
-                                        title=post['title'],
-                                        url=FORUM_URL,
-                                        wd_thread_id=thread['wikidot_id'],
-                                        wd_post_id=post['wikidot_id'],
-                                        author=post['wikiname'],
-                                        date=pd.from_timestamp(
-                                            post['date_posted']
-                                        ).to_datetime_string(),
-                                        pageno=post['pageno'],
-                                    )
-                                    if 'replies' not in post
-                                    else REPORT_THREAD_POST.format(
-                                        title=post['title'],
-                                        url=FORUM_URL,
-                                        wd_thread_id=thread['wikidot_id'],
-                                        wd_post_id=post['wikidot_id'],
-                                        pageno=post['pageno'],
-                                        replies="\\n".join(
-                                            REPORT_THREAD_POST_REPLY.format(
-                                                title=reply['title'],
-                                                url=FORUM_URL,
-                                                wd_thread_id=thread[
-                                                    'wikidot_id'
-                                                ],
-                                                wd_post_id=reply['wikidot_id'],
-                                                author=reply['wikiname'],
-                                                date=pd.from_timestamp(
-                                                    reply['date_posted']
-                                                ).to_datetime_string(),
-                                            )
-                                            for reply in post['replies']
-                                        ),
-                                    )
-                                    for post in thread['posts']
-                                ),
-                            )
-                            for thread in forum['threads']
-                        ),
+                            comments="\\n\\n".join(
+                                REPORT_THREAD.format(
+                                    title=thread['title'],
+                                    url=FORUM_URL,
+                                    wd_thread_id=thread['wikidot_id'],
+                                    replies="\\n".join(
+                                        REPORT_THREAD_REPLY.format(
+                                            title=post['title'],
+                                            url=FORUM_URL,
+                                            wd_thread_id=thread['wikidot_id'],
+                                            wd_post_id=post['wikidot_id'],
+                                            author=post['wikiname'],
+                                            date=pd.from_timestamp(
+                                                post['date_posted']
+                                            ).to_datetime_string(),
+                                            pageno=post['pageno'],
+                                        )
+                                        if 'replies' not in post
+                                        else REPORT_THREAD_POST.format(
+                                            title=post['title'],
+                                            url=FORUM_URL,
+                                            wd_thread_id=thread['wikidot_id'],
+                                            wd_post_id=post['wikidot_id'],
+                                            pageno=post['pageno'],
+                                            replies="\\n".join(
+                                                REPORT_THREAD_POST_REPLY.format(
+                                                    title=reply['title'],
+                                                    url=FORUM_URL,
+                                                    wd_thread_id=thread[
+                                                        'wikidot_id'
+                                                    ],
+                                                    wd_post_id=reply[
+                                                        'wikidot_id'
+                                                    ],
+                                                    author=reply['wikiname'],
+                                                    date=pd.from_timestamp(
+                                                        reply['date_posted']
+                                                    ).to_datetime_string(),
+                                                )
+                                                for reply in post['replies']
+                                            ),
+                                        )
+                                        for post in thread['posts']
+                                    ),
+                                )
+                                for thread in forum['threads']
+                            ),
+                        )
                     )
                     for forum in responses
                 ),
@@ -440,7 +450,9 @@ class checkcomments:
             .replace("\n", "")
             .replace("\\n", "\n")
         )
+        report = emojize(report, use_aliases=True)
 
         # Job 4: Upload the report
 
-        print(report)
+        report_url = paste(report)
+        msg.reply("New comments report: {}".format(report_url))
