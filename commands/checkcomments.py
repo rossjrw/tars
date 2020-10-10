@@ -153,6 +153,7 @@ class checkcomments:
             with open(CONFIG.cc.feedcache, 'w') as cache:
                 json.dump(sub_feed, cache)
         except Exception:
+            irc_c.PRIVMSG("#tars", "cc error: could not fetch feed")
             msg.reply(
                 "There was a problem with fetching the subscription thread, "
                 "so I have used a cached version."
@@ -182,9 +183,9 @@ class checkcomments:
             try:
                 # Subscriptions are in bullet points
                 for command in sub_post_body.select("ul li"):
-                    action, href = tuple(command.children)
+                    action, link = tuple(command.children)
                     action = action.strip().lower()
-                    url_match = url_pattern.search(href)
+                    url_match = url_pattern.search(link.get("href"))
                     if not url_match:
                         # Probably a URL from an unsupported branch
                         continue
@@ -195,7 +196,8 @@ class checkcomments:
                         sub['unsubs'].append(wd_thread_id)
                     else:
                         raise ValueError("unknown action {}".format(action))
-            except Exception:
+            except Exception as e:
+                irc_c.PRIVMSG("#tars", "cc error: {}".format(e))
                 sub_parse_error = True
 
         # Job 2: Compile an object that contains all the relevant posts
