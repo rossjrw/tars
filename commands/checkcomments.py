@@ -243,10 +243,13 @@ class checkcomments:
                     continue
                 sub_thread_count += 1
                 posts = DB.get_thread_posts(thread['id'])
+                thread['wikiname'] = (
+                    posts[0]['wikiname'] if len(posts) > 0 else None
+                )
                 for index, post in enumerate(posts):
                     # 3rd layer: posts
                     post['replies'] = get_replies(post)
-                    post['pageno'] = (index - 1) // 12 + 1
+                    post['pageno'] = index // 12 + 1
                     # The 3rd layer should contain a flattened list of followed
                     # posts and general thread replies
                     # The 4th layer is only for replies to followed posts
@@ -273,13 +276,11 @@ class checkcomments:
                         # recursion
                     # Add this post to the thread based on whether or not we
                     # are subscribed to it
-                    if (
-                        thread['wikidot_id'] in sub['subs']
-                        or ('replies' in post and len(post['replies']) > 0)
-                        or (
-                            len(thread['posts']) > 0
-                            and thread['posts'][0]['wikiname'].lower()
-                            == author.lower()
+                    if ('replies' in post and len(post['replies']) > 0) or (
+                        'replies' not in post
+                        and (
+                            (thread['wikidot_id'] in sub['subs'])
+                            or (thread['wikiname'].lower() == author.lower())
                         )
                     ):
                         thread['posts'].append(post)
