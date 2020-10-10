@@ -4,9 +4,11 @@ Container file for gimmick commands.
 More commands can be added by request.
 """
 
-from random import choice
+from random import choice, randint
 from emoji import emojize
 import requests
+
+from helpers.defer import defer
 
 
 class idea:
@@ -89,6 +91,31 @@ class cat:
         msg.reply(output)
 
 
+class balls:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        repeat = randint(2, 15)
+        output = ""
+        for _ in range(0, repeat):
+            output += emojize(
+                choice(
+                    [
+                        ":soccer:",
+                        ":volleyball:",
+                        ":basketball:",
+                        ":football:",
+                        ":rugby_football:",
+                        ":softball:",
+                        ":baseball:",
+                        ":8ball:",
+                        ":crystal_ball:",
+                        ":yarn:",
+                    ]
+                )
+            )
+        msg.reply(output)
+
+
 class narcissism:
     @classmethod
     def command(cls, irc_c, msg, cmd):
@@ -116,3 +143,11 @@ class punctuation:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         msg.reply("dot: · en: – em: —")
+
+
+class tell:
+    @classmethod
+    def command(cls, irc_c, msg, cmd):
+        if defer.check(cmd, 'jarvis', 'Secretary_Helen'):
+            return
+        msg.reply("{}: dumbass".format(msg.sender))

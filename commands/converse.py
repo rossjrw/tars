@@ -85,6 +85,13 @@ class converse:
         ):
             msg.reply("big")
             return
+        if (
+            CONFIG.nick == "TARS"
+            and matches_any_of(msg.message, ["damn you to hell",])
+            and "TARS" in msg.message.upper()
+        ):
+            msg.reply("damn me to hell")
+            return
 
         ##### regex matches #####
 
@@ -123,7 +130,7 @@ class converse:
             and "slime" in msg.message
             and "XilasCrowe" in DB.get_channel_members(msg.raw_channel)
         ):
-            msg.reply("Oy xilas I heard you like slime!")
+            msg.reply("Oi xilas I heard you like slime!")
             return
 
         # after all attempts, must indicate failure if pinged

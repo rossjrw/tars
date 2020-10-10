@@ -20,13 +20,6 @@ class query:
     @classmethod
     def command(cls, irc_c, msg, cmd):
         cmd.expandargs(["table tables t", "user users u"])
-        # No argument given - show the db structure
-        if len(cmd.args) == 1:
-            msg.reply(
-                "https://raw.githubusercontent.com/"
-                "rossjrw/tars/master/database.png"
-            )
-            return
         # Table - print a list of tables, or a given table
         if 'table' in cmd:
             if len(cmd['table']) > 0:
