@@ -273,7 +273,7 @@ class checkcomments:
                     # are subscribed to it
                     if (
                         thread['wikidot_id'] in sub['subs']
-                        or 'replies' in post
+                        or ('replies' in post and len(post['replies']) > 0)
                         or (
                             len(thread['posts']) > 0
                             and thread['posts'][0]['wikiname'].lower()
