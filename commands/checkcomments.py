@@ -204,7 +204,7 @@ class checkcomments:
             """Takes a post and returns the nested replies."""
             replies = DB.get_post_posts(post['id'])
             for reply in replies:
-                reply['replies'] = get_replies(reply['id'])
+                reply['replies'] = get_replies(reply)
             return replies
 
         sub_thread_count = 0
@@ -225,7 +225,7 @@ class checkcomments:
                 posts = DB.get_thread_posts(thread['id'])
                 for index, post in enumerate(posts):
                     # 3rd layer: posts
-                    post['replies'] = get_replies(post['id'])
+                    post['replies'] = get_replies(post)
                     post['pageno'] = (index - 1) // 12 + 1
                     # The 3rd layer should contain a flattened list of followed
                     # posts and general thread replies
@@ -262,8 +262,11 @@ class checkcomments:
                     ):
                         thread['posts'].append(post)
                 thread['posts'].sort(key=lambda r: r['date_posted'])
-                thread['posts'] = filter(
-                    lambda r: r['date_posted'] >= timestamp, thread['posts']
+                thread['posts'] = list(
+                    filter(
+                        lambda r: r['date_posted'] >= timestamp,
+                        thread['posts'],
+                    )
                 )
                 # Add this thread to the forum if it has any posts
                 if len(thread['posts']) > 0:
