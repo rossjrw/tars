@@ -66,10 +66,10 @@ def kill_bye():
 
 def acronym_gen():
     responses = [
-        "!Totally !Awesome !Robot (/!S)",  # TSATPWTCOTTTADC
+        # "!Totally !Awesome !Robot (/!S)",  # TSATPWTCOTTTADC
         "!Total !Annihilation !Reigns !Supreme",  # TSATPWTCOTTTADC
-        "ano!Ther bot that !Also helps io do p!Romotion !Stuff",  # Croquembouche
-        "!Tool-!Assisted !Robotic !Sassmouth",
+        # "ano!Ther bot that !Also helps io do p!Romotion !Stuff",  # Croquembouche
+        # "!Tool-!Assisted !Robotic !Sassmouth",
         # "!Tantalising !And !Rambunctious !Sexbot", # Croquembouche
         "!Tell !Aaron !Rocks !Suck",  # ROUNDERHOUSE
         # "!There's !A !Rong !Spelling", # ROUNDERHOUSE
@@ -77,8 +77,8 @@ def acronym_gen():
         # "!Try !And !Rate !SCPs", # CuteGirl
         "!These !Acronyms !Really !Suck",  # ROUNDERHOUSE
         "I stand for robot rights.",  # ROUNDERHOUSE
-        "!Tales !Are the !Real !Shit",
-        "!Tales !Are !Real !Shitty",  # aismallard
+        # "!Tales !Are the !Real !Shit",
+        # "!Tales !Are !Real !Shitty",  # aismallard
         # "!TARS' !Ass? !Real !Soft.",
         "It's just SRAT but backwards.",
         "!Tummy & !Ass !Rubs, !Sergeant",  # Ayers
@@ -98,12 +98,12 @@ def acronym_gen():
         # "!Travesty !Awaits !Remaining !",
         "!T y p i n g !A c r o n y m s !R e a l l y !S l o w l y",  # Arlexus
         "!Tomorrow, !Another !Revolution !Starts",  # Arlexus
-        "!Three !Anuses !Rigorously !Spread",  # aismallard
+        # "!Three !Anuses !Rigorously !Spread",  # aismallard
         # "!Twenty !Anuses !Rigorously !Spread", # aismallard
         "!Tomorrow's !A !Recycled !Sunday",  # Arlexus
         "!Trying !And !Rarely !Succeeding",  # Arlexus
         "!Time !And !Relative... !Space?",  # Arlexus
-        # "!Turn !Around ... !Swivel
+        "!Turn !Around, !Rotate, !Swivel",  # Croquembouche
         "!Tumeric !Ain't a !Real !Spice",  # Arlexus
         "!Taunting !A !Random !Stranger",  # Croquembouche
         "!Tool-!Assisted !Run (!Sexual%)",  # TheMightyMcB
@@ -111,6 +111,13 @@ def acronym_gen():
         "!Tear !Ass, !Riptide !Sailor!",  # TSATPWTCOTTTADC
         "!This !Anomaly !Repeatedly !Shits",  # MalyceGraves
         "!Transmogrification !And !Radical !Sorcery",  # aismallard
+        "!Terrific! !Another !Robotic !Sentience.",  # Croquembouche
+        "!Thaumaturging !A !Real !Séance",  # TheMightyMcB
+        "!Terribly !Ashamed; !Repenting !So",  # Croquembouche
+        "!Tremendous !Aptitude !Rejects !Simplicity",  # MalyceGraves
+        "!This !Automobile !Requires !Skeletons",  # RockTeethMothEyes
+        "!This !Always !Recurs, !Sometimes",  # MalyceGraves
+        "!To !All !Requests: !Stop",  # Croquembouche
     ]
     last_response = []
     while True:
