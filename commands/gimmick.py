@@ -142,7 +142,7 @@ class fiction:
 class punctuation:
     @classmethod
     def command(cls, irc_c, msg, cmd):
-        msg.reply("dot: · en: – em: —")
+        msg.reply("dot: · en: – em: — blackbox: █")
 
 
 class tell:
