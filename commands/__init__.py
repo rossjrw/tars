@@ -61,7 +61,7 @@ COMMANDS = {
         "hug": {"hug", "hugtars"},
         "fiction": {"isthisreal"},
         "idea": {"idea"},
-        "punctuation": {"punctuation", "punc"},
+        "punctuation": {"punctuation", "punc", "blackbox"},
         "tell": {"tell"},
     },
     # Other
