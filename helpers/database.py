@@ -1441,7 +1441,6 @@ class SqliteDriver:
 
     def delete_article(self, url, commit=True):
         """Delete an article by slug"""
-        dbprint("Adding article {}".format(url))
         c = self.conn.cursor()
         c.execute(
             '''
