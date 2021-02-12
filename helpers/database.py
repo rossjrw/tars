@@ -1422,20 +1422,26 @@ class SqliteDriver:
             ''',
             [(article_data['id'], t) for t in article['tags']],
         )
-        c.execute(
-            '''
-            DELETE FROM articles_authors
-            WHERE article_id=? AND metadata=0
-            ''',
-            (article_data['id'],),
-        )
-        c.execute(
-            '''
-            INSERT INTO articles_authors (article_id, author)
-            VALUES ( ? , ? )
-            ''',
-            (article_data['id'], article['created_by']),
-        )
+        # If a list of authors has been passed, assume these to be accurate and
+        # call set_authors now; otherwise, assign what value we were given and
+        # defer to set_authors in the metadata acquisition step later
+        if isinstance(article['created_by'], list):
+            self.set_authors(article['url'], article['created_by'], commit)
+        else:
+            c.execute(
+                '''
+                DELETE FROM articles_authors
+                WHERE article_id=? AND metadata=0
+                ''',
+                (article_data['id'],),
+            )
+            c.execute(
+                '''
+                INSERT INTO articles_authors (article_id, author)
+                VALUES ( ? , ? )
+                ''',
+                (article_data['id'], article['created_by']),
+            )
         if commit:
             self.conn.commit()
 

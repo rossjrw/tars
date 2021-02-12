@@ -110,7 +110,10 @@ class propagate:
                 continue
         reply("Propagated {} of {}".format(len(slugs), len(slugs)))
         for slug in metadata_slugs:
-            propagate.get_metadata(slug, reply=reply)
+            # The Crom API already has all the metadata attached, so there's no
+            # need for TARS to handle it specifically
+            # propagate.get_metadata(slug, reply=reply)
+            pass
         DB.commit()
 
     @classmethod
@@ -125,8 +128,7 @@ class propagate:
         soup = BeautifulSoup(html, "html.parser")
         if slug == 'attribution-metadata':
             return propagate.get_attribution_metadata(slug, soup, **kwargs)
-        else:
-            return propagate.get_series_metadata(slug, soup, **kwargs)
+        return propagate.get_series_metadata(slug, soup, **kwargs)
 
     @staticmethod
     def get_series_metadata(slug, soup, **kwargs):
