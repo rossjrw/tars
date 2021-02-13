@@ -42,25 +42,25 @@ class CromAPI:
 
     page_graphql = """
         url
-        attributions {{
+        attributions {
             type
-            user {{
+            user {
                 name
-            }}
+            }
             date
-        }}
-        alternateTitles {{
+        }
+        alternateTitles {
             type
             title
-        }}
-        wikidotInfo {{
+        }
+        wikidotInfo {
             title
             category
             rating
             voteCount
             tags
             createdAt
-        }}
+        }
     """
 
     def __init__(self, domain):
@@ -94,7 +94,7 @@ class CromAPI:
             'title': wd_metadata['title'],
             'rating': wd_metadata['rating'],
             'fullname': page_data['url'].split("/")[-1],
-            'created_at': wd_metadata['created_at'],
+            'created_at': wd_metadata['createdAt'],
             'created_by': [
                 attribution['user']['name']
                 for attribution in page_data['attributions']
@@ -121,36 +121,55 @@ class CromAPI:
         """Gets a list of all slugs that satisfy the requirements."""
 
     def get_recent_pages(self, seconds):
-        """Gets data for pages created in the last n seconds."""
+        """Returns a generator that gets data for pages created within the last
+        given number of seconds. The generator returns chunks of page data as
+        a list."""
         datetime = pd.now().subtract(seconds=seconds).isoformat()
-        response = self._get(
-            f"""{{
-                pages (
-                    sort: {{
-                        order: DESC
-                        key: CREATED_AT
-                    }}
-                    filter: {{
-                        anyBaseUrl: "@domain"
-                        wikidotInfo: {{
-                            createdAt: {{
-                                gte: "{datetime}"
+
+        def paginated_generator():
+            previous_end_cursor = ""
+            while True:
+                response = self._get(
+                    f"""{{
+                        pages (
+                            sort: {{
+                                order: DESC
+                                key: CREATED_AT
+                            }}
+                            filter: {{
+                                anyBaseUrl: "@domain"
+                                wikidotInfo: {{
+                                    createdAt: {{
+                                        gte: "{datetime}"
+                                    }}
+                                }}
+                            }}
+                            first: 100
+                            after: "{previous_end_cursor}"
+                        ) {{
+                            edges {{
+                                node {{
+                                    {CromAPI.page_graphql}
+                                }}
+                            }}
+                            pageInfo {{
+                                hasNextPage
+                                endCursor
                             }}
                         }}
-                    }}
-                ) {{
-                    edges {{
-                        node {{
-                            {CromAPI.page_graphql}
-                        }}
-                    }}
-                }}
-            }}"""
-        )
-        return [
-            self._process_page_data(edge['node'])
-            for edge in json.loads(response.text)['data']['pages']['edges']
-        ]
+                    }}"""
+                )
+                print(response.text)
+                data = json.loads(response.text)['data']['pages']
+                yield [
+                    self._process_page_data(edge['node'])
+                    for edge in data['edges']
+                ]
+                if not data['pageInfo']['hasNextPage']:
+                    return
+                previous_end_cursor = data['pageInfo']['endCursor']
+
+        return paginated_generator()
 
 
 class ScuttleAPI:
