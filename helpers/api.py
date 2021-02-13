@@ -19,6 +19,7 @@ import time
 
 import tomlkit
 import requests
+import pendulum as pd
 
 from scuttle import scuttle
 
@@ -39,6 +40,29 @@ def toml_url(url):
 class CromAPI:
     """Wrapper for Crom API functions."""
 
+    page_graphql = """
+        url
+        attributions {{
+            type
+            user {{
+                name
+            }}
+            date
+        }}
+        alternateTitles {{
+            type
+            title
+        }}
+        wikidotInfo {{
+            title
+            category
+            rating
+            voteCount
+            tags
+            createdAt
+        }}
+    """
+
     def __init__(self, domain):
         self.endpoint = "https://api.crom.avn.sh/"
         self.domain = {'en': "scp-wiki.wikidot.com"}[domain]
@@ -46,49 +70,30 @@ class CromAPI:
     def _get(self, query):
         return requests.post(
             self.endpoint,
-            json={'query': query.replace("domain/", f"http://{self.domain}")},
+            json={'query': query.replace("@domain", f"http://{self.domain}")},
         )
 
     def _get_one_page(self, slug):
         """Gets all Crom data for a single page."""
         response = self._get(
             f"""{{
-            page (
-                url: domain/{slug}
-            ) {{
-                attributions {{
-                    type
-                    user {{
-                        name
-                    }}
-                    date
+                page (
+                    url: "@domain/{slug}"
+                ) {{
+                    {CromAPI.page_graphql}
                 }}
-                alternateTitles {{
-                    type
-                    title
-                }}
-                wikidotInfo {{
-                    title
-                    category
-                    rating
-                    voteCount
-                    tags
-                    createdAt
-                }}
-            }}
-        }}"""
+            }}"""
         )
-        return json.loads(response.text)
+        return json.loads(response.text)['data']['page']
 
-    def get_one_page_meta(self, slug):
-        """Gets Wikidot metadata for a single page."""
-        page_data = self._get_one_page(slug)['data']['page']
+    def _process_page_data(self, page_data):
+        """Converts page data structure from Crom to TARS."""
         wd_metadata = page_data['wikidotInfo']
         metadata = {
             'tags': wd_metadata['tags'],
             'title': wd_metadata['title'],
             'rating': wd_metadata['rating'],
-            'fullname': f"{wd_metadata['category']}:{wd_metadata['???']}",
+            'fullname': page_data['url'].split("/")[-1],
             'created_at': wd_metadata['created_at'],
             'created_by': [
                 attribution['user']['name']
@@ -107,6 +112,45 @@ class CromAPI:
             except StopIteration:
                 pass
         return metadata
+
+    def get_one_page_meta(self, slug):
+        """Gets Wikidot metadata for a single page."""
+        return self._process_page_data(self._get_one_page(slug))
+
+    def get_all_pages(self, *, tags=None, categories=None):
+        """Gets a list of all slugs that satisfy the requirements."""
+
+    def get_recent_pages(self, seconds):
+        """Gets data for pages created in the last n seconds."""
+        datetime = pd.now().subtract(seconds=seconds).isoformat()
+        response = self._get(
+            f"""{{
+                pages (
+                    sort: {{
+                        order: DESC
+                        key: CREATED_AT
+                    }}
+                    filter: {{
+                        anyBaseUrl: "@domain"
+                        wikidotInfo: {{
+                            createdAt: {{
+                                gte: "{datetime}"
+                            }}
+                        }}
+                    }}
+                ) {{
+                    edges {{
+                        node {{
+                            {CromAPI.page_graphql}
+                        }}
+                    }}
+                }}
+            }}"""
+        )
+        return [
+            self._process_page_data(edge['node'])
+            for edge in json.loads(response.text)['data']['pages']['edges']
+        ]
 
 
 class ScuttleAPI:
