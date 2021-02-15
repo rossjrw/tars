@@ -209,47 +209,4 @@ class CromAPI:
         return paginated_generator()
 
 
-class ScuttleAPI:
-    """Wrapper for Wikidot API functions."""
-
-    def __init__(self, domain):
-        self.scuttle = scuttle(domain, keys['scuttle_api'], 1)
-
-    def _get_one_page(self, slug):
-        """Gets all SCUTTLE data for a single page."""
-        return self.scuttle.page_by_slug(slug)
-
-    def get_one_page_meta(self, slug):
-        """Gets wikidot metadata for a single page."""
-        return self._get_one_page(slug)['metadata']['wikidot_metadata']
-
-    def get_one_page_html(self, slug):
-        """Gets the HTML for a single page."""
-        return self._get_one_page(slug)['latest_revision']
-
-    def get_all_pages(self, *, tags=None, categories=None):
-        """Gets a list of all slugs that satisfy the requirements."""
-        if tags is None:
-            tags = []
-        assert isinstance(tags, list)
-        if categories is None:
-            categories = []
-        else:
-            raise NotImplementedError
-        assert isinstance(categories, list)
-        # get info for all pages
-        if len(tags) == 1:
-            slugs = [page['slug'] for page in self.scuttle.tag_pages(tags[0])]
-        elif len(tags) != 0:
-            raise NotImplementedError
-        else:
-            slugs = [page['slug'] for page in self.scuttle.pages()]
-        return slugs
-
-    def get_recent_pages(self, seconds):
-        """Gets data for pages created in the last n seconds."""
-        pages = self.scuttle.pages_since(int(time.time() - seconds))
-        return [page['slug'] for page in pages]
-
-
 SCPWiki = CromAPI("en")
