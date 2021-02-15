@@ -118,7 +118,45 @@ class CromAPI:
         return self._process_page_data(self._get_one_page(slug))
 
     def get_all_pages(self, *, tags=None, categories=None):
-        """Gets a list of all slugs that satisfy the requirements."""
+        """Returns a generator that gets data for all pages on the wiki."""
+
+        def paginated_generator():
+            previous_end_cursor = ""
+            while True:
+                response = self._get(
+                    f"""{{
+                        pages (
+                            sort: {{
+                                key: CREATED_AT
+                            }}
+                            filter: {{
+                                anyBaseUrl: "@domain"
+                            }}
+                            first: 100
+                            after: "{previous_end_cursor}"
+                        ) {{
+                            edges {{
+                                node {{
+                                    {CromAPI.page_graphql}
+                                }}
+                            }}
+                            pageInfo {{
+                                hasNextPage
+                                endCursor
+                            }}
+                        }}
+                    }}"""
+                )
+                data = json.loads(response.text)['data']['pages']
+                yield [
+                    self._process_page_data(edge['node'])
+                    for edge in data['edges']
+                ]
+                if not data['pageInfo']['hasNextPage']:
+                    return
+                previous_end_cursor = data['pageInfo']['endCursor']
+
+        return paginated_generator()
 
     def get_recent_pages(self, seconds):
         """Returns a generator that gets data for pages created within the last
@@ -159,7 +197,6 @@ class CromAPI:
                         }}
                     }}"""
                 )
-                print(response.text)
                 data = json.loads(response.text)['data']['pages']
                 yield [
                     self._process_page_data(edge['node'])
