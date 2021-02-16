@@ -28,14 +28,10 @@ class propagate:
         if 'sample' in cmd:
             samples = [
                 "scp-173",
-                "scp-1111",
                 "scp-3939",
                 "cone",
-                "scp-series",
-                "listpages-magic-and-you",
-                "scp-4205",
-                "omega-k",
-                "component:ar-theme",
+                "theme:ar",
+                "scp-3790",  # should be a collab
             ]
             msg.reply("Adding sample data...")
             propagate.get_wiki_data_for_pages(samples, reply=msg.reply)

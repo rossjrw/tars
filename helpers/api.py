@@ -95,7 +95,7 @@ class CromAPI:
             'created_by': [
                 attribution['user']['name']
                 for attribution in page_data['attributions']
-                if attribution['type'] == "SUBMITTER"
+                if attribution['type'] in ["SUBMITTER", "AUTHOR"]
             ],
             'parent_fullname': None,
         }
