@@ -15,13 +15,10 @@ The keys are:
 
 import json
 import pathlib
-import time
 
 import tomlkit
 import requests
 import pendulum as pd
-
-from scuttle import scuttle
 
 with open(pathlib.Path.cwd() / "keys.secret.toml") as keys:
     keys = tomlkit.parse(keys.read())['keys']
@@ -117,52 +114,21 @@ class CromAPI:
         """Gets Wikidot metadata for a single page."""
         return self._process_page_data(self._get_one_page(slug))
 
-    def get_all_pages(self, *, tags=None, categories=None):
+    def get_all_pages(self, *, tags=None, categories=None, seconds=None):
         """Returns a generator that gets data for all pages on the wiki."""
-
-        def paginated_generator():
-            previous_end_cursor = ""
-            while True:
-                response = self._get(
-                    f"""{{
-                        pages (
-                            sort: {{
-                                key: CREATED_AT
-                            }}
-                            filter: {{
-                                anyBaseUrl: "@domain"
-                            }}
-                            first: 100
-                            after: "{previous_end_cursor}"
-                        ) {{
-                            edges {{
-                                node {{
-                                    {CromAPI.page_graphql}
-                                }}
-                            }}
-                            pageInfo {{
-                                hasNextPage
-                                endCursor
-                            }}
-                        }}
-                    }}"""
-                )
-                data = json.loads(response.text)['data']['pages']
-                yield [
-                    self._process_page_data(edge['node'])
-                    for edge in data['edges']
-                ]
-                if not data['pageInfo']['hasNextPage']:
-                    return
-                previous_end_cursor = data['pageInfo']['endCursor']
-
-        return paginated_generator()
-
-    def get_recent_pages(self, seconds):
-        """Returns a generator that gets data for pages created within the last
-        given number of seconds. The generator returns chunks of page data as
-        a list."""
-        datetime = pd.now().subtract(seconds=seconds).isoformat()
+        if tags is not None or categories is not None:
+            raise NotImplementedError
+        date_filter = (
+            ""
+            if seconds is None
+            else f"""
+                wikidotInfo: {{
+                    createdAt: {{
+                        gte: "{pd.now().subtract(seconds=seconds).isoformat()}"
+                    }}
+                }}
+            """
+        )
 
         def paginated_generator():
             previous_end_cursor = ""
@@ -176,11 +142,7 @@ class CromAPI:
                             }}
                             filter: {{
                                 anyBaseUrl: "@domain"
-                                wikidotInfo: {{
-                                    createdAt: {{
-                                        gte: "{datetime}"
-                                    }}
-                                }}
+                                {date_filter}
                             }}
                             first: 100
                             after: "{previous_end_cursor}"
