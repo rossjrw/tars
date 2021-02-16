@@ -25,18 +25,21 @@ class Schedule:
             CONFIG.external['propagation']['logging']['channel'],
         )
 
+        # Scheduled full wiki update
         self.scheduler.add_job(
-            propagate.get_all_pages,
+            propagate.get_wiki_data,
             'cron',
             kwargs={'reply': log_propagation_message},
             **self.cron_to_kwargs(
                 CONFIG.external['propagation']['all_articles']['often']
             ),
         )
+
+        # Scheduled recent pages update
         self.scheduler.add_job(
-            propagate.get_recent_pages,
+            propagate.get_wiki_data,
             'cron',
-            kwargs={'reply': log_propagation_message},
+            kwargs={'reply': log_propagation_message, 'seconds': 259200},
             **self.cron_to_kwargs(
                 CONFIG.external['propagation']['new_articles']['often']
             ),
