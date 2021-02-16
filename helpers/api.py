@@ -144,15 +144,15 @@ class CromAPI:
                     f"""{{
                         pages (
                             sort: {{
-                                order: DESC
+                                order: ASC
                                 key: CREATED_AT
                             }}
                             filter: {{
                                 anyBaseUrl: "@domain"
                                 {date_filter}
                             }}
-                            first: 100
-                            after: "{previous_end_cursor}"
+                            last: 100
+                            before: "{previous_end_cursor}"
                         ) {{
                             edges {{
                                 node {{
@@ -160,7 +160,7 @@ class CromAPI:
                                 }}
                             }}
                             pageInfo {{
-                                hasNextPage
+                                hasPreviousPage
                                 endCursor
                             }}
                         }}
@@ -171,7 +171,7 @@ class CromAPI:
                     self._process_page_data(edge['node'])
                     for edge in data['edges']
                 ]
-                if not data['pageInfo']['hasNextPage']:
+                if not data['pageInfo']['hasPreviousPage']:
                     return
                 previous_end_cursor = data['pageInfo']['endCursor']
 
