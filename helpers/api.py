@@ -65,12 +65,12 @@ class CromAPI:
 
     def __init__(self, domain):
         self.endpoint = "https://api.crom.avn.sh/"
-        self.domain = {'en': "scp-wiki.wikidot.com"}[domain]
+        self.domain = {'en': "http://scp-wiki.wikidot.com"}[domain]
 
     def _get(self, query):
         return requests.post(
             self.endpoint,
-            json={'query': query.replace("@domain", f"http://{self.domain}")},
+            json={'query': query.replace("@domain", self.domain)},
         )
 
     def _get_one_page(self, slug):
@@ -112,7 +112,7 @@ class CromAPI:
                 page_data['alternateTitles'],
             )
             try:
-                metadata['meta_title'] = next(meta_titles)
+                metadata['meta_title'] = next(meta_titles)['title']
             except StopIteration:
                 pass
         return metadata

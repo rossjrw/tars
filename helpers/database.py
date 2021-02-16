@@ -1442,6 +1442,11 @@ class SqliteDriver:
                 ''',
                 (article_data['id'], article['created_by']),
             )
+        # If a meta title was passed along with the payload, add it now
+        if 'meta_title' in article:
+            self.add_article_title(
+                article['url'], article['title'], article['meta_title'], commit
+            )
         if commit:
             self.conn.commit()
 
