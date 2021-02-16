@@ -57,6 +57,9 @@ class CromAPI:
             voteCount
             tags
             createdAt
+            parent {
+                url
+            }
         }
     """
 
@@ -97,7 +100,11 @@ class CromAPI:
                 for attribution in page_data['attributions']
                 if attribution['type'] in ["SUBMITTER", "AUTHOR"]
             ],
-            'parent_fullname': None,
+            'parent_fullname': (
+                None
+                if wd_metadata['parent'] is None
+                else wd_metadata['parent']['url'].split("/")[-1]
+            ),
         }
         if len(page_data['alternateTitles']) > 0:
             meta_titles = filter(
