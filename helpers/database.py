@@ -1615,8 +1615,12 @@ class SqliteDriver:
             elif search['type'] is None:
                 q = q.where(
                     (art.title.like(search['term']))
-                    | (art.scp_num == search['term'].lower())
-                    | (art.scp_num == "scp-{}".format(search['term']))
+                    | (art.scp_num.regex(re.escape(search['term'])))
+                    | (
+                        art.scp_num.regex(
+                            re.escape("scp-{}".format(search['term']))
+                        )
+                    )
                 )
             elif search['type'] == 'regex':
                 q = q.where(art.title.regex(search['term']))
