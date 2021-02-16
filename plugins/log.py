@@ -4,6 +4,7 @@ Logs all input and output for recordkeeping purposes.
 """
 
 import time
+import sys
 from pyaib.plugins import plugin_class
 from pyaib.components import observe
 from pyaib.signals import emit_signal, await_signal
@@ -34,6 +35,13 @@ class Log:
     # @observe('IRC_RAW_MSG','IRC_RAW_SEND')
     # def print_everything(self, irc_c, msg):
     #     print(msg)
+
+    @observe('IRC_MSG_465')
+    async def stop_connecting_if_banned(self, irc_c, msg):
+        print(msg)
+        print("Quitting in 1 second")
+        time.sleep(1)
+        sys.exit(1)
 
     @observe(
         'IRC_MSG_PRIVMSG',

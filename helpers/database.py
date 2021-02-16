@@ -1325,6 +1325,7 @@ class SqliteDriver:
         # int rating
         # str fullname
         # str title
+        # str? meta_title
         # str created_at: ISO-8601
         # str? created_by
         # str? parent_fullname
@@ -1350,12 +1351,14 @@ class SqliteDriver:
                 article['url'] = article['fullname']
         if 'created_by' not in article or article['created_by'] is None:
             article['created_by'] = "an anonymous user"
-        # this dict will be fed into the database
+        # Is there a meta title that would override the page title?
+        has_meta = 'meta_title' in article
+        # Construct the article object that will be put in the DB
         article_data = {
             'url': article['url'],
             'category': article['category'],
-            'title': article['title'],
-            'scp_num': None,
+            'title': article.get('meta_title' if has_meta else 'title'),
+            'scp_num': article['title'] if has_meta else None,
             'parent': article['parent_fullname'],
             'rating': article['rating'],
             'ups': article['ups'],
@@ -1422,20 +1425,26 @@ class SqliteDriver:
             ''',
             [(article_data['id'], t) for t in article['tags']],
         )
-        c.execute(
-            '''
-            DELETE FROM articles_authors
-            WHERE article_id=? AND metadata=0
-            ''',
-            (article_data['id'],),
-        )
-        c.execute(
-            '''
-            INSERT INTO articles_authors (article_id, author)
-            VALUES ( ? , ? )
-            ''',
-            (article_data['id'], article['created_by']),
-        )
+        # If a list of authors has been passed, assume these to be accurate and
+        # call set_authors now; otherwise, assign what value we were given and
+        # defer to set_authors in the metadata acquisition step later
+        if isinstance(article['created_by'], list):
+            self.set_authors(article['url'], article['created_by'], commit)
+        else:
+            c.execute(
+                '''
+                DELETE FROM articles_authors
+                WHERE article_id=? AND metadata=0
+                ''',
+                (article_data['id'],),
+            )
+            c.execute(
+                '''
+                INSERT INTO articles_authors (article_id, author)
+                VALUES ( ? , ? )
+                ''',
+                (article_data['id'], article['created_by']),
+            )
         if commit:
             self.conn.commit()
 
@@ -1448,24 +1457,6 @@ class SqliteDriver:
             WHERE url=?
             ''',
             (url,),
-        )
-        if commit:
-            self.conn.commit()
-
-    def add_article_title(self, url, num, title, commit=True):
-        """Update the meta title for an SCP"""
-        c = self.conn.cursor()
-        # for most articles: title is full, scp-num is null
-        # for scps: scp-num is fill, title is to be filled
-        # possibly TODO throw if scp doesn't exist
-        # title is allowed to be None
-        c.execute(
-            '''
-            UPDATE articles
-            SET title=?, scp_num=?
-            WHERE url=?
-            ''',
-            (title, num, url),
         )
         if commit:
             self.conn.commit()
@@ -1624,8 +1615,12 @@ class SqliteDriver:
             elif search['type'] is None:
                 q = q.where(
                     (art.title.like(search['term']))
-                    | (art.scp_num == search['term'].lower())
-                    | (art.scp_num == "scp-{}".format(search['term']))
+                    | (art.scp_num.regex(re.escape(search['term'])))
+                    | (
+                        art.scp_num.regex(
+                            re.escape("scp-{}".format(search['term']))
+                        )
+                    )
                 )
             elif search['type'] == 'regex':
                 q = q.where(art.title.regex(search['term']))

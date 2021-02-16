@@ -12,14 +12,13 @@ The keys are:
     google_cse_id: The ID of the Google CSE.
     scuttle_api: A Personal Access Token for SCUTTLE.
 """
+
 import json
 import pathlib
-import time
 
 import tomlkit
 import requests
-
-from scuttle import scuttle
+import pendulum as pd
 
 with open(pathlib.Path.cwd() / "keys.secret.toml") as keys:
     keys = tomlkit.parse(keys.read())['keys']
@@ -35,47 +34,148 @@ def toml_url(url):
     return tomlkit.parse(response.text)
 
 
-class ScuttleAPI:
-    """Wrapper for Wikidot API functions."""
+class CromAPI:
+    """Wrapper for Crom API functions."""
+
+    page_graphql = """
+        url
+        attributions {
+            type
+            user {
+                name
+            }
+            date
+        }
+        alternateTitles {
+            type
+            title
+        }
+        wikidotInfo {
+            title
+            category
+            rating
+            voteCount
+            tags
+            createdAt
+            parent {
+                url
+            }
+        }
+    """
 
     def __init__(self, domain):
-        self.scuttle = scuttle(domain, keys['scuttle_api'], 1)
+        self.endpoint = "https://api.crom.avn.sh/"
+        self.domain = {'en': "http://scp-wiki.wikidot.com"}[domain]
 
-    def get_one_page(self, slug):
-        """Gets all SCUTTLE data for a single page."""
-        return self.scuttle.page_by_slug(slug)
+    def _get(self, query):
+        return requests.post(
+            self.endpoint,
+            json={'query': query.replace("@domain", self.domain)},
+        )
+
+    def _get_one_page(self, slug):
+        """Gets all Crom data for a single page."""
+        response = self._get(
+            f"""{{
+                page (
+                    url: "@domain/{slug}"
+                ) {{
+                    {CromAPI.page_graphql}
+                }}
+            }}"""
+        )
+        return json.loads(response.text)['data']['page']
+
+    def _process_page_data(self, page_data):
+        """Converts page data structure from Crom to TARS."""
+        wd_metadata = page_data['wikidotInfo']
+        metadata = {
+            'tags': wd_metadata['tags'],
+            'title': wd_metadata['title'],
+            'rating': wd_metadata['rating'],
+            'fullname': page_data['url'].split("/")[-1],
+            'created_at': wd_metadata['createdAt'],
+            'created_by': [
+                attribution['user']['name']
+                for attribution in page_data['attributions']
+                if attribution['type'] in ["SUBMITTER", "AUTHOR"]
+            ],
+            'parent_fullname': (
+                None
+                if wd_metadata['parent'] is None
+                else wd_metadata['parent']['url'].split("/")[-1]
+            ),
+        }
+        if len(page_data['alternateTitles']) > 0:
+            meta_titles = filter(
+                lambda alt: alt['type'] == self.domain,
+                page_data['alternateTitles'],
+            )
+            try:
+                metadata['meta_title'] = next(meta_titles)['title']
+            except StopIteration:
+                pass
+        return metadata
 
     def get_one_page_meta(self, slug):
-        """Gets wikidot metadata for a single page."""
-        return self.get_one_page(slug)['metadata']['wikidot_metadata']
+        """Gets Wikidot metadata for a single page."""
+        return self._process_page_data(self._get_one_page(slug))
 
-    def get_one_page_html(self, slug):
-        """Gets the HTML for a single page."""
-        return self.get_one_page(slug)['latest_revision']
-
-    def get_all_pages(self, *, tags=None, categories=None):
-        """Gets a list of all slugs that satisfy the requirements."""
-        if tags is None:
-            tags = []
-        assert isinstance(tags, list)
-        if categories is None:
-            categories = []
-        else:
+    def get_all_pages(self, *, tags=None, categories=None, seconds=None):
+        """Returns a generator that gets data for all pages on the wiki."""
+        if tags is not None or categories is not None:
             raise NotImplementedError
-        assert isinstance(categories, list)
-        # get info for all pages
-        if len(tags) == 1:
-            slugs = [page['slug'] for page in self.scuttle.tag_pages(tags[0])]
-        elif len(tags) != 0:
-            raise NotImplementedError
-        else:
-            slugs = [page['slug'] for page in self.scuttle.pages()]
-        return slugs
+        date_filter = (
+            ""
+            if seconds is None
+            else f"""
+                wikidotInfo: {{
+                    createdAt: {{
+                        gte: "{pd.now().subtract(seconds=seconds).isoformat()}"
+                    }}
+                }}
+            """
+        )
 
-    def get_recent_pages(self, seconds):
-        """Gets data for pages created in the last n seconds."""
-        pages = self.scuttle.pages_since(int(time.time() - seconds))
-        return [page['slug'] for page in pages]
+        def paginated_generator():
+            previous_end_cursor = ""
+            while True:
+                response = self._get(
+                    f"""{{
+                        pages (
+                            sort: {{
+                                order: ASC
+                                key: CREATED_AT
+                            }}
+                            filter: {{
+                                anyBaseUrl: "@domain"
+                                {date_filter}
+                            }}
+                            last: 100
+                            before: "{previous_end_cursor}"
+                        ) {{
+                            edges {{
+                                node {{
+                                    {CromAPI.page_graphql}
+                                }}
+                            }}
+                            pageInfo {{
+                                hasPreviousPage
+                                endCursor
+                            }}
+                        }}
+                    }}"""
+                )
+                data = json.loads(response.text)['data']['pages']
+                yield [
+                    self._process_page_data(edge['node'])
+                    for edge in data['edges']
+                ]
+                if not data['pageInfo']['hasPreviousPage']:
+                    return
+                previous_end_cursor = data['pageInfo']['endCursor']
+
+        return paginated_generator()
 
 
-SCPWiki = ScuttleAPI("en")
+SCPWiki = CromAPI("en")
