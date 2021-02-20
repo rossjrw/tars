@@ -17,19 +17,39 @@ from helpers.error import (
 )
 
 
-# Sentinel value to indicate that an argument was not provided
+# Sentinel value to indicate that an argument was not provided (e.g. for
+# nargs="*", distinguishes between argument present but no parameters provided,
+# and argument not present at all)
 NoArgument = object()
 
 
-def regex_type(validation_regex, validation_reason):
+def matches_regex(validation_regex, validation_reason):
     """Generates an argument type for a string matching a regex expression."""
+    if not isinstance(validation_regex, re.Pattern):
+        validation_regex = re.compile(validation_regex)
 
-    def rtype(arg_value, pattern=re.compile(validation_regex)):
+    def string_matches_regex_type(arg_value, pattern=validation_regex):
+        """Checks whether an argument matches a regex and returns the argument
+        as a string."""
         if not pattern.match(arg_value):
             raise argparse.ArgumentTypeError(validation_reason)
         return arg_value
 
-    return rtype
+    return string_matches_regex_type
+
+
+def regex_type(arg_value):
+    """Checks whether an argument compiles to a valid regex and returns the
+    compiled regex."""
+    try:
+        arg_value = re.compile(arg_value)
+    except re.error as error:
+        raise argparse.ArgumentTypeError(
+            "'{}' isn't a valid regular expression: {}".format(
+                arg_value, error
+            )
+        )
+    return arg_value
 
 
 class ArgumentParser(argparse.ArgumentParser):
@@ -39,12 +59,12 @@ class ArgumentParser(argparse.ArgumentParser):
         """Instead of crashing on error, reply a message"""
         raise CommandParsingError(message)
 
-    def exit(self, status=0, message=None):
+    def exit(self, _status=0, message=None):
         """Instead of crashing on error, reply a message"""
         if message is not None:
             raise CommandParsingError(message)
 
-    def print_help(self):
+    def print_help(self, _file=None):
         """Reply with help instead of printing to console"""
         raise CommandParsingHelp(self.format_usage()[7:])
 
@@ -192,9 +212,12 @@ class Command:
                         # The default would usually be None
                         # Use __contains__ to check if argument is present
                         arg['default'] = NoArgument
-                else:
-                    if arg['nargs'] in ['*', '+']:
-                        assert isinstance(arg['default'], list)
+                        # For '?', the `default` value is used if the option is
+                        # not provided; if it is provided but with no argument,
+                        # the value from `const` is taken, which defaults to
+                        # None
+                if arg['nargs'] in ['*', '+']:
+                    assert isinstance(arg['default'], list)
             parser.add_argument(*flags, **arg)
         return parser
 

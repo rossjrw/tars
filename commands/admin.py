@@ -9,7 +9,7 @@ import sys
 import git
 
 from commands.gib import Gib
-from helpers.command import Command, regex_type
+from helpers.command import Command, matches_regex
 from helpers.greetings import kill_bye
 from helpers.error import CommandError
 from helpers.database import DB
@@ -56,7 +56,7 @@ class Join(Command):
     arguments = [
         dict(
             flags=['channel'],
-            type=regex_type(r"^#", "must be a channel"),
+            type=matches_regex(r"^#", "must be a channel"),
             nargs=None,
             help="""The channel to join.""",
         ),
@@ -84,7 +84,7 @@ class Leave(Command):
     arguments = [
         dict(
             flags=['channel'],
-            type=regex_type(r"^#", "must be a channel"),
+            type=matches_regex(r"^#", "must be a channel"),
             nargs='?',
             help="""The channel to leave.
 
@@ -169,7 +169,9 @@ class Say(Command):
     arguments = [
         dict(
             flags=['recipient'],
-            type=regex_type(r"^(#|[A-z0-9])", "must be a channel or a user"),
+            type=matches_regex(
+                r"^(#|[A-z0-9])", "must be a channel or a user"
+            ),
             nargs=None,
             help="""Where to send the message. Either a channel or a user.""",
         ),
