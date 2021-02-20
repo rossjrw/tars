@@ -10,33 +10,75 @@ from datetime import datetime
 import pendulum as pd
 
 from commands.gib import Gib
+from helpers.command import Command
 from helpers.error import CommandError, MyFaultError
 from helpers.parse import nickColor
 from helpers.database import DB
 from helpers.defer import defer
 
 
-class query:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
-        cmd.expandargs(["table tables t", "user users u"])
-        # No argument given - show the db structure
-        if len(cmd.args) == 1:
-            msg.reply(
-                "https://raw.githubusercontent.com/"
-                "rossjrw/tars/master/database.png"
-            )
-            return
-        # Table - print a list of tables, or a given table
-        if 'table' in cmd:
-            if len(cmd['table']) > 0:
+class Query(Command):
+    """For checking the integrity of the database.
+
+    This command does not result in any meaningful output in IRC beyond
+    confirmation of the command. Instead, information is printed to the bot's
+    console.
+    """
+
+    command_name = "dbq"
+    arguments = [
+        dict(
+            flags=['--tables'],
+            type=str,
+            nargs='?',
+            help="""Examine the tables in the database.
+
+            Accepts the name of the table to print. If no name is provided,
+            prints a list of tables.
+            """,
+        ),
+        dict(
+            flags=['--users'],
+            type=bool,
+            help="""Prints a list of known users.""",
+        ),
+        dict(
+            flags=['--id'],
+            type=str,
+            nargs='?',
+            help="""Gets the ID of a thing.
+
+            The thing can be a user or a channel. If no argument is provided,
+            the thing is assumed to be yourself.
+            """,
+        ),
+        dict(
+            flags=['--sql'],
+            type=str,
+            nargs='+',
+            help="""Issue an SQL statement to the database.
+
+            This should only be used for read-only queries. @command(refactor)
+            should be used for statements that modify the database.
+            """,
+        ),
+        dict(
+            flags=['--str'],
+            type=bool,
+            help="""Print SQL results as a string rather than a table.""",
+        ),
+    ]
+
+    def execute(self, irc_c, msg, cmd):
+        if 'tables' in self:
+            if self['tables'] is not None:
                 # print a specific table
                 msg.reply(
                     "Printing contents of table {} to console.".format(
-                        cmd['table'][0]
+                        self['tables']
                     )
                 )
-                DB.print_one_table(cmd['table'][0])
+                DB.print_one_table(self['tables'])
             else:
                 # print a list of all tables
                 tables = DB.get_all_tables()
@@ -46,8 +88,7 @@ class query:
                     )
                 )
                 print(" ".join(tables))
-        # Users - print a list of users, or from a given channel
-        if 'user' in cmd:
+        elif self['users']:
             users = DB.get_all_users()
             if len(users) == 0:
                 msg.reply("There are no users.")
@@ -58,12 +99,12 @@ class query:
                     )
                 )
                 print(" ".join([nickColor(u) for u in users]))
-        if 'id' in cmd:
+        elif 'id' in self:
             # we want to find the id of something
-            if len(cmd.args['root']) != 2:
+            if self['id'] is None:
                 search = msg.sender
             else:
-                search = cmd.args['root'][1]
+                search = self['id']
             id, type = DB.get_generic_id(search)
             if id:
                 if type == 'user' and search == msg.sender:
@@ -79,79 +120,85 @@ class query:
                     msg.reply(
                         "I don't know anything called '{}'.".format(search)
                     )
-        if 'alias' in cmd:
-            search = (
-                cmd.args['root'][1]
-                if len(cmd.args['root']) > 1
-                else msg.sender
-            )
-            aliases = DB.get_aliases(search)
-            # should be None or a list of lists
-            if aliases is None:
-                msg.reply(
-                    "I don't know anyone with the alias '{}'.".format(search)
-                )
-            else:
-                msg.reply(
-                    "I know {} users with the alias '{}'.".format(
-                        len(aliases), search
-                    )
-                )
-                for i, group in enumerate(aliases):
-                    msg.reply("\x02{}.\x0F {}".format(i + 1, ", ".join(group)))
-        if 'occ' in cmd:
-            if len(cmd.args['root']) < 2:
-                raise CommandError("Specify a channel to get the occupants of")
-            msg.reply(
-                "Printing occupants of {} to console".format(
-                    cmd.args['root'][1]
-                )
-            )
-            users = DB.get_occupants(cmd.args['root'][1], True)
-            if isinstance(users[0], int):
-                pprint(users)
-            else:
-                pprint([nickColor(user) for user in users])
-        if 'sql' in cmd:
+        elif len(self['sql']) > 0:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
             try:
-                DB.print_selection(" ".join(cmd['sql']), 'str' in cmd)
+                DB.print_selection(" ".join(self['sql']), 'str' in self)
                 msg.reply("Printing that selection to console")
             except:
                 msg.reply("There was a problem with the selection")
                 raise
+        else:
+            msg.reply("Checking... yes! There is a database.")
 
 
-class seen:
-    @staticmethod
-    def execute(irc_c, msg, cmd):
-        if defer.check(cmd, 'Secretary_Helen'):
-            return
-        cmd.expandargs(["first f", "count c"])
-        # have to account for .seen -f name
-        if 'first' in cmd:
-            cmd.args['root'].extend(cmd.args['first'])
-        if 'count' in cmd:
-            cmd.args['root'].extend(cmd.args['count'])
-        if len(cmd.args['root']) < 1:
+class Seen(Command):
+    """Check when the bot last saw a given user.
+
+    For privacy reasons, only checks the current channel.
+    """
+
+    command_name = "seen"
+    defers_to = ["Secretary_Helen"]
+    arguments = [
+        dict(
+            flags=['nick'],
+            type=str,
+            nargs='?',
+            help="""The nick of the user to search for.
+
+            Aliases of this user will also be searched for.
+
+            When using -f or -c, the nick can be omitted here, in which case a
+            nick is expected after -f or -c.
+            """,
+        ),
+        dict(
+            flags=['--first', '-f'],
+            type=str,
+            nargs='?',
+            help="""Shows when the user was first seen.
+
+            The username can come after this argument, in which case it
+            overrides a username that was provided before it.
+            """,
+        ),
+        dict(
+            flags=['--count', '-c'],
+            type=str,
+            nargs='?',
+            help="""Counts the number of times this user has been seen.
+
+            The username can come after this argument, in which case it
+            overrides a username that was provided before it.
+            """,
+        ),
+    ]
+
+    def execute(self, irc_c, msg, cmd):
+        nick = self['nick']
+        if 'first' in self and self['first'] is not None:
+            nick = self['first']
+        if 'count' in self and self['count'] is not None:
+            nick = self['count']
+        if nick is None:
             raise CommandError(
                 "Specify a user and I'll tell you when I last saw them"
             )
-        nick = cmd.args['root'][0]
         messages = DB.get_messages_from_user(nick, msg.raw_channel)
         if len(messages) == 0:
             raise MyFaultError(
                 "I've never seen {} in this channel.".format(nick)
             )
-        if 'count' in cmd:
+        if 'count' in self:
             msg.reply(
                 "I've seen {} {} times in this channel.".format(
                     nick, len(messages)
                 )
             )
             return
-        if 'first' in cmd:
+        if 'first' in self:
             message = messages[0]
             response = "I first saw {} {} saying: {}"
         else:
