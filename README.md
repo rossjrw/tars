@@ -69,23 +69,89 @@ comprehensive.
 
 ## Adding commands
 
-Each major command should be in its own file. Subcommands can be in the same file
-as the major command's file.
+Each major command should be in its own file. Subcommands can be in the same
+file as the major command's file.
 
 Create a new file in `commands/` named the same as your major command.
 
-Within this file, create a new `class` with the (lowercase) name of the major
-command. Add an `aliases` property with a list of any aliases for the command.
+Within this file, create a new class named for the major command that extends
+`helpers.command.Command`, with the following properties (all of which are
+optional):
 
-Within the class, create a new class method called `command` that takes
-arguments `irc_c`, `msg` and `cmd`, where irc_c is pyaib's irc context and msg
-is pyaib's message object, and cmd is the message as a parsed command.
+* `command_name`: The canonical name of this command, used for documentation;
+  if not provided or `None`, this command will not appear in documentation.
+* `arguments`: A list of dicts, each of which represents an argument for this
+  command. These are passed directly to the argparse [`add_argument`
+  constructor](https://docs.python.org/3/library/argparse.html#the-add-argument-method)
+  and the keys correspond to its kwargs. However, the following extra keys are
+  accepted:
+  * `flags`: A list of flags for this argument (will be used as the first
+    positional parameter of `add_argument`).
+  * `mode`: If `"hidden"`, this argument will not appear in documentation.
+  * `permission`: The permission level required to run this command (currently
+     boolean, with `true` indicating only a Controller can run it).
+  * `type`: The same as `type` from argparse, but can also be the following
+    values:
+    * `helpers.command.regex_type`: Checks that the arguments correctly compile
+      to a regex, and exposes the argument values as compiled regex objects.
+    * `helpers.command.matches_regex(rgx, reason)`: Checks that the provided
+      string matches regex `rgx` (can be a Pattern or a string); if it
+      does not, rejects the argument with the given reason.
+* `defers_to`: A list of IRC nicks; if any of these nicks are present in the
+  channel when the command would be executed, it will not be.
+* `permission`: The permission level required to run this command (currently
+  boolean, with `true` indicating only a Controller can run it).
+* `arguments_prepend`: A string that will be prepended to arguments passed to
+  this command. Useful for setting defaults for subcommands.
+
+The class' docstring is used as documentation for the command, although only
+the first line will appear on the command line.
+
+The command must have an instance method called `execute`, which is called when
+the command is run, that takes the
+following arguments (which can be named anything):
+
+* `self`: The command object. Check for argument presence with `'argname' in
+  self`. To get the value of the argument, access `self` like a dict:
+  `self['argname']`.
+* `irc_c`: [pyaib
+  context](https://github.com/facebook/pyaib/wiki/Plugin-Writing#context-object)
+* `msg`: [pyaib
+  message](https://github.com/facebook/pyaib/wiki/Plugin-Writing#message-object)
+* `cmd`: A parsed message-like object, similar to `msg` but with more
+  properties that are pertinent to this command specifically:
+  * `ping`: Whether the bot was pinged by this message.
+  * `command`: The command name as typed by the user (may differ from the
+    canonical `command_name`).
+  * `force`: Whether to bypass the defer step.
+
+To create a subcommand, create a new class that extends the parent command,
+with its own docstring and `command_name`. I recommend using
+`arguments_prepend` to add command-line flags and then implement the
+corresponding functionality in the parent command, but if you must add
+an `execute` method to the subcommand, be sure to call the parent's `execute`
+method as appropriate.
 
 Edit `commands/__init__.py` and add any commands you created to the `COMMANDS`
 dict along with any aliases as a sub-dict. Your command must have at least one
 alias, or it won't be able to be called.
 
-## Commands
+Other considerations:
+
+* `nargs` must be either 0 or not present if the `type` is `bool`.
+* Most `nargs` values will result in a list being created, except for
+  `nargs=None`, which expects a single value and returns it directly.
+* The default value for `nargs` of `*` and `+` is an empty list, even if no
+  value was actually provided.
+* If an argument with `nargs` of `"*"` or `"?"` is not present, `'argname' in
+  self` will return `false`; if it _is_ present but no values were provided,
+  `'argname' in self` will return `true`, even though either way the value is
+  identical (`[]` for `"*"` and `XXX TODO` for `"?"`).
+* A boolean arg is always present (and an `'arg' in self` check will always
+  return `true`) regardless of whether it was actually specified. If it was not
+  specified, its value is `false`.
+
+## Other bits
 
 A few other important pieces of information:
 
@@ -94,29 +160,3 @@ A few other important pieces of information:
   function in helpers/database.py
 * `from helpers.config import CONFIG` then `CONFIG.xxx` to access property xxx
   of the configuration file
-
-## Parsing commands
-
-Command objects (`cmd`) are parsed by argparse. Arguments are accessible from
-`cmd.args` as a Namespace object or by accessing `cmd` like a dict.
-
-Each command class must have class vars `command_name` as a string, `defers_to`
-as a list of strings representing which bots the command defers to, and
-`arguments` as a list of dicts.
-
-Each argument dict uses the same keys as argparse - that is, `type`, `nargs`, `help`, optionally `default`, `choices` etc. - and a couple more:
-
-* `flags` is a list of the argument's flags. At least one of these should not
-  start with `--`, but this is not enforced, and just means that the command
-  will not have a root argument.
-* `mode` can be `'hidden'`, meaning that the argument will not appear in help
-  or in the documentation.
-
-Other considerations:
-
-* `nargs` must be either 0 or not present if the `type` is `bool`.
-* Most `nargs` values will result in a list being created, except for
-  `nargs=None`, which expects a single value and returns it directly.
-* The default value for `nargs` of `*` and `+` is an empty list.
-* The first line of `help` will appear on command line (IRC) help. The rest
-  will appear in documentation.
