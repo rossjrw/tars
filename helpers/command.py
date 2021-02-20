@@ -248,8 +248,8 @@ class Command(ABC):
 
     def __getitem__(self, arg):
         """Retrieves argument value via getitem operator"""
-        # Cannot access item is the argument was either not provided or if it
-        # has no default value
+        # Cannot access item if the argument was either not provided or if it
+        # has no default value.
         if getattr(self.args, arg) is NoArgument:
             raise AttributeError(
                 "tried to access an argument ({}) that either wasn't given "
@@ -257,6 +257,11 @@ class Command(ABC):
             )
         # Return either the given value or the default value
         return getattr(self.args, arg)
+
+    def __setitem__(self, arg, value):
+        """Sets the value of an argument. Should only be used to modify
+        existing arguments."""
+        setattr(self.args, arg, value)
 
     def __len__(self):
         """Get the number of arguments given to this command"""
