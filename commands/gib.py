@@ -5,12 +5,15 @@ Gib gab gibber gob!
 
 import random
 import re
+
 from emoji import emojize
 import markovify
+
+from helpers.command import Command, matches_regex, regex_type
 from helpers.config import CONFIG
 from helpers.database import DB
 from helpers.defer import defer
-from helpers.error import CommandError, MyFaultError, isint
+from helpers.error import CommandError, MyFaultError
 
 _URL_PATT = (
     r"https?:\/\/(www\.)?"
@@ -26,124 +29,173 @@ class MarkovFromList(markovify.Text):
         return [text]
 
 
-class Gib:
-    users = []
-    channels = []
-    model = None
-    size = 3
-    ATTEMPT_LIMIT = 20
-    nocache = False
+class Gib(Command):
+    """Generate a sentence.
 
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
-        if defer.check(cmd, 'jarvis'):
-            return
-        cmd.expandargs(
-            [
-                "no-cache n",
-                "user u author a",
-                "channel c",
-                "size s",
-                "roulette r",
-                "regex x",
-                "minlength length l",
-                "me",
-                "help h",
-            ]
-        )
-        if 'help' in cmd:
-            msg.reply(
-                "Usage: .gib [--channel #channel] [--user user] [--no-cache]"
-            )
-            return
-        channels = [msg.raw_channel]
-        users = []
-        # root has 1 num, 1 string, 1 string startswith #
-        for arg in cmd.args['root']:
-            if arg.startswith('#'):
-                raise CommandError("Try .gib -c {}".format(arg))
-            else:
-                raise CommandError("Try .gib -u {}".format(arg))
-        if 'channel' in cmd:
-            if len(cmd['channel']) == 0:
+    TARS will take all of the messages in the channel and employ an
+    extremely sophisticated machine-learning algorithm backed by over $8
+    billion in research funding to contribute to the conversation. The result
+    will be scarily accurate. Viewer discretion is advised.
+
+    Additionally, any pings (username mentions) that are produced in the
+    output will be censored to avoid annoying anyone not present in the
+    conversation. To add a nick to the list of pings to search, see
+    @command(alias).
+
+    TARS keeps a list of all gibs it's made. It will never make the same gib
+    twice. It will also never make a gib that's identical to an existing
+    message.
+
+    @example(.gib -u Croquembouche)(make a sentence only using messages spoken
+    by Croquembouche.)
+
+    @example(.gib -u Croquembouche TARS -x moo -l 200 -s 2)(make a sentence
+    only using messages spoken by Croquembouche or TARS which contain the word
+    "moo", that's at least 200 characters long, with a coherency of 2.)
+    """
+
+    command_name = "gib"
+    defers_to = ["jarvis"]
+    arguments = [
+        dict(
+            flags=['--user', '-u'],
+            type=str,
+            nargs='+',
+            help="""Filter source messages by user(s).
+
+            Only messages said by the named users will be used to construct the
+            gib. If not provided, defaults to all users. Add a hyphen to the
+            start of the user's name to exclude them but include everyone else.
+            """,
+        ),
+        dict(
+            flags=['--channel', '-c'],
+            type=matches_regex(r"^#", "must be a channel"),
+            nargs='+',
+            help="""Filter source messages by channel.
+
+            If not provided, defaults to the current channel. To add a channel
+            to the filter, both yourself and TARS must be present in it. You
+            can only choose which channels to gib from if you are gibbing in
+            PMs with the bot; otherwise, you can only gib from the current
+            channel.
+            """,
+        ),
+        dict(
+            flags=['--regex', '-x'],
+            type=regex_type,
+            nargs='+',
+            help="""Filter source messages by regex match.
+
+            Only messages that match the provided regular expression will be
+            used to construct the gib. Can be used for simple word matches,
+            e.g. @example(.gib -x hello).
+            """,
+        ),
+        dict(
+            flags=['--me'],
+            type=bool,
+            help="""Only gib from `/me`-style messages.""",
+        ),
+        dict(
+            flags=['--size', '-s'],
+            type=int,
+            nargs=None,
+            default=3,
+            help="""Adjust the coherency of the output.
+
+            'size' refers to the internal state size of the Markov chain. The
+            default value is 3. Smaller values produce more nonsensical
+            output. Larger values produce more readable output, at the cost of
+            longer processing time and maybe being a bit dull.
+            """,
+        ),
+        dict(
+            flags=['--no-cache', '-n'],
+            type=bool,
+            help="""Ignore the Markov model and gib history caches.
+
+            Normally, TARS caches the expensive @command(gib) calculations, and
+            will only generate a new Markov model if a non-identical
+            @command(gib) is issued (e.g. from a different channel or searching
+            a different user). Additionally, TARS keeps a list of output
+            sentences and will never generate the same sentence twice. Applying
+            @argument(--no-cache) will ignore both of these constraints.
+            """,
+        ),
+        dict(
+            flags=['--media', '-m'],
+            type=str,
+            nargs=None,
+            choices=['image', 'youtube'],
+            help="""Picks a random image or YouTube link instead of gibbing.
+
+            Instead of generating a nonsensical sentence, TARS will instead
+            pick a random link. Either image or YouTube links are supported.
+            """,
+        ),
+        dict(
+            flags=['--minlength', '-l'],
+            type=int,
+            nargs=None,
+            default=0,
+            help="""The minimum length (characters) for the gib.
+
+            If the gib process generates a gib shorter than this amount, it is
+            discarded and another one is generated.
+
+            Gibs that fail for being too short contribute to the attempt limit.
+            Very long minimum lengths will nearly always fail.
+            """,
+        ),
+        dict(
+            flags=['--limit'],
+            type=int,
+            nargs=None,
+            default=CONFIG['gib']['limit'] or 5000,
+            help="""The message selection size limit.
+
+            Limits the number of messages that can be in the gib selection.
+            Defaults to {}.
+            """.format(
+                CONFIG['gib']['message_limit'] or 5000
+            ),
+        ),
+    ]
+
+    cache = {
+        'model': None,
+        'users': [],
+        'channels': [],
+        'size': 3,
+        'limit': 0,
+    }
+
+    def execute(self, irc_c, msg, cmd):
+        self['channel'] = self['channel']
+        if len(self['channel']) == 0:
+            if msg.raw_channel is None:
+                # Happens when gibbing from PMs
                 raise CommandError(
-                    "When using the --channel/-c filter, "
-                    "at least one channel must be specified"
+                    "Specify a channel to gib from with --channel/-c"
                 )
-            if cmd['channel'][0] == "all":
-                if defer.controller(cmd):
-                    channels = DB.get_all_channels()
-                    msg.reply("Gibbing from all channels I'm in:")
-                else:
-                    msg.reply("Gibbing from all channels you're in:")
-                    # get all channels this user is in
-                    raise MyFaultError("This isn't implemented yet.")
-            else:
-                for channel in cmd['channel']:
-                    if not channel.startswith('#'):
-                        raise CommandError("Channel names must start with #.")
-                channels = cmd['channel']
-        elif msg.raw_channel is None:
-            raise CommandError(
-                "Specify a channel to gib from with --channel/-c"
-            )
-        if 'user' in cmd:
-            if len(cmd['user']) == 0:
-                raise CommandError(
-                    "When using the --user/-u filter, "
-                    "at least one user must be specified"
-                )
-            users = cmd['user']
-        if 'size' in cmd:
-            try:
-                cls.size = int(cmd['size'][0])
-            except ValueError:
-                raise CommandError("Sizes must be numbers")
-        else:
-            cls.size = 3
-        # ignore gib cache?
-        if 'no-cache' in cmd:
-            cls.nocache = True
-        else:
-            cls.nocache = False
-        if 'limit' in cmd:
-            try:
-                limit = int(cmd['limit'][0])
-            except ValueError:
-                raise CommandError(
-                    "When using --limit, the limit must be an int"
-                )
-            if limit < 200:
-                raise CommandError(
-                    "When using --limit, the limit cannot be lower than 200"
-                )
-        else:
-            limit = CONFIG['gib']['limit']
-            if not limit:
-                limit = 5000
-        if 'roulette' in cmd:
-            if len(cmd['roulette']) == 0:
-                raise CommandError(
-                    "When using roulette mode, you must "
-                    "specify a roulette type"
-                )
-            roulette_type = cmd['roulette'][0]
-            if roulette_type not in ['video', 'image', 'youtube', 'yt']:
-                raise CommandError(
-                    "The roulette type must be either "
-                    "'image' or one of 'video','youtube','yt'"
-                )
-            limit = None
+            # Default channel is the current one
+            self['channel'] = [msg.raw_channel]
+        limit = self['limit'] or CONFIG['gib']['message_limit'] or 5000
+        if 'media' in self:
+            limit = -1
+        if 'me' in self:
+            self['regex'].append(r"\u0001ACTION ")
         # can only gib a channel both the user and the bot are in
-        for channel in channels:
-            if channel is msg.raw_channel:
+        for channel in self['channel']:
+            if channel == msg.raw_channel:
                 continue
             if (
                 msg.raw_channel is not None
-                and cmd['channel'][0] != 'all'
+                and self['channel'][0] != 'all'
                 and not all(
-                    x in DB.get_channel_members(channel)
-                    for x in [msg.sender, CONFIG.nick]
+                    nick in DB.get_channel_members(channel)
+                    for nick in [msg.sender, CONFIG.nick]
                 )
             ):
                 raise CommandError(
@@ -159,98 +211,68 @@ class Gib:
                     "You can only gib the current channel (or "
                     "any channel from PMs)"
                 )
-        # Run a check to see if we need to reevaluate the model or not
-        if cls.channels == channels and cls.users == users and not cls.nocache:
+        # Does the model need to be regenerated?
+        if not self['nocache'] and all(
+            Gib.cache['model'] is not None,
+            Gib.cache['channels'] == self['channel'],
+            Gib.cache['users'] == self['user'],
+            Gib.cache['size'] == self['size'],
+            Gib.cache['limit'] == limit,
+        ):
             print("Reusing Markov model")
         else:
-            cls.model = None
-            cls.channels = channels
-            if len(cls.channels) == 0:
-                cls.channels = [msg.raw_channel]
-            cls.users = users
-            if len(cls.users) == 0:
-                cls.users = [None]
+            Gib.cache['model'] = None
+            Gib.cache['channels'] = self['channel']
+            Gib.cache['users'] = self['user']
+            Gib.cache['size'] = self['size']
+            Gib.cache['limit'] = limit
         # are we gibbing or rouletting?
-        if 'roulette' in cmd:
-            urls = cls.roulette(roulette_type)
+        if 'media' in self:
+            urls = self.media_roulette()
             msg.reply(
                 "{} {} · ({} link{} found)".format(
                     emojize(":game_die:"),
                     random.choice(urls),
                     len(urls),
-                    ("s" if len(urls) > 1 else ""),
+                    "s" if len(urls) > 1 else "",
                 )
             )
             return
-        if 'regex' in cmd:
-            if len(cmd['regex']) == 0:
-                raise CommandError(
-                    "When using the regex filter, you must specify a regex"
-                )
-            patterns = cmd['regex']
-            for pattern in patterns:
-                try:
-                    re.compile(pattern)
-                except re.error as e:
-                    raise CommandError(
-                        "'{}' isn't a valid regular "
-                        "expression: {}".format(pattern, e)
-                    )
-        else:
-            patterns = []
-        if 'me' in cmd:
-            patterns.append(r"\u0001ACTION ")
-        if 'minlength' in cmd:
-            if len(cmd['minlength']) == 0:
-                raise CommandError(
-                    "When using the minimum length modifier "
-                    "(--length/-l), you must specify a "
-                    "minimum length"
-                )
-            minlength = cmd['minlength'][0]
-            if not isint(minlength):
-                raise CommandError(
-                    "When using the minimum length modifier "
-                    "(--length/-l), the minimum length must be "
-                    "an integer"
-                )
-            minlength = int(minlength)
-        else:
-            minlength = 0
         # gibbing:
         try:
-            sentence = cls.get_gib_sentence(
-                limit=limit, minlength=minlength, patterns=patterns
-            )
+            sentence = self.get_gib_sentence(limit=limit)
             if sentence is None:
                 raise AttributeError
-        except (RuntimeError, AttributeError):
+        except (RuntimeError, AttributeError) as error:
             raise MyFaultError(
                 "Looks like {} spoken enough in {} just yet.{}".format(
                     (
                         "you haven't"
-                        if msg.sender in users and len(users) == 1
+                        if msg.sender in self['user']
+                        and len(self['user']) == 1
                         else "nobody has"
-                        if len(users) == 0
-                        else "{} hasn't".format(users[0])
-                        if len(users) == 1
+                        if len(self['user']) == 0
+                        else "{} hasn't".format(self['user'][0])
+                        if len(self['user']) == 1
                         else "they haven't"
                     ),
                     (
-                        channels[0]
-                        if len(channels) == 1
-                        and channels[0] == msg.raw_channel
+                        self['channel'][0]
+                        if (
+                            len(self['channel']) == 1
+                            and self['channel'][0] == msg.raw_channel
+                        )
                         else "that channel"
-                        if len(channels) == 1
+                        if len(self['channel']) == 1
                         else "those channels"
                     ),
                     " ({} messages)".format(
-                        len(cls.model.to_dict()['parsed_sentences'])
-                        if cls.model is not None
+                        len(Gib.cache['model'].to_dict()['parsed_sentences'])
+                        if Gib.cache['model'] is not None
                         else 0
                     ),
                 )
-            )
+            ) from error
         # first: remove a ping at the beginning of the sentence
         pattern = r"^(\S+[:,]\s+)(.*)$"
         match = re.match(pattern, sentence)
@@ -300,10 +322,7 @@ class Gib:
         string += closing_bracket * depths[-1]
         return string
 
-    @classmethod
-    def get_gib_sentence(
-        cls, attempts=0, limit=7500, minlength=0, patterns=None
-    ):
+    def get_gib_sentence(self, attempts=0, limit=7500):
         print("Getting a gib sentence")
         # messages = []
         # for channel in cls.channels:
@@ -312,56 +331,65 @@ class Gib:
         #         print("Iterating users")
         #         messages.extend(DB.get_messages(channel, user))
         messages = DB.get_messages(
-            cls.channels,
+            self['channel'],
             minlength=40,
             limit=limit,
-            senders=None if cls.users == [None] else cls.users,
-            patterns=patterns,
+            senders=None if self['user'] == [] else self['user'],
+            patterns=self['regex'],
         )
         print("messages found: {}".format(len(messages)))
         if len(messages) == 0:
             raise AttributeError
-        for decr in range(0, cls.size):
+        # Automatically decrement the state size if the higher state size fails
+        for decr in range(0, self['size']):
             print(
-                "Making model from messages, size {}".format(cls.size - decr)
+                "Making model from messages, size {}".format(
+                    self['size'] - decr
+                )
             )
-            cls.model = cls.make_model(messages, decrement=decr)
+            # The model cache depends on the state size, so if there is a state
+            # size decrement, discard it anyway
+            if decr != 0:
+                Gib.cache['model'] = None
+            model = (
+                Gib.cache['model']
+                if Gib.cache['model'] is not None
+                else Gib.make_model(messages, self['size'], decrement=decr)
+            )
             print("Making sentence")
-            sentence = cls.model.make_short_sentence(
-                400, minlength, tries=200, force_result=False
+            sentence = model.make_short_sentence(
+                400, self['minlength'], tries=200, force_result=False
             )
             if sentence is not None:
                 break
             print("Sentence is None")
-        if not cls.nocache and sentence in DB.get_gibs():
+        if not self['nocache'] and sentence in DB.get_gibs():
             print(
                 "Sentence already sent, {} attempts remaining".format(
-                    cls.ATTEMPT_LIMIT - attempts
+                    CONFIG['gib']['attempt_limit'] - attempts
                 )
             )
             try:
-                if attempts < cls.ATTEMPT_LIMIT:
-                    sentence = cls.get_gib_sentence(
-                        attempts + 1, limit, minlength, patterns
-                    )
+                if attempts < CONFIG['gib']['attempt_limit']:
+                    sentence = self.get_gib_sentence(attempts + 1, limit)
                 else:
                     raise RecursionError
-            except RecursionError:
+            except RecursionError as error:
                 raise MyFaultError(
                     "I didn't find any gibs for that selection "
                     "that haven't already been said."
-                )
+                ) from error
         if sentence is not None:
             DB.add_gib(sentence)
         return sentence
 
-    @classmethod
-    def make_model(cls, messages, decrement=0):
-        size = cls.size - decrement
+    @staticmethod
+    def make_model(messages, base_size, decrement=0):
+        """Generate the Markov model."""
+        size = base_size - decrement
         if size == 0:
             return None
-        else:
-            return MarkovFromList(messages, well_formed=False, state_size=size)
+        return MarkovFromList(messages, well_formed=False, state_size=size)
 
     @staticmethod
     def obfuscate(sentence, nicks):
@@ -378,8 +406,8 @@ class Gib:
         # string, which would match and therefore obfuscate all words
         return nicks.sub(Gib.obfuscate_word, sentence)
 
-    @classmethod
-    def obfuscate_word(cls, match):
+    @staticmethod
+    def obfuscate_word(match):
         """Obfuscates a single word to remove a ping."""
         word = list(match.group(0))
         for index, letter in enumerate(word):
@@ -390,12 +418,11 @@ class Gib:
             word.insert(2, "*")
         return "".join(word)
 
-    @classmethod
-    def roulette(cls, roulette_type):
-        """Get a random image or video link"""
+    def media_roulette(self):
+        """Get a random image or video link."""
         # take all the messages in the channel, filtered for links
         messages = DB.get_messages(
-            cls.channels, senders=cls.users, patterns=[_URL_PATT]
+            self['channel'], senders=self['user'], patterns=[_URL_PATT]
         )
         if len(messages) == 0:
             raise MyFaultError(
@@ -409,11 +436,11 @@ class Gib:
         # make urls unique
         urls = list(set(urls))
         # then filter by either images or videos
-        if roulette_type == 'image':
+        if self['media'] == 'image':
             urls = [url for url in urls if _IMG_PATT.search(url)]
             if len(urls) == 0:
                 raise MyFaultError("I didn't find any images.")
-        if roulette_type in ['video', 'youtube', 'yt']:
+        if self['media'] == 'youtube':
             urls = [url for url in urls if _YT_PATT.search(url)]
             if len(urls) == 0:
                 raise MyFaultError("I didn't find any video links.")

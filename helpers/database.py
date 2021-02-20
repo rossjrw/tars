@@ -400,7 +400,7 @@ class SqliteDriver:
         patterns=None,
         contains=None,
         minlength=None,
-        limit=None,
+        limit=-1,
     ):
         """Returns all messages from the channel by the user.\
         user, sender, pattern, contains should be lists (and channel can be)."""
@@ -417,7 +417,7 @@ class SqliteDriver:
         assert isinstance(patterns, (list, type(None)))
         assert isinstance(contains, (list, type(None)))
         assert isinstance(minlength, (int, type(None)))
-        assert isinstance(limit, (int, type(None)))
+        assert isinstance(limit, int)
         c.execute(
             '''
             SELECT id FROM channels
@@ -459,7 +459,7 @@ class SqliteDriver:
         if minlength is not None:
             q = q.where(Length(messages.message) >= minlength)
         q = q.orderby(messages.timestamp, order=Order.desc)
-        if limit is not None:
+        if limit >= 0:
             q = q[:limit]
         q = str(q).replace(" LIKE ", " GLOB ").replace(" REGEX ", " REGEXP ")
         print("Getting messages:", str(q))
