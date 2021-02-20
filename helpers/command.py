@@ -4,6 +4,7 @@ _command.py
 Provides the base Command class that all commands inherit from.
 """
 
+from abc import ABC, abstractmethod
 import argparse
 import copy
 import shlex
@@ -96,7 +97,11 @@ def help_formatter(prog):
     )
 
 
-class Command:
+class Command(ABC):
+    """Base command extended by all commands that generates documentation from
+    its internal argparse object. If this text appears outside of TARS' source
+    code, something has gone wrong."""
+
     # The canonical name of this command, lowercase
     command_name = None
 
@@ -256,3 +261,8 @@ class Command:
     def __len__(self):
         """Get the number of arguments given to this command"""
         return len(vars(self.args))
+
+    @abstractmethod
+    def execute(self, irc_c, msg, cmd):
+        """Method to be called when this command is run that implements its
+        functionality."""
