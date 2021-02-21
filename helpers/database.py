@@ -1393,9 +1393,9 @@ class SqliteDriver:
             c.execute(
                 '''
                 UPDATE articles
-                SET url=:url, category=:category,
-                    parent=:parent, rating=:rating,
-                    date_posted=:date_posted
+                SET url=:url, category=:category, parent=:parent,
+                    rating=:rating, date_posted=:date_posted, title=:title,
+                    scp_num=:scp_num
                 WHERE id=:id
                 ''',
                 article_data,
