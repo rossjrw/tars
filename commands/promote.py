@@ -6,10 +6,11 @@ Commands for IO to use to promote articles across social media.
 from tomlkit import loads
 from tomlkit import dumps
 
+from helpers.basecommand import Command
 
-class promote:
+
+class Promote(Command):
     """Base command, reliant on config"""
 
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
+    def execute(self, irc_c, msg, cmd):
         pass
