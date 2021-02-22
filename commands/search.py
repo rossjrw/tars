@@ -53,10 +53,6 @@ class Search(Command):
     of between 20 and 80, and were created between June 1st 2018 and the end of
     2018.)
 
-    @example(.s Unexplained Location -f -c 20d..40W3d --random)(matches pages
-    whose name is exactly "Unexplained Location" created between 20 days and
-    [40 weeks + 3 days] ago, and returns a random one.)
-
     @example(.s -x ^SCP-\d*2$ -m)(matches articles that start with "SCP-"
     followed by any amount of numbers so long as that number ends in a 2, and
     returns the one that most needs extra attention.)
