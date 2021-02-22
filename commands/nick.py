@@ -3,85 +3,126 @@
 For handling aliases and stuff like that.
 """
 
+from helpers.basecommand import Command
 from helpers.database import DB
 from helpers.error import CommandError, MyFaultError
 from helpers.defer import defer
 from helpers.config import CONFIG
 
 
-class alias:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
-        cmd.expandargs(["add a", "remove r", "wiki wikiname w", "list l"])
-        if len(cmd.args['root']) > 0:
-            nick = cmd.args['root'][0]
-        else:
-            nick = msg.sender
+class Alias(Command):
+    """Modify your aliases.
+
+    An alias is an alternate name for yourself. These names are currently only
+    used for @command(seen) and to stop the bot from pinging you in search
+    results (@command(search), @command(showmore)) and gibs (@command(gib)).
+
+    This command lets you view, add and remove your aliases.
+
+    Aliases cannot be shared.
+    """
+
+    command_name = "alias"
+    arguments = [
+        dict(
+            flags=['nick'],
+            type=str,
+            nargs=None,
+            default="",
+            help="""The target whose aliases you want to view or modify.
+
+            If not provided, defaults to yourself i.e. the nick you are
+            currently using. You can view the aliases of any nick, but you can
+            only modify your own aliases.
+            """,
+        ),
+        dict(
+            flags=['--add', '-a'],
+            type=str,
+            nargs='+',
+            help="""A list of aliases to add, separated by space.
+
+            If the alias you'd like to add contains a space, wrap it in quotes;
+            for example @example(..alias Kirby -a "Captain Kirby").
+            """,
+        ),
+        dict(
+            flags=['--remove', '-r'],
+            type=str,
+            nargs='+',
+            help="""A list of aliases to remove, separated by space.""",
+        ),
+        dict(
+            flags=['--list', '-l'],
+            type=bool,
+            help="""List the aliases associated with this nick.""",
+        ),
+        dict(
+            flags=['--wikiname', '-w'],
+            type=str,
+            nargs=None,
+            help="""Sets the Wikidot username associated with this IRC
+            nick.""",
+        ),
+    ]
+
+    def execute(self, irc_c, msg, cmd):
+        if self['nick'] == "":
+            self['nick'] = msg.sender
         # 1. Check if this is the right nick
         # get the user ID
-        user_id = DB.get_user_id(nick)
+        user_id = DB.get_user_id(self['nick'])
         if user_id is None:
-            msg.reply("I don't know anyone called '{}'.".format(nick))
+            msg.reply("I don't know anyone called '{}'.".format(self['nick']))
             return
         # 2. Add new aliases
-        if 'add' in cmd:
-            if nick.lower() != msg.sender.lower() and not defer.controller(
-                cmd
-            ):
+        if len(self['add']) > 0:
+            if self[
+                'nick'
+            ].lower() != msg.sender.lower() and not defer.controller(cmd):
                 raise CommandError("You can't add an alias for someone else.")
-            aliases = cmd['add']
-            if len(aliases) < 1:
-                raise CommandError("Provide at least one alias to add.")
-            # db has add_alias, but that needs user ID
-            for alias in aliases:
-                if alias.lower() == msg.sender.lower():
-                    continue
+            for alias in self['add']:
                 if DB.add_alias(user_id, alias, 1):
                     msg.reply(
-                        "{} already has the alias {}!".format(nick, alias)
+                        "{} already has the alias {}!".format(
+                            self['nick'], alias
+                        )
                     )
             msg.reply(
-                "Added aliases to {}: {}".format(nick, ", ".join(aliases))
+                "Added aliases to {}: {}".format(
+                    self['nick'], ", ".join(self['alias'])
+                )
             )
             irc_c.PRIVMSG(
                 CONFIG['channels']['home'],
-                "{} added alias {}".format(nick, alias),
+                "{} added alias {}".format(self['nick'], self['alias']),
             )
-        if 'remove' in cmd:
-            if nick.lower() != msg.sender.lower() and not defer.controller(
-                cmd
-            ):
+        if len(self['remove']) > 0:
+            if self[
+                'nick'
+            ].lower() != msg.sender.lower() and not defer.controller(cmd):
                 raise CommandError(
                     "You can't remove an alias from someone else."
                 )
-            aliases = cmd['remove']
-            if len(aliases) < 1:
-                raise CommandError("Provide at least one alias to remove.")
-            # db has add_alias, but that needs user ID
-            for alias in aliases:
+            for alias in self['remove']:
                 if not DB.remove_alias(user_id, alias, 1):
                     msg.reply(
-                        "{} didn't have the alias {}!".format(nick, alias)
+                        "{} didn't have the alias {}!".format(
+                            self['nick'], alias
+                        )
                     )
             msg.reply(
-                "Removed aliases from {}: {}".format(nick, ", ".join(aliases))
-            )
-        if 'wiki' in cmd:
-            if nick.lower() != msg.sender.lower() and not defer.controller(
-                cmd
-            ):
-                raise CommandError("You can't change someone else's wikiname.")
-            aliases = cmd['wiki']
-            if len(aliases) < 1:
-                raise CommandError(
-                    "Provide the Wikidot username. To see any known aliases, "
-                    "including Wikidot username, try .alias --list"
+                "Removed aliases from {}: {}".format(
+                    self['nick'], ", ".join(self['remove'])
                 )
-            # Wikidot names can contain spaces, and there can only be one
-            # wikiname in the database, so it is safe to concatenate
-            wikiname = " ".join(aliases)
+            )
+        if 'wikiname' in self:
+            if self[
+                'nick'
+            ].lower() != msg.sender.lower() and not defer.controller(cmd):
+                raise CommandError("You can't change someone else's wikiname.")
             # The wikiname might be taken by another user
-            wikiname_owner = DB.get_wikiname_owner(wikiname)
+            wikiname_owner = DB.get_wikiname_owner(self['wikiname'])
             if wikiname_owner is not None and wikiname_owner != user_id:
                 raise MyFaultError(
                     "Another user has claimed that Wikidot username. "
@@ -90,51 +131,49 @@ class alias:
                 )
 
             current_wikiname = DB.get_wikiname(user_id)
-            if current_wikiname == wikiname:
+            if current_wikiname == self['wikiname']:
                 msg.reply(
                     "{} Wikidot username is already {}!".format(
-                        "{}'s".format(nick) if nick != msg.sender else "Your",
-                        wikiname,
+                        "{}'s".format(self['nick'])
+                        if self['nick'].lower() != msg.sender.lower()
+                        else "Your",
+                        self['wikiname'],
                     )
                 )
             else:
-                DB.set_wikiname(user_id, wikiname)
+                DB.set_wikiname(user_id, self['wikiname'])
                 msg.reply(
                     "Updated {} Wikidot username {}to {}.".format(
-                        "{}'s".format(nick) if nick != msg.sender else "your",
+                        "{}'s".format(self['nick'])
+                        if self['nick'].lower() != msg.sender.lower()
+                        else "your",
                         ""
                         if current_wikiname is None
                         else "from {} ".format(current_wikiname),
-                        wikiname,
+                        self['wikiname'],
                     )
                 )
                 irc_c.PRIVMSG(
                     CONFIG['channels']['home'],
-                    "{} set wikiname {}".format(nick, wikiname),
+                    "{} set wikiname {}".format(
+                        self['nick'], self['wikiname']
+                    ),
                 )
-        if 'list' in cmd:
+        if self['list']:
             # get all aliases associated with the user
             aliases = DB.get_aliases(user_id)
             wikiname = DB.get_wikiname(user_id)
             msg.reply(
                 "I've seen {} go by the names: {}. {}".format(
-                    nick if nick != msg.sender else "you",
+                    self['nick'] if self['nick'] != msg.sender else "you",
                     ", ".join(aliases),
                     "I don't know {} Wikidot username.".format(
-                        "their" if nick != msg.sender else "your",
+                        "their" if self['nick'] != msg.sender else "your",
                     )
                     if wikiname is None
                     else "{} Wikidot username is {}.".format(
-                        "Their" if nick != msg.sender else "Your", wikiname,
+                        "Their" if self['nick'] != msg.sender else "Your",
+                        wikiname,
                     ),
                 )
-            )
-        if not any(
-            ['add' in cmd, 'remove' in cmd, 'list' in cmd, 'wiki' in cmd]
-        ):
-            raise CommandError(
-                "Usage: "
-                "Add/remove aliases to a nick with --add/--remove [nick(s)]. "
-                "Update your Wikidot name with --wiki [username]. "
-                "See all your known aliases with --list."
             )
