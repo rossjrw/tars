@@ -6,50 +6,96 @@ Used to be in analytic.py, but it's too long now.
 """
 
 from itertools import product, combinations_with_replacement
+from helpers.command import Command
 from helpers.database import DB
 from helpers.error import CommandError, MyFaultError
 
 
-class Shortest:
-    """Get the shortest unique search term for a page"""
+class Shortest(Command):
+    """Find the shortest search term for the page at URL, or the page named
+    TITLE.
 
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
-        cmd.expandargs(
-            ["url u", "title t",]
-        )
-        if 'title' not in cmd and 'url' not in cmd:
+    Looks through the database and plays golf with article titles. Can be
+    pretty slow, so give it a moment.
+
+    Usually (but not always) returns two results: 'single string' and 'multi
+    string'.
+
+    TARS enables you to search for articles by a string that can contain
+    spaces, using quotemarks, for example @example(.s "hello there") will
+    search for an article whose title literally contains the string "hello
+    there". The 'single string' result refers to this method.
+
+    TARS can also search for articles by multiple strings, delimited by spaces,
+    and this is also the only search method supported by other bots such as
+    Secretary_Helen and Crom. The search @example(.s hello there) will search
+    for an article whose titles contains both "hello" and "there" individually.
+    The 'multi string' result refers to this method.
+
+    If it takes TARS more than three minutes to calculate the shortest search
+    for something, it will be kicked from IRC. If you find an article this
+    happens for, please let me know.
+    """
+
+    command_name = ["shortest"]
+    arguments = [
+        dict(
+            flags=['--url', '-u'],
+            type=str,
+            nargs=None,
+            help="""The 'fullname' or 'slug' of an article as seen in its URL,
+            e.g. 'scp-173'.""",
+        ),
+        dict(
+            flags=['--title', '-t'],
+            type=str,
+            nargs=None,
+            help="""An article's title. Doesn't have to be a real one.
+
+            This argument can be any text, not just the title of an
+            already-existing article. You can use this to see whether or not
+            there will be an easy search for your article before you post it,
+            which may help you avoid terrible titles like "Tower" or "Why?".
+            """,
+        ),
+    ]
+
+    def execute(self, irc_c, msg, cmd):
+        if 'title' not in self and 'url' not in self:
             raise CommandError(
-                "Usage: ..shortest [--url URL | --title TITLE] — find the "
-                "shortest search for the page at URL, or the page named TITLE."
+                "At least one of --title or --url must be given."
             )
-        if 'title' in cmd:
-            title = " ".join(cmd['title'])
-        if 'url' in cmd:
-            url = cmd['url'][0].split("/")[-1]
-            if len(url) < 1:
-                raise CommandError(
-                    "Usage: ..shortest --url URL — URL should be the fullname "
-                    "as seen in an article's URL, e.g. 'scp-173'"
-                )
+        if 'title' in self:
+            title = self['title']
+        elif 'url' in self:
             try:
                 title = DB.get_article_info(
-                    DB.get_articles([{'type': 'url', 'term': url}])[0]
+                    DB.get_articles(
+                        [
+                            {
+                                'type': 'url',
+                                # Handle case where the whole URL was entered
+                                'term': self['url'][0].split("/")[-1],
+                            }
+                        ]
+                    )[0]
                 )['title']
-            except IndexError:
-                raise MyFaultError("I couldn't find the page with that URL.")
+            except IndexError as error:
+                raise MyFaultError(
+                    "I don't see any page at '{}'.".format(self['url'])
+                ) from error
         pages = [
             DB.get_article_info(p_id)['title'] for p_id in DB.get_articles([])
         ]
-        single_string = shortest.get_substring(title, pages)
-        helen_style = shortest.get_multi_substring(title, pages)
+        single_string = Shortest.get_substring(title, pages)
+        helen_style = Shortest.get_multi_substring(title, pages)
         if single_string is None and helen_style is None:
             raise MyFaultError(
                 "There's no unique search for \"{}\".".format(title)
             )
         msg.reply(
             "Shortest search for \"\x1d{}\x0F\" · {}".format(
-                title, shortest.pick_answer(single_string, helen_style),
+                title, Shortest.pick_answer(single_string, helen_style),
             )
         )
 
@@ -58,15 +104,18 @@ class Shortest:
         if single_string is None and helen_style is None:
             raise TypeError("None check should have been done by now")
         if helen_style is None or single_string == helen_style:
-            if ' ' in single_string:
-                return "\"\x02{}\x0F\"".format(single_string.lower())
+            if " " in single_string:
+                # There are spaces, so display this in quotemarks, and better
+                # be clear about what that means or people won't notice and
+                # will be confused
+                return (
+                    "single-string: \"\x02{}\x0F\" · there is no unique "
+                    "multi-string (Helen-compatible) search"
+                ).format(single_string.lower())
+            # No spaces, so is identical to a multi-string result anyway
             return "\x02{}\x0F".format(single_string.lower())
         if single_string is None:
             return "\x02{}\x0F".format(helen_style.lower())
-            return (
-                "single-string: \x02{}\x0F · There is no unique multi-string "
-                "(Helen-style) search"
-            ).format(single_string.lower())
         return "single string: \"\x02{}\x0F\" · multi string: \x02{}\x0F".format(
             single_string.lower(), helen_style.lower()
         )
@@ -109,7 +158,7 @@ class Shortest:
 
     @staticmethod
     def get_substring(selected_name, all_names):
-        length_substrings = shortest.get_all_substrings(selected_name)
+        length_substrings = Shortest.get_all_substrings(selected_name)
         for substrings in length_substrings:
             for substring in substrings:
                 if not any(
@@ -126,12 +175,12 @@ class Shortest:
     def get_multi_substring(selected_name, all_names):
         all_names = [name for name in all_names if name is not None]
         # first: check if there are *any* unique matches
-        if shortest.count_matches(selected_name.split(), all_names) == 0:
+        if Shortest.count_matches(selected_name.split(), all_names) == 0:
             print("Returning early")
             return None
         # then check normally
-        length_substrings = shortest.get_all_substrings(selected_name, False)
-        template_terms = shortest.get_term_sizes(
+        length_substrings = Shortest.get_all_substrings(selected_name, False)
+        template_terms = Shortest.get_term_sizes(
             min(10, len(selected_name)), 4
         )
         already_searched_terms = []
@@ -150,7 +199,7 @@ class Shortest:
                     continue
                 if sorted(search_term) in already_searched_terms:
                     continue
-                if shortest.count_matches(search_term, all_names) == 1:
+                if Shortest.count_matches(search_term, all_names) == 1:
                     return " ".join(search_term)
                 already_searched_terms.append(sorted(search_term))
         return None
