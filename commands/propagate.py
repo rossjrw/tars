@@ -17,7 +17,16 @@ def prop_print(text):
 
 
 class Propagate(Command):
-    command_name = 'prop'
+    """Updates articles' database entries.
+
+    This command is called automatically on a set timer to update articles from
+    the Crom API.
+
+    It can also be called manually to force an update or to update specific
+    articles.
+    """
+
+    command_name = "propagate"
     arguments = [
         dict(
             flags=['--sample'],
@@ -29,9 +38,15 @@ class Propagate(Command):
             type=bool,
             help="""Propagate all pages on the wiki.""",
         ),
-        dict(flags=['--seconds'],),
         dict(
-            flags=['manual'],
+            flags=['--seconds'],
+            type=int,
+            nargs=None,
+            help="""Propagate all pages created less than this many seconds
+            ago.""",
+        ),
+        dict(
+            flags=['slugs'],
             type=str,
             nargs='*',
             help="""List of page slugs to propagate manually.""",
@@ -39,8 +54,7 @@ class Propagate(Command):
     ]
 
     def execute(self, irc_c, msg, cmd):
-        # arg 1 should be a url name
-        if 'sample' in cmd:
+        if self['sample']:
             samples = [
                 "scp-173",
                 "scp-3939",
@@ -50,28 +64,24 @@ class Propagate(Command):
             ]
             msg.reply("Adding sample data...")
             Propagate.get_wiki_data_for_pages(samples, reply=msg.reply)
-        elif 'all' in cmd:
+        elif self['all']:
             if not defer.controller(cmd):
                 raise CommandError("I'm afriad I can't let you do that.")
             Propagate.get_wiki_data(reply=msg.reply)
-        elif 'seconds' in cmd:
-            Propagate.get_wiki_data(
-                reply=msg.reply, seconds=int(cmd['seconds'][0])
-            )
-        elif len(cmd.args['root']) > 0:
-            Propagate.get_wiki_data_for_pages(
-                cmd.args['root'], reply=msg.reply
-            )
+        elif 'seconds' in self:
+            Propagate.get_wiki_data(reply=msg.reply, seconds=self['seconds'])
+        elif len(self['slugs']) > 0:
+            Propagate.get_wiki_data_for_pages(self['slugs'], reply=msg.reply)
         else:
             raise CommandError("Bad command")
         msg.reply("Done!")
 
-    @classmethod
-    def get_wiki_data(cls, **kwargs):
+    @staticmethod
+    def get_wiki_data(**kwargs):
         """Gets wiki data for all pages."""
         reply = kwargs.pop('reply', lambda _: None)
         if 'seconds' in kwargs:
-            reply(f"Getting wiki data for last{kwargs['seconds']} seconds")
+            reply(f"Getting wiki data for last {kwargs['seconds']} seconds")
         else:
             reply("Getting wiki data for all pages")
         pages_generator = SCPWiki.get_all_pages(**kwargs)
@@ -83,8 +93,8 @@ class Propagate(Command):
                 DB.add_article(page, commit=False)
         DB.commit()
 
-    @classmethod
-    def get_wiki_data_for_pages(cls, slugs, **kwargs):
+    @staticmethod
+    def get_wiki_data_for_pages(slugs, **kwargs):
         """Gets wiki data for the pages indicated by the list of slugs."""
         reply = kwargs.pop('reply', lambda _: None)
         reply(f"Gettings wiki data for {len(slugs)} specific pages")
