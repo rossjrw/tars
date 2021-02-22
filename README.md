@@ -92,11 +92,13 @@ optional):
      boolean, with `true` indicating only a Controller can run it).
   * `type`: The same as `type` from argparse, but can also be the following
     values:
-    * `helpers.basecommand.regex_type`: Checks that the arguments correctly compile
-      to a regex, and exposes the argument values as compiled regex objects.
-    * `helpers.basecommand.matches_regex(rgx, reason)`: Checks that the provided
-      string matches regex `rgx` (can be a Pattern or a string); if it
-      does not, rejects the argument with the given reason.
+    * `helpers.basecommand.regex_type`: Checks that the arguments correctly
+      compile to a regex, and exposes the argument values as compiled regex
+      objects.
+    * `helpers.basecommand.matches_regex(rgx, reason)`: Checks that the
+      provided string matches regex `rgx` (can be a Pattern or a string); if it
+      does not, rejects the argument with the given reason. The reason should
+      complete the sentence "Argument rejected because the value..."
 * `defers_to`: A list of IRC nicks; if any of these nicks are present in the
   channel when the command would be executed, it will not be.
 * `permission`: The permission level required to run this command (currently

@@ -5,59 +5,77 @@ Pings everyone in the room.
 
 from pyaib.signals import await_signal
 
+from helpers.basecommand import Command, matches_regex
 from helpers.database import DB
 from helpers.defer import defer
 from helpers.error import CommandError, MyFaultError
 
 
-class pingall:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
-        """Ping everyone in the channel"""
-        cmd.expandargs(
-            [
-                "message msg m",  # message to be PM'd
-                "target t",  # channel op level target
-                "channel c",  # channel to get names from
-                "help h",
-            ]
-        )
+class Pingall(Command):
+    """Pings everyone in the room.
 
-        # TODO remove this check in the argparse refactor
-        if len(cmd.args['root']) > 0 or 'help' in cmd:
-            raise CommandError(
-                "Usage: ..pingall [--target level] [--message "
-                "message]. If -m is not set, ping will happen "
-                "in this channel. If -m is set, message will "
-                "be sent to users in PM."
-            )
+    Just dumps a list of everyone's names into the channel. Can also be used to
+    send a message to everyone in the room.
+    """
 
-        # TODO extend this to channel operator
+    command_name = "pingall"
+    arguments = [
+        dict(
+            flags=['--message', '-m'],
+            type=str,
+            nargs='+',
+            help="""Specify a message to be PMed to everyone.
+
+            When this option is added, instead of pinging everyone, TARS will
+            send a private message to everyone. The message will include your
+            name as well as the current channel.
+            """,
+        ),
+        dict(
+            flags=['--channel'],
+            type=matches_regex("^#", "must be a channel"),
+            mode='hidden',
+            help="""The channel for the NAMES request.""",
+        ),
+        dict(
+            flags=['--target', '-t'],
+            type=str,
+            nargs=None,
+            default="",
+            choices=["~", "&", "@", "%", "+"],
+            help="""The op level target.
+
+            Use this argument to choose who is pinged by op level in the
+            channel. For example, @example(..pingall -t @) will ping all
+            operators in the channel, and all ranks above that (admins and
+            owners).
+
+            The choices are the same as the symbols used on IRC:
+
+            * `~`: Channel owners.
+            * `&`: Channel admins and above.
+            * `@`: Channel operators and above.
+            * `%`: Channel half-ops and above.
+            * `+`: Voiced users (and all users with a role).
+            * Not specified: all users in the channel.
+            """,
+        ),
+    ]
+
+    def execute(self, irc_c, msg, cmd):
+        # TODO extend this to channel operator (or at least voiced)
         if not defer.controller(cmd):
             raise CommandError("You're not authorised to do that")
 
-        cmd.expandargs(["channel c"])
-        if 'channel' in cmd:
+        if 'channel' in self:
             if not defer.controller(cmd):
                 raise MyFaultError(
                     "You're not authorised to extract the "
                     "nicks of another channel"
                 )
-            channel = cmd['channel'][0]
+            channel = self['channel']
         else:
             channel = msg.raw_channel
-        if 'target' in cmd:
-            if len(cmd['target']) != 1:
-                raise CommandError(
-                    "Specify a target as a channel user mode "
-                    "symbol: one of +, %, @, &, ~"
-                )
-            if not cmd['target'][0] in '+%@&~' and len(cmd['target'][0]) == 1:
-                raise CommandError(
-                    "When using the --target/-t argument, the "
-                    "target must be a channel user mode: one "
-                    "of +, %, @, &, ~"
-                )
         # Issue a fresh NAMES request and await the response
         defer.get_users(irc_c, channel)
         try:
@@ -69,23 +87,20 @@ class pingall:
             pass
         finally:
             members = DB.get_occupants(channel, True, levels=True)
-        if 'target' in cmd:
-            modes = '+%@&~'
-            members = [
-                nick
-                for nick, mode in members
-                if mode is not None
-                and modes.find(mode) >= modes.find(cmd['target'][0])
-            ]
-        else:
-            members = [nick for nick, mode in members]
-        if 'message' in cmd:
-            message = " ".join(cmd.args['message'])
+        modes = "+%@&~"
+        members = [
+            nick
+            for nick, mode in members
+            if mode is not None
+            and modes.find(mode) >= modes.find(self['target'])
+            # Unspecified target is "" so this is genius honestly
+        ]
+        if len(self['message']) > 0:
             for member in members:
                 irc_c.PRIVMSG(
                     member,
-                    "{} (from {} in {})".format(
-                        " ".join(cmd.args['root']), msg.sender, msg.raw_channel
+                    "{1} in {2} says: {0}".format(
+                        " ".join(self['message']), msg.sender, msg.raw_channel
                     ),
                 )
             msg.reply("Message sent to selected users.")
