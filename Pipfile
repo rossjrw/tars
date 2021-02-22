@@ -32,6 +32,7 @@ beautifulsoup4 = "*"
 toml = "*"
 python-scuttle = "*"
 pre-commit = "*"
+apscheduler = "*"
 
 [requires]
 python_version = "3.8"

@@ -89,6 +89,7 @@ class SqliteDriver:
         except sqlite3.OperationalError as e:
             dbprint("The database could not be opened", True)
             raise
+        self.conn.execute("PRAGMA foreign_keys = 1")
         self._create_database()
         self.conn.row_factory = sqlite3.Row
         self.conn.create_function("REGEXP", 2, _regexp)
@@ -175,9 +176,13 @@ class SqliteDriver:
             );
             CREATE TABLE IF NOT EXISTS channels_users (
                 channel_id INTEGER NOT NULL
-                    REFERENCES channels(id),
+                    REFERENCES channels(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 user_id INTEGER NOT NULL
-                    REFERENCES users(id),
+                    REFERENCES users(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 user_mode CHARACTER(1),
                 date_checked INTEGER NOT NULL
                     DEFAULT (CAST(STRFTIME('%s','now') AS INT)),
@@ -185,7 +190,9 @@ class SqliteDriver:
             );
             CREATE TABLE IF NOT EXISTS user_aliases (
                 user_id INTEGER NOT NULL
-                    REFERENCES users(id),
+                    REFERENCES users(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 alias TEXT NOT NULL
                     COLLATE NOCASE,
                 type TEXT NOT NULL
@@ -220,14 +227,18 @@ class SqliteDriver:
             );
             CREATE TABLE IF NOT EXISTS articles_tags (
                 article_id INTEGER NOT NULL
-                    REFERENCES articles(id),
+                    REFERENCES articles(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 tag TEXT NOT NULL
                     COLLATE NOCASE,
                 UNIQUE(article_id, tag)
             );
             CREATE TABLE IF NOT EXISTS articles_authors (
                 article_id INTEGER NOT NULL
-                    REFERENCES articles(id),
+                    REFERENCES articles(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 author TEXT NOT NULL
                     COLLATE NOCASE,
                 metadata BOOLEAN NOT NULL
@@ -238,15 +249,21 @@ class SqliteDriver:
             CREATE TABLE IF NOT EXISTS showmore_list (
                 id INTEGER PRIMARY KEY,
                 channel_id INTEGER NOT NULL
-                    REFERENCES channels(id),
+                    REFERENCES channels(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 article_id INTEGER NOT NULL
-                    REFERENCES articles(id),
+                    REFERENCES articles(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 UNIQUE(channel_id, id)
             );
             CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY,
                 channel_id INTEGER
-                    REFERENCES channels(id),
+                    REFERENCES channels(id)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
                 kind TEXT NOT NULL
                     DEFAULT 'PRIVMSG',
                 sender TEXT NOT NULL
@@ -604,7 +621,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT alias FROM user_aliases
-            WHERE user_id IN ({})
+            WHERE user_id IN ({}) AND type='irc'
             '''.format(
                 ','.join(['?'] * len(ids))
             ),
@@ -728,6 +745,7 @@ class SqliteDriver:
             SELECT alias FROM user_aliases
             WHERE user_id IN (SELECT id FROM users
                               WHERE controller=1)
+                  AND type='irc'
             '''
         )
         return [row['alias'] for row in c.fetchall()]
@@ -753,7 +771,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT user_id FROM user_aliases
-            WHERE alias=?
+            WHERE alias=? AND type='irc'
             ''',
             (alias,),
         )
@@ -838,17 +856,14 @@ class SqliteDriver:
         c = self.conn.cursor()
         c.execute(
             '''
-            SELECT user_id FROM user_aliases WHERE alias=? AND type=?
+            SELECT user_id FROM user_aliases
+            WHERE alias=? AND type=?
             ''',
             (alias, type),
         )
         result = c.fetchall()
         if result:
             # this alias already exists
-            # c.execute('''
-            #     UPDATE user_aliases SET most_recent=0
-            #     WHERE alias=? AND type='irc'
-            #           ''', (
             if len(result) == 1:
                 # dbprint("User {} already exists as ID {}"
                 #         .format(nickColor(alias), norm(result)[0]))
@@ -894,9 +909,9 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT user_id FROM user_aliases
-            WHERE user_id=? AND alias=? AND weight=?
+            WHERE user_id=? AND alias=? AND weight=? AND type=?
             ''',
-            (user, alias, weight),
+            (user, alias, weight, nick_type),
         )
         combo_exists = len(c.fetchall())
         # things to do:
@@ -937,21 +952,74 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT user_id FROM user_aliases
-            WHERE user_id=? AND alias=?
+            WHERE user_id=? AND alias=? AND type=?
             ''',
-            (user, alias),
+            (user, alias, nick_type),
         )
         combo_exists = len(c.fetchall())
         # things to do:
         # scrap the alias
         c.execute(
             '''
-            DELETE FROM user_aliases WHERE user_id=? AND alias=?
+            DELETE FROM user_aliases
+            WHERE user_id=? AND alias=? AND type=?
             ''',
-            (user, alias),
+            (user, alias, nick_type),
         )
         self.conn.commit()
         return combo_exists
+
+    def set_wikiname(self, user, wikiname):
+        """Sets a user's wikiname."""
+        assert isinstance(user, int)
+        c = self.conn.cursor()
+        c.execute(
+            '''
+            DELETE FROM user_aliases
+            WHERE user_id=? AND type='wiki'
+            ''',
+            (user,),
+        )
+        c.execute(
+            '''
+            INSERT OR REPLACE INTO user_aliases
+                  (user_id, alias, type)
+            VALUES ( ? , ? , 'wiki' )
+            ''',
+            (user, wikiname,),
+        )
+        self.conn.commit()
+
+    def get_wikiname(self, user):
+        """Gets a user's wikiname or None."""
+        assert isinstance(user, int)
+        c = self.conn.cursor()
+        c.execute(
+            '''
+            SELECT alias FROM user_aliases
+            WHERE user_id=? AND type='wiki'
+            ''',
+            (user,),
+        )
+        row = c.fetchone()
+        if row is None:
+            return None
+        return row['alias']
+
+    def get_wikiname_owner(self, wikiname):
+        """Check who owns a wikiname. Returns their ID or None."""
+        c = self.conn.cursor()
+        c.execute(
+            '''
+            SELECT user_id FROM user_aliases
+            WHERE alias=? AND type='wiki'
+            ''',
+            (wikiname,),
+        )
+        row = c.fetchone()
+        if row is None:
+            return None
+        return row['user_id']
 
     def __rename_user(self, old, new, force=False):
         """Adds a new alias for a user"""
@@ -1055,7 +1123,7 @@ class SqliteDriver:
                     # prompt the user for confirmation?
                     pass
 
-    def rename_user(self, old_nick, new_nick):
+    def rename_user(self, old_nick, new_nick, nick_type='irc'):
         """Handle a user changing their name.
         This process operates at weight 0."""
         dbprint("Renaming {} to {}".format(old_nick, new_nick))
@@ -1070,9 +1138,9 @@ class SqliteDriver:
             WHERE alias=? AND weight=(
                 SELECT MAX(weight) FROM user_aliases
                 WHERE alias=?
-            )
+            ) AND type=?
             ''',
-            (old_nick, old_nick),
+            (old_nick, old_nick, nick_type),
         )
         old_id = c.fetchall()
         # old_id should be a single row (multiple if the nick is ambiguous)
@@ -1095,9 +1163,9 @@ class SqliteDriver:
             WHERE alias=? AND weight=(
                 SELECT MAX(weight) FROM user_aliases
                 WHERE alias=?
-            )
+            ) AND type=?
             ''',
-            (new_nick, new_nick),
+            (new_nick, new_nick, nick_type),
         )
         new_id = c.fetchall()
         if len(new_id) == 0:
@@ -1194,7 +1262,7 @@ class SqliteDriver:
         c.execute(
             '''
             SELECT user_id FROM user_aliases
-            WHERE alias=?
+            WHERE alias=? AND type='irc'
             ''',
             (msg['nick'],),
         )
@@ -1238,7 +1306,7 @@ class SqliteDriver:
                 WHERE channel_name=?)
             AND sender IN (
                 SELECT alias FROM user_aliases
-                WHERE user_id=(
+                WHERE user_id IN (
                     SELECT user_id FROM user_aliases
                     WHERE alias=?))
             ORDER BY timestamp
@@ -1257,6 +1325,7 @@ class SqliteDriver:
         # int rating
         # str fullname
         # str title
+        # str? meta_title
         # str created_at: ISO-8601
         # str? created_by
         # str? parent_fullname
@@ -1267,7 +1336,6 @@ class SqliteDriver:
         # 2. add to articles_tags
         # 3. add to articles_authors
         # 3.1 [allow metadata to overwrite articles_authors]
-        dbprint("Adding article {}".format(article['fullname']))
         c = self.conn.cursor()
         if 'ups' not in article:
             article['ups'] = None
@@ -1283,12 +1351,14 @@ class SqliteDriver:
                 article['url'] = article['fullname']
         if 'created_by' not in article or article['created_by'] is None:
             article['created_by'] = "an anonymous user"
-        # this dict will be fed into the database
+        # Is there a meta title that would override the page title?
+        has_meta = 'meta_title' in article
+        # Construct the article object that will be put in the DB
         article_data = {
             'url': article['url'],
             'category': article['category'],
-            'title': article['title'],
-            'scp_num': None,
+            'title': article.get('meta_title' if has_meta else 'title'),
+            'scp_num': article['title'] if has_meta else None,
             'parent': article['parent_fullname'],
             'rating': article['rating'],
             'ups': article['ups'],
@@ -1318,15 +1388,14 @@ class SqliteDriver:
             article_data['id'] = c.lastrowid
         else:
             # the article already exists and must be updated
-            dbprint("This article already exists", True)
             article_data['id'] = existing_article_data['id']
             # ignore ups/downs
             c.execute(
                 '''
                 UPDATE articles
-                SET url=:url, category=:category,
-                    parent=:parent, rating=:rating,
-                    date_posted=:date_posted
+                SET url=:url, category=:category, parent=:parent,
+                    rating=:rating, date_posted=:date_posted, title=:title,
+                    scp_num=:scp_num
                 WHERE id=:id
                 ''',
                 article_data,
@@ -1356,26 +1425,31 @@ class SqliteDriver:
             ''',
             [(article_data['id'], t) for t in article['tags']],
         )
-        c.execute(
-            '''
-            DELETE FROM articles_authors
-            WHERE article_id=? AND metadata=0
-            ''',
-            (article_data['id'],),
-        )
-        c.execute(
-            '''
-            INSERT INTO articles_authors (article_id, author)
-            VALUES ( ? , ? )
-            ''',
-            (article_data['id'], article['created_by']),
-        )
+        # If a list of authors has been passed, assume these to be accurate and
+        # call set_authors now; otherwise, assign what value we were given and
+        # defer to set_authors in the metadata acquisition step later
+        if isinstance(article['created_by'], list):
+            self.set_authors(article['url'], article['created_by'], commit)
+        else:
+            c.execute(
+                '''
+                DELETE FROM articles_authors
+                WHERE article_id=? AND metadata=0
+                ''',
+                (article_data['id'],),
+            )
+            c.execute(
+                '''
+                INSERT INTO articles_authors (article_id, author)
+                VALUES ( ? , ? )
+                ''',
+                (article_data['id'], article['created_by']),
+            )
         if commit:
             self.conn.commit()
 
     def delete_article(self, url, commit=True):
         """Delete an article by slug"""
-        dbprint("Adding article {}".format(url))
         c = self.conn.cursor()
         c.execute(
             '''
@@ -1383,24 +1457,6 @@ class SqliteDriver:
             WHERE url=?
             ''',
             (url,),
-        )
-        if commit:
-            self.conn.commit()
-
-    def add_article_title(self, url, num, title, commit=True):
-        """Update the meta title for an SCP"""
-        c = self.conn.cursor()
-        # for most articles: title is full, scp-num is null
-        # for scps: scp-num is fill, title is to be filled
-        # possibly TODO throw if scp doesn't exist
-        # title is allowed to be None
-        c.execute(
-            '''
-            UPDATE articles
-            SET title=?, scp_num=?
-            WHERE url=?
-            ''',
-            (title, num, url),
         )
         if commit:
             self.conn.commit()
@@ -1559,8 +1615,12 @@ class SqliteDriver:
             elif search['type'] is None:
                 q = q.where(
                     (art.title.like(search['term']))
-                    | (art.scp_num == search['term'].lower())
-                    | (art.scp_num == "scp-{}".format(search['term']))
+                    | (art.scp_num.regex(re.escape(search['term'])))
+                    | (
+                        art.scp_num.regex(
+                            re.escape("scp-{}".format(search['term']))
+                        )
+                    )
                 )
             elif search['type'] == 'regex':
                 q = q.where(art.title.regex(search['term']))

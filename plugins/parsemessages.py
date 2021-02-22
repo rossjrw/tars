@@ -32,7 +32,7 @@ def try_command(irc_c, msg, cmd, command_name=None):
     except CommandNotExistError:
         if cmd.ping:
             # there are .converse strings for pinged
-            return try_command('converse', irc_c, msg, cmd)
+            return try_command(irc_c, msg, cmd, 'converse')
         if msg.raw_channel is None:
             # should be only in pm
             msg.reply("I don't know what '{}' means.".format(command_name))

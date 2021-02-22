@@ -290,6 +290,9 @@ class Gib(Command):
         sentence = Gib.bracketify(sentence, (r"\(", "("), (r"\)", ")"))
         sentence = Gib.bracketify(sentence, (r"\[", "["), (r"\}", "]"))
         sentence = Gib.bracketify(sentence, (r"\{", "{"), (r"\}", "}"))
+        sentence = Gib.bracketify(sentence, ("“", "“"), (r"”", "”"))
+        sentence = Gib.bracketify(sentence, ("‘", "‘"), (r"’", "’"))
+        sentence = Gib.bracketify(sentence, ("«", "«"), (r"»", "»"))
 
         cmd.command = cmd.command.lower()
         if "oo" in cmd.command:

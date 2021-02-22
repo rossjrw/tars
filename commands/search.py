@@ -330,6 +330,35 @@ class Search(Command):
                             raise CommandError("Unknown rating comparison")
                     except MinMaxError as e:
                         raise CommandError(str(e).format("rating")) from e
+                elif rating[0] in [">", "<", "="]:
+                    pattern = r"^(?P<comp>[<>=]{1,2})(?P<value>-?[0-9]+)"
+                    match = re.search(pattern, rating)
+                    if match:
+                        try:
+                            rating = int(match.group('value'))
+                        except ValueError:
+                            raise CommandError("Invalid rating comparison")
+                        comp = match.group('comp')
+                        try:
+                            if comp == ">=":
+                                ratings >= rating
+                            elif comp == "<=":
+                                ratings <= rating
+                            elif comp == "<":
+                                ratings < rating
+                            elif comp == ">":
+                                ratings > rating
+                            elif comp == "=":
+                                ratings >= rating
+                                ratings <= rating
+                            else:
+                                raise CommandError(
+                                    "Unknown operator in rating comparison"
+                                )
+                        except MinMaxError as e:
+                            raise CommandError(str(e).format("rating"))
+                    else:
+                        raise CommandError("Invalid rating comparison")
                 else:
                     raise CommandError("Invalid rating comparison")
             else:
@@ -545,9 +574,10 @@ class Search(Command):
 
 
 class Regexsearch(Search):
-    """Searches the wiki for pages that match a regex. Exactly the same as
-    @command(search), except your search terms are parsed as regular
-    expressions. Not case-sensitive.
+    """Searches the wiki for pages that match a regex.
+
+    Exactly the same as @command(search), except your search terms are parsed
+    as regular expressions. Not case-sensitive.
 
     @example(.rs ^SCP- -t -scp)(searches for articles starting with "SCP-" but
     that are not tagged 'scp'.)
@@ -561,8 +591,7 @@ class Regexsearch(Search):
 
 
 class Tags(Search):
-    """Search by tags. Equivalent to `.s -t [tag]`.
-    """
+    """Search by tags. Equivalent to `.s -t [tag]`."""
 
     command_name = "tags"
     arguments_prepend = "--tags"
@@ -576,7 +605,7 @@ class Lastcreated(Search):
     """
 
     command_name = "lastcreated"
-    arguments_prepend = "--order recent --limit 3"
+    arguments_prepend = "--order recent --limit 3 --rating >-10"
 
 
 class MinMax:

@@ -53,16 +53,19 @@ class Showmore:
     @staticmethod
     def parse_title(page):
         """Makes a pretty string containing page info."""
-        title_preview = "\x02{}\x0F"
+        bold = "\x02{}\x0F"
         if Showmore.page_is_scp(page):
             if page['scp_num']:
-                title_preview = title_preview.format(page['scp_num'].upper())
                 if page['title']:
-                    title_preview += ": {}".format(page['title'])
+                    title_preview = "{}: {}".format(
+                        page['scp_num'].upper(), bold.format(page['title'])
+                    )
+                else:
+                    title_preview = bold.format(page['scp_num'].upper())
             else:
-                title_preview = title_preview.format(page['title'].upper())
+                title_preview = bold.format(page['title'])
         else:
-            title_preview = title_preview.format(page['title'])
+            title_preview = bold.format(page['title'])
         return "{} · {} · {} · {} · {}".format(
             title_preview,
             "by " + " & ".join(page['authors']),
