@@ -10,7 +10,7 @@ from datetime import datetime
 import pendulum as pd
 
 from commands.gib import Gib
-from helpers.command import Command
+from helpers.basecommand import Command
 from helpers.error import CommandError, MyFaultError
 from helpers.parse import nickColor
 from helpers.database import DB

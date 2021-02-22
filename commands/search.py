@@ -17,7 +17,7 @@ import pendulum as pd
 
 from commands.gib import Gib
 from commands.showmore import Showmore
-from helpers.command import Command
+from helpers.basecommand import Command
 from helpers.defer import defer
 from helpers.api import GOOGLE_CSE_API_KEY, GOOGLE_CSE_ID
 from helpers.error import CommandError, isint

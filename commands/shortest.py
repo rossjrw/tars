@@ -6,7 +6,7 @@ Used to be in analytic.py, but it's too long now.
 """
 
 from itertools import product, combinations_with_replacement
-from helpers.command import Command
+from helpers.basecommand import Command
 from helpers.database import DB
 from helpers.error import CommandError, MyFaultError
 

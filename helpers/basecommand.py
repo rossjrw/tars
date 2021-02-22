@@ -1,6 +1,4 @@
 """
-_command.py
-
 Provides the base Command class that all commands inherit from.
 """
 

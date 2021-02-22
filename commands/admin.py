@@ -9,7 +9,7 @@ import sys
 import git
 
 from commands.gib import Gib
-from helpers.command import Command, matches_regex
+from helpers.basecommand import Command, matches_regex
 from helpers.greetings import kill_bye
 from helpers.error import CommandError
 from helpers.database import DB

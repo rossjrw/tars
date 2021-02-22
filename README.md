@@ -75,7 +75,7 @@ file as the major command's file.
 Create a new file in `commands/` named the same as your major command.
 
 Within this file, create a new class named for the major command that extends
-`helpers.command.Command`, with the following properties (all of which are
+`helpers.basecommand.Command`, with the following properties (all of which are
 optional):
 
 * `command_name`: The canonical name of this command, used for documentation;
@@ -92,9 +92,9 @@ optional):
      boolean, with `true` indicating only a Controller can run it).
   * `type`: The same as `type` from argparse, but can also be the following
     values:
-    * `helpers.command.regex_type`: Checks that the arguments correctly compile
+    * `helpers.basecommand.regex_type`: Checks that the arguments correctly compile
       to a regex, and exposes the argument values as compiled regex objects.
-    * `helpers.command.matches_regex(rgx, reason)`: Checks that the provided
+    * `helpers.basecommand.matches_regex(rgx, reason)`: Checks that the provided
       string matches regex `rgx` (can be a Pattern or a string); if it
       does not, rejects the argument with the given reason.
 * `defers_to`: A list of IRC nicks; if any of these nicks are present in the

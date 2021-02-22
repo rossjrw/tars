@@ -4,7 +4,7 @@ For propagating the database with wiki data.
 """
 
 from helpers.api import SCPWiki
-from helpers.command import Command
+from helpers.basecommand import Command
 from helpers.error import CommandError
 from helpers.parse import nickColor
 from helpers.database import DB

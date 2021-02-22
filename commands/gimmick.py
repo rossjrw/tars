@@ -9,7 +9,7 @@ from random import choice, randint
 from emoji import emojize
 import requests
 
-from helpers.command import Command
+from helpers.basecommand import Command
 from helpers.defer import defer
 
 

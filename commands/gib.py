@@ -9,7 +9,7 @@ import re
 from emoji import emojize
 import markovify
 
-from helpers.command import Command, matches_regex, regex_type
+from helpers.basecommand import Command, matches_regex, regex_type
 from helpers.config import CONFIG
 from helpers.database import DB
 from helpers.defer import defer
