@@ -1618,7 +1618,9 @@ class SqliteDriver:
                     | (art.scp_num.regex(re.escape(search['term'])))
                     | (
                         art.scp_num.regex(
-                            re.escape("scp-{}".format(search['term']))
+                            "scp-{}($|[^0-9])".format(
+                                re.escape(search['term'])
+                            )
                         )
                     )
                 )
