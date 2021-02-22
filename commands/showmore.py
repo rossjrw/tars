@@ -7,35 +7,63 @@ Accesses the most recent list for the current channel from the db.
 import re
 import pendulum as pd
 from helpers.database import DB
-from helpers.defer import defer
-from helpers.error import CommandError, MyFaultError, isint
+from helpers.command import Command
+from helpers.error import MyFaultError
 
 
-class Showmore:
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
-        if defer.check(cmd, 'jarvis', 'Secretary_Helen'):
-            return
-        if len(cmd.args['root']) > 1 or not all(map(isint, cmd.args['root'])):
-            raise CommandError(
-                "Specify the number of the article you want "
-                "(or none to see the choices)"
-            )
-        elif len(cmd.args['root']) == 0:
-            number = 0
-        else:
-            number = int(cmd.args['root'][0])
+class Showmore(Command):
+    """Pick which article you want from previous search results.
+
+    When TARS presents you with a list of articles to pick from, for example
+    from the results of @command(search), use this command to pick which one
+    you want to see.
+
+    @example(..sm 2)(pick the 2nd article from the list.)
+
+    Anyone can use @command(showmore) on the last list that TARS created in a
+    given channel, even if TARS has been offline, and even if that person
+    didn't issue the command that created that list. When a new list is created
+    in a channel, it will overwrite the old list.
+
+    Use @example(..sm) or @example(..sm 0) to see the whole list.
+
+    Note that Secretary_Helen implements a similar command with a couple of
+    differences:
+
+    1. Picking a result will remove it from the list; for example, you can
+    repeatedly issue @example(.sm 1) to iterate through the list. TARS does not
+    remove results from the list; repeating issuing @example(.sm 1) will always
+    get you the same article.
+    2. Each user has their own list which other users cannot access. TARS
+    stores list per-channel, so anyone in that channel can access them.
+    """
+
+    defers_to = ["jarvis", "Secretary_Helen"]
+    arguments = [
+        dict(
+            flags=['index'],
+            type=int,
+            nargs=None,
+            default=0,
+            help="""The index of the cached results list to fetch.
+
+            If 0 or not provided, the whole list will be shown.
+            """,
+        )
+    ]
+
+    def execute(self, irc_c, msg, cmd):
         page_ids = DB.get_showmore_list(msg.raw_channel)
         if len(page_ids) == 0:
             raise MyFaultError("I have nothing to show more of.")
-        if number > len(page_ids):
+        if self['index'] > len(page_ids):
             raise MyFaultError(
                 "I only have {} results for the last search.".format(
                     len(page_ids)
                 )
             )
-        pages = [DB.get_article_info(p_id) for p_id in page_ids]
-        if number == 0:
+        pages = [DB.get_article_info(page_id) for page_id in page_ids]
+        if self['index'] == 0:
             msg.reply(
                 "{} saved results (use ..sm to choose): {}".format(
                     len(pages), Showmore.parse_multiple_titles(pages)
@@ -44,9 +72,9 @@ class Showmore:
         else:
             msg.reply(
                 "{}/{} · {}".format(
-                    number,
+                    self['index'],
                     len(page_ids),
-                    Showmore.parse_title(pages[number - 1]),
+                    Showmore.parse_title(pages[self['index'] - 1]),
                 )
             )
 
