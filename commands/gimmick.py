@@ -128,9 +128,10 @@ class Fiction(Command):
         msg.reply("https://www.youtube.com/watch?v=ioGoPOAxkCg")
 
 
-class balls:
-    @classmethod
-    def command(cls, irc_c, msg, cmd):
+class Balls(Command):
+    """balls"""
+
+    def execute(self, irc_c, msg, cmd):
         repeat = randint(2, 15)
         output = ""
         for _ in range(0, repeat):
@@ -153,15 +154,33 @@ class balls:
         msg.reply(output)
 
 
-class punctuation:
-    @classmethod
-    def command(cls, irc_c, msg, cmd):
+class Punctuation(Command):
+    """Quick copy-pastes for common but hard-to-find characters."""
+
+    def execute(self, irc_c, msg, cmd):
         msg.reply("dot: · en: – em: — blackbox: █")
 
 
-class tell:
-    @classmethod
-    def command(cls, irc_c, msg, cmd):
-        if defer.check(cmd, 'jarvis', 'Secretary_Helen'):
-            return
+class Tell(Command):
+    """Calls you a dumbass.
+
+    TARS intentionally doesn't support `.tell`, so as to avoid causing
+    confusion with other bots on the network. It would be a bit of a pain
+    sending a message with one bot, only for it to take forever to arrive
+    because most of the other user's interactions are with another bot.
+
+    You can send a message to any user on SkipIRC using MemoServ with
+    @example(/ms send nick <message>), which will even tell you when they've
+    read it.
+
+    If you write a tell in a channel with TARS but no other bot that TARS
+    knows, it will call you a dumbass. This will hopefully prompt you to
+    rewrite your message elsewhere. If TARS didn't respond at all, you might
+    not notice and go on with your life, and the message would never be sent.
+    """
+
+    command_name = "tell"
+    defers_to = ["jarvis", "Secretary_Helen"]
+
+    def execute(self, irc_c, msg, cmd):
         msg.reply("{}: dumbass".format(msg.sender))
