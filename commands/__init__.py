@@ -31,7 +31,7 @@ COMMANDS = {
     "refactor": {"Refactor": {"refactor"},},
     "nick": {"Alias": {"alias"},},
     # Staff tools
-    "record": {"Record": {"record"}, "Pingall": {"pingall"},},
+    "pingall": {"Pingall": {"pingall"},},
     "promote": {"Promote": {"promote"},},
     # Internal commands
     "admin": {
