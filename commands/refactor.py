@@ -9,42 +9,62 @@ TEMPORARY commands for refactoring the database.
 TARS will not allow you to refactor a 2nd time unless you issue .reload again.
 """
 
-from helpers.error import CommandError
+from helpers.basecommand import Command
 from helpers.database import DB
 from helpers.defer import defer
+from helpers.error import CommandError
 
 
-class refactor:
+class Refactor(Command):
+    """Modifies the database.
+
+    Executes an SQL mutation against the database. Only Controllers can use
+    this command.
+
+    Hardcoded refactoring can only be performed once per reload/reboot, as a
+    mild sanity check. The hardcoded query should be edited whenever, but it
+    should not be committed.
+    """
+
     has_refactored = False
+    arguments = [
+        dict(
+            flags=['--force'],
+            type=bool,
+            help="""Ignore the refactor-only-once-per-reload check.""",
+        ),
+        dict(
+            flags=['--sql'],
+            type=str,
+            nargs='+',
+            help="""An SQL query to issue.
 
-    @classmethod
-    def execute(cls, irc_c, msg, cmd):
+            If not provided, the hardcoded SQL query at
+            `commands.refactor.Refactor.refactor_database` is used, which is
+            preferable.
+            """,
+        ),
+    ]
+
+    def execute(self, irc_c, msg, cmd):
         if not defer.controller(cmd):
             raise CommandError("I'm afriad I can't let you do that.")
             return
-        if cls.has_refactored and 'force' not in cmd:
+        if Refactor.has_refactored and not self['force']:
             raise CommandError("Already refactored once this reload.")
-        if 'callback' in cmd:
-            print(cmd['callback'])
-            if cmd['callback'][0] == "msg.reply":
-                callback = msg.reply
-            else:
-                raise CommandError("Unknown callback")
-        else:
-            callback = None
         try:
-            if 'sql' in cmd:
-                DB.issue(" ".join(cmd['sql']), callback=callback)
+            if len(self['sql']) > 0:
+                DB.issue(" ".join(cmd['sql']), callback=msg.reply)
             else:
-                refactor.refactor_database(irc_c)
-                cls.has_refactored = True
+                Refactor.refactor_database()
+                Refactor.has_refactored = True
         except:
             msg.reply("Refactoring failed.")
             raise
         msg.reply("Refactoring succeeded.")
 
     @staticmethod
-    def refactor_database(irc_c):
+    def refactor_database():
         """Query is NOT executed as script"""
         # DB.issue()
         # DB.issue("PRAGMA foreign_keys = 0")
