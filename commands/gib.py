@@ -39,7 +39,7 @@ class Gib(Command):
 
     Additionally, any pings (username mentions) that are produced in the
     output will be censored to avoid annoying anyone not present in the
-    conversation. To add a nick to the list of pings to search, see
+    conversation. To add your nick to the list of pings to remove, see
     @command(alias).
 
     TARS keeps a list of all gibs it's made. It will never make the same gib
@@ -58,7 +58,7 @@ class Gib(Command):
     defers_to = ["jarvis"]
     arguments = [
         dict(
-            flags=['--user', '-u'],
+            flags=['--user', '-u', '--author', '-a'],
             type=str,
             nargs='+',
             help="""Filter source messages by user(s).
@@ -69,7 +69,7 @@ class Gib(Command):
             """,
         ),
         dict(
-            flags=['--channel', '-c'],
+            flags=['--channel', '--ch', '-c'],
             type=matches_regex(r"^#", "must be a channel"),
             nargs='+',
             help="""Filter source messages by channel.
@@ -185,7 +185,7 @@ class Gib(Command):
         if 'media' in self:
             limit = -1
         if 'me' in self:
-            self['regex'].append(r"\u0001ACTION ")
+            self['regex'].append(re.compile(r"^\u0001ACTION "))
         # can only gib a channel both the user and the bot are in
         for channel in self['channel']:
             if channel == msg.raw_channel:

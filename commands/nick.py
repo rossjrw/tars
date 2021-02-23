@@ -32,8 +32,8 @@ class Alias(Command):
             help="""The target whose aliases you want to view or modify.
 
             If not provided, defaults to yourself i.e. the nick you are
-            currently using. You can view the aliases of any nick, but you can
-            only modify your own aliases.
+            currently using. You can @argument(view) the aliases of any nick,
+            but you can only modify your own aliases.
             """,
         ),
         dict(
@@ -42,8 +42,8 @@ class Alias(Command):
             nargs='+',
             help="""A list of aliases to add, separated by space.
 
-            If the alias you'd like to add contains a space, wrap it in quotes;
-            for example @example(..alias Kirby -a "Captain Kirby").
+            If the alias you'd like to add contains a space, wrap it in quotes:
+            @example(..alias 007 --add "James Bond").
             """,
         ),
         dict(
@@ -55,7 +55,7 @@ class Alias(Command):
         dict(
             flags=['--list', '-l'],
             type=bool,
-            help="""List the aliases associated with this nick.""",
+            help="""Lists the aliases associated with this nick.""",
         ),
         dict(
             flags=['--wikiname', '-w'],

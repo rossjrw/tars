@@ -75,8 +75,8 @@ class Join(Command):
 class Leave(Command):
     """Have the bot leave a channel.
 
-    This is the only way to make the bot leave your channel for good. Kicking
-    it will not work — it will come back when it is rebooted.
+    This is the only way to make the bot leave your channel for good. Just
+    kicking it will not work, as it will come back when it is rebooted.
     """
 
     command_name = "leave"
@@ -232,9 +232,6 @@ class Config(Command):
 
 
 class Debug(Command):
-
-    command_name = "debug"
-
     def execute(self, irc_c, msg, cmd):
         # msg.reply(", ".join("%s: %s" % item for item in vars(msg).items()))
         pass

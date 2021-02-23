@@ -42,9 +42,6 @@ class Search(Command):
     meant any of them. To pick your article from the list, see
     @command(showmore).
 
-    @command(regexsearch), @command(tags), @command(random) and
-    @command(lastcreated) are aliases of this command.
-
     @example(TARS: search -t +scp +meta -r >100 -c 2014)(matches pages tagged
     both "scp" and "meta", with a rating of more than 100, posted in 2014.)
 

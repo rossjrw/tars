@@ -10,11 +10,10 @@ from emoji import emojize
 import requests
 
 from helpers.basecommand import Command
-from helpers.defer import defer
 
 
 class Idea(Command):
-    """Generates a random SCP idea."""
+    """Generates a random SCP idea using Mikroscopic's idea generator."""
 
     command_name = "idea"
 
@@ -30,7 +29,9 @@ class Idea(Command):
 
 
 class Hug(Command):
-    """Show your appreciation for TARS physically."""
+    """Shows your appreciation for TARS physically."""
+
+    command_name = "hug"
 
     def execute(self, irc_c, msg, cmd):
         if msg.sender == "Jazstar":
@@ -42,8 +43,6 @@ class Hug(Command):
 
 
 class Reptile(Command):
-    """rawr"""
-
     def execute(self, irc_c, msg, cmd):
         repeat = 31 if msg.sender == "CuteGirl" else 2
         output = ""
@@ -53,8 +52,6 @@ class Reptile(Command):
 
 
 class Fish(Command):
-    """blub blub"""
-
     def execute(self, irc_c, msg, cmd):
         repeat = 2
         output = ""
@@ -64,8 +61,6 @@ class Fish(Command):
 
 
 class Bear(Command):
-    """grrr"""
-
     def execute(self, irc_c, msg, cmd):
         repeat = 2
         output = ""
@@ -75,8 +70,6 @@ class Bear(Command):
 
 
 class Cat(Command):
-    """nyao"""
-
     def execute(self, irc_c, msg, cmd):
         repeat = 2
         output = ""
@@ -102,8 +95,6 @@ class Cat(Command):
 
 
 class Narcissism(Command):
-    """Awful requests by awful people"""
-
     def execute(self, irc_c, msg, cmd):
         if cmd.command == "rounderhouse":
             msg.reply(emojize(":red_circle::house:"))
@@ -116,6 +107,8 @@ class Narcissism(Command):
 class Password(Command):
     """Helpful hints for newbies for finding the passcode."""
 
+    command_name = "passcode"
+
     def execute(self, irc_c, msg, cmd):
         msg.reply("look harder fuckwit")
 
@@ -124,13 +117,13 @@ class Fiction(Command):
     """Links to a useful repository for newbies who are wondering if SCP is
     actually real."""
 
+    command_name = "fiction"
+
     def execute(self, irc_c, msg, cmd):
         msg.reply("https://www.youtube.com/watch?v=ioGoPOAxkCg")
 
 
 class Balls(Command):
-    """balls"""
-
     def execute(self, irc_c, msg, cmd):
         repeat = randint(2, 15)
         output = ""
@@ -156,6 +149,8 @@ class Balls(Command):
 
 class Punctuation(Command):
     """Quick copy-pastes for common but hard-to-find characters."""
+
+    command_name = "punctuation"
 
     def execute(self, irc_c, msg, cmd):
         msg.reply("dot: · en: – em: — blackbox: █")
