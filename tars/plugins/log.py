@@ -29,19 +29,25 @@ def gimmick(message):
 
 @plugin_class('log')
 class Log:
+    banned = False
+    print_everything = False
+
     def __init__(self, irc_c, config):
         print("Log Plugin Loaded!")
 
-    # @observe('IRC_RAW_MSG','IRC_RAW_SEND')
-    # def print_everything(self, irc_c, msg):
-    #     print(msg)
+    @observe('IRC_RAW_MSG', 'IRC_RAW_SEND')
+    def print_all_messages(self, irc_c, msg):
+        if Log.banned:
+            print(msg)
+            sys.exit(1)
+        elif Log.print_everything:
+            print(msg)
 
     @observe('IRC_MSG_465')
-    async def stop_connecting_if_banned(self, irc_c, msg):
+    def stop_connecting_if_banned(self, irc_c, msg):
         print(msg)
-        print("Quitting in 1 second")
-        time.sleep(1)
-        sys.exit(1)
+        print("Banned! oh no")
+        Log.banned = True
 
     @observe(
         'IRC_MSG_PRIVMSG',
