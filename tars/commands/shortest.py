@@ -6,9 +6,9 @@ Used to be in analytic.py, but it's too long now.
 """
 
 from itertools import product, combinations_with_replacement
-from helpers.basecommand import Command
-from helpers.database import DB
-from helpers.error import CommandError, MyFaultError
+from tars.helpers.basecommand import Command
+from tars.helpers.database import DB
+from tars.helpers.error import CommandError, MyFaultError
 
 
 class Shortest(Command):

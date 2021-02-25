@@ -3,12 +3,12 @@
 For propagating the database with wiki data.
 """
 
-from helpers.api import SCPWiki
-from helpers.basecommand import Command
-from helpers.error import CommandError
-from helpers.parse import nickColor
-from helpers.database import DB
-from helpers.defer import defer
+from tars.helpers.api import SCPWiki
+from tars.helpers.basecommand import Command
+from tars.helpers.error import CommandError
+from tars.helpers.parse import nickColor
+from tars.helpers.database import DB
+from tars.helpers.defer import defer
 
 
 def prop_print(text):

@@ -6,9 +6,9 @@ Accesses the most recent list for the current channel from the db.
 
 import re
 import pendulum as pd
-from helpers.database import DB
-from helpers.basecommand import Command
-from helpers.error import MyFaultError
+from tars.helpers.database import DB
+from tars.helpers.basecommand import Command
+from tars.helpers.error import MyFaultError
 
 
 class Showmore(Command):

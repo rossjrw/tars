@@ -13,7 +13,7 @@ COMMANDS = {
 import sys
 from importlib import import_module, reload
 
-from helpers.error import CommandNotExistError
+from tars.helpers.error import CommandNotExistError
 
 COMMANDS = {
     # Searching
@@ -106,10 +106,10 @@ def cmdprint(text, error=False):
 COMMANDS = CommandsDirectory(COMMANDS)
 
 for file in COMMANDS.get():
-    if "commands.{}".format(file) in sys.modules:
-        reload(sys.modules["commands.{}".format(file)])
+    if "tars.commands.{}".format(file) in sys.modules:
+        reload(sys.modules["tars.commands.{}".format(file)])
     else:
-        import_module(".{}".format(file), "commands")
+        import_module(".{}".format(file), "tars.commands")
     for cmd in COMMANDS.get(file):
         cmdprint("Importing {} from {}".format(cmd, file))
         for alias in COMMANDS.get(file, cmd):

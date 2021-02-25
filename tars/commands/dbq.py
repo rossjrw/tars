@@ -9,12 +9,12 @@ from datetime import datetime
 
 import pendulum as pd
 
-from commands.gib import Gib
-from helpers.basecommand import Command
-from helpers.error import CommandError, MyFaultError
-from helpers.parse import nickColor
-from helpers.database import DB
-from helpers.defer import defer
+from tars.commands.gib import Gib
+from tars.helpers.basecommand import Command
+from tars.helpers.error import CommandError, MyFaultError
+from tars.helpers.parse import nickColor
+from tars.helpers.database import DB
+from tars.helpers.defer import defer
 
 
 class Query(Command):

@@ -10,9 +10,9 @@ Whenever we gets a NAMES response from the server, save that info to the db.
 import re
 from pyaib.plugins import observe, plugin_class
 from pyaib.signals import emit_signal
-from helpers.parse import nickColor
-from helpers.database import DB
-from helpers.defer import defer
+from tars.helpers.parse import nickColor
+from tars.helpers.database import DB
+from tars.helpers.defer import defer
 
 
 def nameprint(text, error=False):

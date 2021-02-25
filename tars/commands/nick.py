@@ -3,11 +3,11 @@
 For handling aliases and stuff like that.
 """
 
-from helpers.basecommand import Command
-from helpers.database import DB
-from helpers.error import CommandError, MyFaultError
-from helpers.defer import defer
-from helpers.config import CONFIG
+from tars.helpers.basecommand import Command
+from tars.helpers.database import DB
+from tars.helpers.error import CommandError, MyFaultError
+from tars.helpers.defer import defer
+from tars.helpers.config import CONFIG
 
 
 class Alias(Command):

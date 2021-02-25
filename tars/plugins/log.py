@@ -8,10 +8,10 @@ import sys
 from pyaib.plugins import plugin_class
 from pyaib.components import observe
 from pyaib.signals import emit_signal, await_signal
-from helpers import parse
+from tars.helpers import parse
 from pprint import pprint
-from helpers.database import DB
-from helpers.config import CONFIG
+from tars.helpers.database import DB
+from tars.helpers.config import CONFIG
 
 
 def gimmick(message):

@@ -7,11 +7,11 @@ from importlib import reload
 
 from pyaib.plugins import observe, plugin_class
 
-import commands
+import tars.commands
 
-from helpers import parse
-from helpers.config import CONFIG
-from helpers.error import (
+from tars.helpers import parse
+from tars.helpers.config import CONFIG
+from tars.helpers.error import (
     CommandError,
     CommandNotExistError,
     MyFaultError,
@@ -25,7 +25,7 @@ def try_command(irc_c, msg, cmd, command_name=None):
         command_name = cmd.command
     try:
         # commands are kept in the commands/ module.
-        command_class = getattr(commands.COMMANDS, command_name)
+        command_class = getattr(tars.commands.COMMANDS, command_name)
         command = command_class(cmd.message)
         command.execute(irc_c, msg, cmd)
         return 0
@@ -71,7 +71,7 @@ def execute_commands(irc_c, msg, cmds, command_name=None):
             # special case for .reload - needs high priority
             msg.reply("Reloading commands...")
             try:
-                reload(commands)
+                reload(tars.commands)
             except:
                 msg.reply("Reload failed.")
                 raise

@@ -9,11 +9,11 @@ import re
 from emoji import emojize
 import markovify
 
-from helpers.basecommand import Command, matches_regex, regex_type
-from helpers.config import CONFIG
-from helpers.database import DB
-from helpers.defer import defer
-from helpers.error import CommandError, MyFaultError
+from tars.helpers.basecommand import Command, matches_regex, regex_type
+from tars.helpers.config import CONFIG
+from tars.helpers.database import DB
+from tars.helpers.defer import defer
+from tars.helpers.error import CommandError, MyFaultError
 
 _URL_PATT = (
     r"https?:\/\/(www\.)?"

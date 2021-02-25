@@ -6,8 +6,8 @@ For checking whether a command should defer to jarvis or Secretary_Helen.
 # jarvis: "Page not found."
 # helen: "NICK: I'm sorry, I couldn't find anything."
 
-from helpers.database import DB
-from helpers.config import CONFIG
+from tars.helpers.database import DB
+from tars.helpers.config import CONFIG
 
 
 class defer:

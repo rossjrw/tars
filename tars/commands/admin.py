@@ -8,12 +8,12 @@ import sys
 
 import git
 
-from commands.gib import Gib
-from helpers.basecommand import Command, matches_regex
-from helpers.greetings import kill_bye
-from helpers.error import CommandError
-from helpers.database import DB
-from helpers.defer import defer
+from tars.commands.gib import Gib
+from tars.helpers.basecommand import Command, matches_regex
+from tars.helpers.greetings import kill_bye
+from tars.helpers.error import CommandError
+from tars.helpers.database import DB
+from tars.helpers.defer import defer
 
 
 class Helenhere(Command):

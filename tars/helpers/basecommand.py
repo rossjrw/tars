@@ -8,7 +8,7 @@ import copy
 import shlex
 import re
 
-from helpers.error import (
+from tars.helpers.error import (
     CommandParsingError,
     CommandError,
     CommandParsingHelp,

@@ -8,8 +8,8 @@ from functools import partial
 from apscheduler.schedulers.gevent import GeventScheduler
 from pyaib.plugins import plugin_class
 
-from commands.propagate import propagate
-from helpers.config import CONFIG
+from tars.commands.propagate import propagate
+from tars.helpers.config import CONFIG
 
 
 @plugin_class("scheduler")

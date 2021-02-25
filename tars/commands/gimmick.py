@@ -9,7 +9,7 @@ from random import choice, randint
 from emoji import emojize
 import requests
 
-from helpers.basecommand import Command
+from tars.helpers.basecommand import Command
 
 
 class Idea(Command):

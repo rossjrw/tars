@@ -8,11 +8,11 @@ import time
 
 import platform, distro
 
-from helpers.basecommand import Command
-from helpers.config import CONFIG
-from helpers.error import CommandError
-from helpers.greetings import acronym
-from helpers.defer import defer
+from tars.helpers.basecommand import Command
+from tars.helpers.config import CONFIG
+from tars.helpers.error import CommandError
+from tars.helpers.greetings import acronym
+from tars.helpers.defer import defer
 
 start_time = time.time()
 

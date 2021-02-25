@@ -12,15 +12,15 @@ import json
 import re
 import string
 
-import commands
+import tars.commands
 
 from fuzzywuzzy import fuzz
 
-from helpers.basecommand import Command
-from helpers.config import CONFIG
-from helpers.database import DB
-from helpers.defer import defer
-from helpers.greetings import acronym, greet, greets
+from tars.helpers.basecommand import Command
+from tars.helpers.config import CONFIG
+from tars.helpers.database import DB
+from tars.helpers.defer import defer
+from tars.helpers.greetings import acronym, greet, greets
 
 
 def chunks(array, length):
@@ -58,7 +58,7 @@ class Converse(Command):
 
         if cmd.message.startswith("?? "):
             # CROM compatibility
-            getattr(commands.COMMANDS, 'search').command(irc_c, msg, cmd)
+            getattr(tars.commands.COMMANDS, 'search').command(irc_c, msg, cmd)
         if msg.message.lower() == "{}!".format(CONFIG.nick.lower()):
             msg.reply("{}!".format(msg.nick))
             return

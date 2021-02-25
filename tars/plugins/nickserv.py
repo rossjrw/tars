@@ -6,10 +6,10 @@ from pyaib.plugins import plugin_class, observes
 import sys
 import os.path
 from time import sleep
-from helpers.greetings import greet
-from helpers.api import NICKSERV_PASSWORD
-from helpers.database import DB
-from helpers.config import CONFIG
+from tars.helpers.greetings import greet
+from tars.helpers.api import NICKSERV_PASSWORD
+from tars.helpers.database import DB
+from tars.helpers.config import CONFIG
 
 
 def nsprint(message):

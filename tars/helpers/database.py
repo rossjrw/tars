@@ -17,8 +17,8 @@ from pypika import MySQLQuery, Table, Order
 from pypika.terms import ValueWrapper
 from pypika.functions import Max, Length
 from pyaib.irc import Message
-from helpers.config import CONFIG
-from helpers.error import nonelist, MyFaultError
+from tars.helpers.config import CONFIG
+from tars.helpers.error import nonelist, MyFaultError
 
 try:
     import re2 as re

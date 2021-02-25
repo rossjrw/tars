@@ -15,13 +15,13 @@ from fuzzywuzzy import fuzz
 from googleapiclient.discovery import build
 import pendulum as pd
 
-from commands.gib import Gib
-from commands.showmore import Showmore
-from helpers.basecommand import Command
-from helpers.defer import defer
-from helpers.api import GOOGLE_CSE_API_KEY, GOOGLE_CSE_ID
-from helpers.error import CommandError, isint
-from helpers.database import DB
+from tars.commands.gib import Gib
+from tars.commands.showmore import Showmore
+from tars.helpers.basecommand import Command
+from tars.helpers.defer import defer
+from tars.helpers.api import GOOGLE_CSE_API_KEY, GOOGLE_CSE_ID
+from tars.helpers.error import CommandError, isint
+from tars.helpers.database import DB
 
 try:
     import re2 as re

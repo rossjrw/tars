@@ -1,5 +1,5 @@
 from functools import partial
-from commands.gib import Gib
+from tars.commands.gib import Gib
 
 
 def test_bracketify():

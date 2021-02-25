@@ -3,7 +3,7 @@
 
 from random import choice
 import re
-from helpers.config import CONFIG
+from tars.helpers.config import CONFIG
 
 greets = [
     "Hey",

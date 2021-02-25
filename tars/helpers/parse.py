@@ -7,8 +7,8 @@ import argparse
 import re
 import shlex
 
-from helpers.config import CONFIG
-from helpers.error import CommandError
+from tars.helpers.config import CONFIG
+from tars.helpers.error import CommandError
 
 
 def parseprint(message):

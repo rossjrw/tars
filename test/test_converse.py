@@ -1,4 +1,4 @@
-from commands.converse import find_acronym
+from tars.commands.converse import find_acronym
 
 
 def test_acronym_match():

@@ -9,10 +9,10 @@ TEMPORARY commands for refactoring the database.
 TARS will not allow you to refactor a 2nd time unless you issue .reload again.
 """
 
-from helpers.basecommand import Command
-from helpers.database import DB
-from helpers.defer import defer
-from helpers.error import CommandError
+from tars.helpers.basecommand import Command
+from tars.helpers.database import DB
+from tars.helpers.defer import defer
+from tars.helpers.error import CommandError
 
 
 class Refactor(Command):
@@ -40,8 +40,8 @@ class Refactor(Command):
             help="""An SQL query to issue.
 
             If not provided, the hardcoded SQL query at
-            `commands.refactor.Refactor.refactor_database` is used, which is
-            preferable.
+            `tars.commands.refactor.Refactor.refactor_database` is used, which
+            is preferable.
             """,
         ),
     ]

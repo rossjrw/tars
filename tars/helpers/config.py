@@ -9,7 +9,7 @@ import yaml
 
 from munch import Munch
 
-from helpers.api import toml_url
+from tars.helpers.api import toml_url
 
 argv = sys.argv[1:]
 configfile = argv[0] if argv else 'tars.conf'

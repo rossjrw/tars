@@ -5,10 +5,10 @@ Pings everyone in the room.
 
 from pyaib.signals import await_signal
 
-from helpers.basecommand import Command, matches_regex
-from helpers.database import DB
-from helpers.defer import defer
-from helpers.error import CommandError, MyFaultError
+from tars.helpers.basecommand import Command, matches_regex
+from tars.helpers.database import DB
+from tars.helpers.defer import defer
+from tars.helpers.error import CommandError, MyFaultError
 
 
 class Pingall(Command):
