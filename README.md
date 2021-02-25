@@ -25,17 +25,6 @@ cd tars
 pipenv install --dev
 ```
 
-## Usage
-
-```shell
-pipenv shell
-python3 bot.py [tars.conf]
-```
-or
-```shell
-pipenv run python3 bot.py [tars.conf]
-```
-
 All modules are from PyPI except:
 - pyaib, which is forked here: https://github.com/rossjrw/pyaib
 - re2, which is forked here: https://github.com/andreasvc/pyre2
@@ -50,14 +39,19 @@ required to run:
 
 TARS requires at least Python 3.5.2.
 
-TARS requires a set of API keys to function correctly. These should be stored
-in `keys.secret.toml`. More details can be found in `helpers/api.py`.
+## Usage
 
-TARS will use the config file given as the command line argument. If none is
-provided, it will default to `tars.conf`.
+```shell
+pipenv run python3 -m tars path/to/config
+```
+
+The config files I use are in `config/`.
+
+TARS requires a set of API keys to function correctly. These should be stored
+in `config/keys.secret.toml`. More details can be found in `helpers/api.py`.
 
 TARS will use the nick provided in the config file and NickServ password as
-defined by the key `irc_password` in `keys.secret.txt`.
+defined by the key `irc_password` in `keys.secret.toml`.
 
 ## Testing
 
