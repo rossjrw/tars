@@ -20,7 +20,7 @@ import tomlkit
 import requests
 import pendulum as pd
 
-with open(pathlib.Path.cwd() / "keys.secret.toml") as keys:
+with open(pathlib.Path.cwd() / "config/keys.secret.toml") as keys:
     keys = tomlkit.parse(keys.read())['keys']
 
 GOOGLE_CSE_API_KEY = keys['google_cse_api']
