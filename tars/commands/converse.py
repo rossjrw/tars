@@ -14,7 +14,7 @@ import string
 
 from fuzzywuzzy import fuzz
 
-from tars.commands import COMMANDS_REGISTRY
+import tars.commands
 from tars.helpers.basecommand import Command
 from tars.helpers.config import CONFIG
 from tars.helpers.database import DB
@@ -59,7 +59,9 @@ class Converse(Command):
             # CROM compatibility
             # Manually parse and instantiate a search command
             # Duplication of code in plugins/parsemessages.py - TODO unify
-            command_class = COMMANDS_REGISTRY.get_command('search')
+            command_class = tars.commands.COMMANDS_REGISTRY.get_command(
+                'search'
+            )
             command = command_class(cmd.message)
             command.execute(irc_c, msg, cmd)
             return

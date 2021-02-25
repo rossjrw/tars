@@ -53,6 +53,12 @@ in `config/keys.secret.toml`. More details can be found in `helpers/api.py`.
 TARS will use the nick provided in the config file and NickServ password as
 defined by the key `irc_password` in `keys.secret.toml`.
 
+## Building documentation
+
+```shell
+pipenv run python3 -m tars path/to/config --docs
+```
+
 ## Testing
 
 ```shell

@@ -21,8 +21,8 @@ def takeover(bot):
         raise
 
 
-def get_config_from_command_line():
-    """Gets the specified config file name from the command line invocation"""
+def get_args_from_command_line():
+    """Parses the command line arguments."""
     parser = argparse.ArgumentParser(
         description="""Command-line interface for TARS."""
     )
@@ -32,12 +32,29 @@ def get_config_from_command_line():
         nargs=None,
         help="""The config file for the bot.""",
     )
-    args = parser.parse_args()
-    return args.config
+    parser.add_argument(
+        '--docs',
+        default=False,
+        action='store_true',
+        help="""Instead of running the bot, build the documentation.""",
+    )
+    return parser.parse_args()
+
+
+def get_config_from_command_line():
+    """Gets the specified config file name from the command line invocation"""
+    return get_args_from_command_line().config
 
 
 if __name__ == "__main__":
-    config = get_config_from_command_line()
-    # Pyaib wants the config file name and the path separately
-    config_path, _, config_file = config.rpartition("/")
-    takeover(IrcBot(config_file, config_path))
+    args = get_args_from_command_line()
+    if args.docs:
+        from tars.documentation.build import build
+
+        build()
+    else:
+        # Run the bot
+        config = get_config_from_command_line()
+        # Pyaib wants the config file name and the path separately
+        config_path, _, config_file = config.rpartition("/")
+        takeover(IrcBot(config_file, config_path))
