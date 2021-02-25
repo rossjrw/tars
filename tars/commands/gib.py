@@ -152,7 +152,7 @@ class Gib(Command):
             flags=['--limit'],
             type=int,
             nargs=None,
-            default=CONFIG['gib']['limit'] or 5000,
+            default=CONFIG['gib']['message_limit'] or 5000,
             help="""The message selection size limit.
 
             Limits the number of messages that can be in the gib selection.
