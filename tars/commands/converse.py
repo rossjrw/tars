@@ -12,10 +12,9 @@ import json
 import re
 import string
 
-import tars.commands
-
 from fuzzywuzzy import fuzz
 
+from tars.commands import COMMANDS_REGISTRY
 from tars.helpers.basecommand import Command
 from tars.helpers.config import CONFIG
 from tars.helpers.database import DB
@@ -58,7 +57,12 @@ class Converse(Command):
 
         if cmd.message.startswith("?? "):
             # CROM compatibility
-            getattr(tars.commands.COMMANDS, 'search').command(irc_c, msg, cmd)
+            # Manually parse and instantiate a search command
+            # Duplication of code in plugins/parsemessages.py - TODO unify
+            command_class = COMMANDS_REGISTRY.get_command('search')
+            command = command_class(cmd.message)
+            command.execute(irc_c, msg, cmd)
+            return
         if msg.message.lower() == "{}!".format(CONFIG.nick.lower()):
             msg.reply("{}!".format(msg.nick))
             return

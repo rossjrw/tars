@@ -7,6 +7,7 @@ from importlib import reload
 
 from pyaib.plugins import observe, plugin_class
 
+# Import entire commands module so that it can be reloaded
 import tars.commands
 
 from tars.helpers import parse
@@ -24,9 +25,14 @@ def try_command(irc_c, msg, cmd, command_name=None):
     if command_name is None:
         command_name = cmd.command
     try:
-        # commands are kept in the commands/ module.
-        command_class = getattr(tars.commands.COMMANDS, command_name)
+        # Get the command class from the command registry
+        command_class = tars.commands.COMMANDS_REGISTRY.get_command(
+            command_name
+        )
+        # Instantiate the command with the command message to parse it like a
+        # command line
         command = command_class(cmd.message)
+        # Execute the command
         command.execute(irc_c, msg, cmd)
         return 0
     except CommandNotExistError:
