@@ -10,6 +10,9 @@ promotion; however, I've never actually gotten around to implementing this. For
 now it is just a general chat bot, although it boasts (I believe) the most
 powerful search syntax of all SCP bots available.
 
+Come chat with TARS in [`#tars`](http://scp-wiki.wikidot.com/chat-guide) on
+SkipIRC.
+
 ### Using TARS
 
 Use TARS by issuing commands to it, either in IRC channels that it's in, or in
