@@ -26,8 +26,11 @@ class CommandsRegistry:
         # The registry contains the command locations and aliases as declared
         # by the bot owner
         self._registry = registry
-        # The internal commands store contains the commands themselves, mapped
+        # The internal alias store contains the commands themselves, mapped
         # to each alias
+        self._aliased_commands = {}
+        # The internal commands store contains the commands mapped to their own
+        # class name for documentation convenience
         self._commands = {}
 
         # Bind all the registered commands to the internal commands store
@@ -53,9 +56,9 @@ class CommandsRegistry:
                             "Command '{}' in '{}' does not extend the base "
                             "command".format(command_name, file)
                         )
-                    # Extend the internal commands store with the map of this
+                    # Extend the internal alias store with the map of this
                     # command's aliases to the command itself
-                    self._commands.update(
+                    self._aliased_commands.update(
                         {
                             alias: command_class
                             for alias in self.list_command_aliases(
@@ -63,6 +66,10 @@ class CommandsRegistry:
                             )
                         }
                     )
+                    # Extend the internal command store with this command's
+                    # class name and the class itself, for easy access by the
+                    # documentation generator
+                    self._commands[command_name] = command_class
             except AttributeError as error:
                 # If the file or command does not exist, report it, but
                 # continue loading commands
@@ -82,6 +89,10 @@ class CommandsRegistry:
 
     def get_command(self, alias):
         """Gets the command that has the given alias."""
-        if alias not in self._commands:
+        if alias not in self._aliased_commands:
             raise CommandNotExistError(alias)
-        return self._commands[alias]
+        return self._aliased_commands[alias]
+
+    def get_command_by_name(self, name):
+        """Gets a command by its class name."""
+        return self._commands[name]
