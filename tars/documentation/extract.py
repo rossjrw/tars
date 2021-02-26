@@ -30,6 +30,7 @@ def get_info_from_command(command_class):
         # This command does not want to be documented
         return None
     info = {
+        'id': command_class.__name__,
         'name': command_class.command_name,
         'help': dedent_docstring(command_class.__doc__),
         'defers_to': command_class.defers_to,
@@ -38,6 +39,9 @@ def get_info_from_command(command_class):
             for arg in command_class.arguments
             if arg.get('mode', "") != 'hidden'
         ],
+        'aliases': COMMANDS_REGISTRY.list_command_aliases(
+            command_class=command_class
+        ),
     }
     return info
 
@@ -51,4 +55,4 @@ def dedent_docstring(docstring):
     # if I want these in the future, I will have to replace this with a less
     # naive method. textwrap.dedent is not appropriate because the first line
     # of a docstring has no indentation.
-    return re.sub("\n\s*", "\n", docstring)
+    return re.sub(r"\n[ \t]*", "\n", docstring)

@@ -32,7 +32,7 @@ class Alias(Command):
             help="""The target whose aliases you want to view or modify.
 
             If not provided, defaults to yourself i.e. the nick you are
-            currently using. You can @argument(view) the aliases of any nick,
+            currently using. You can @argument(list) the aliases of any nick,
             but you can only modify your own aliases.
             """,
         ),

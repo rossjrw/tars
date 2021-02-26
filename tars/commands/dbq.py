@@ -25,7 +25,6 @@ class Query(Command):
     console.
     """
 
-    command_name = "dbq"
     arguments = [
         dict(
             flags=['--tables'],
