@@ -1,5 +1,3 @@
-### What is TARS?
-
 TARS is an IRC bot made by SCP Wiki tech team member Croquembouche. It operates
 on SkipIRC, and its database is powered by SMLT's Crom API. TARS is fully
 @repo(open source).

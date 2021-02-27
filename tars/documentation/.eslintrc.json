@@ -4,9 +4,12 @@
     "es6": true
   },
   "extends": [
-    "eslint:recommended",
-    "standard"
+    "eslint:recommended"
   ],
+  "parserOptions": {
+    "sourceType": "module"
+  },
+  "plugins": ["svelte3"],
   "rules": {
     "no-unused-vars": [
       "warn", { "argsIgnorePattern": "^_" }
@@ -14,5 +17,11 @@
     "prefer-template": "error",
     "quotes": ["warn", "double"],
     "comma-dangle": ["error", "always-multiline"]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["*.svelte"],
+      "processor": "svelte3/svelte3"
+    }
+  ]
 }

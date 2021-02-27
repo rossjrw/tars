@@ -25,18 +25,22 @@ module.exports = {
         use: [
           "style-loader",
           "css-loader",
-          {
-            loader: "postcss-loader",
-            options: {
-              postcssOptions: {
-                plugins: ["tailwindcss", "autoprefixer"],
-              },
-            },
-          },
         ],
       },
       { test: /\.(woff2?|svg)$/, type: "asset/resource" },
-      { test: /.svelte$/, use: "svelte-loader" },
+      {
+        test: /.svelte$/,
+        use: {
+          loader: "svelte-loader",
+          options: {
+            preprocess: require("svelte-preprocess")({
+              postcss: {
+                plugins: [require("tailwindcss"), require("autoprefixer")],
+              },
+            })
+          }
+        }
+      },
     ],
   },
   optimization: {
