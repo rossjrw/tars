@@ -34,6 +34,13 @@ module.exports = {
           }
         ]
       },
+      {
+        test: /\.(woff2?|svg)$/,
+        use: {
+          loader: 'file-loader',
+          options: { name: "[name].[ext]", }
+        },
+      },
     ],
   },
   optimization: {

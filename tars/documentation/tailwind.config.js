@@ -2,15 +2,23 @@ const plugin = require("tailwindcss/plugin");
 
 module.exports = {
   purge: [ './src/**/*.html' ],
-  // theme: {
-  //   extend: {
-  //     fontFamily: {
-  //       display: ['Aileron', 'sans-serif'],
-  //       sans: ['"Libre Franklin"', 'sans-serif'],
-  //       serif: ['Lora', 'serif']
-  //     },
-  //   },
-  // },
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          bright: "#f7f197",
+          light: "#8fbc8f",
+          DEFAULT: "#68916F",
+          dim: "#40654f",
+          dark: "#29453e",
+          darker: "#1b2f2b",
+        },
+      },
+      fontFamily: {
+        sans: ['"Libre Franklin"', 'sans-serif'],
+      },
+    },
+  },
   plugins: [
     plugin(({ addUtilities }) => {
       addUtilities({
