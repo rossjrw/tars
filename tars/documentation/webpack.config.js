@@ -1,5 +1,5 @@
 const path = require("path")
-const {CleanWebpackPlugin} = require("clean-webpack-plugin")
+const { CleanWebpackPlugin } = require("clean-webpack-plugin")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
 const TerserPlugin = require("terser-webpack-plugin")
 
@@ -7,8 +7,8 @@ module.exports = {
   mode: process.env.NODE_ENV,
   ...(
     process.env.NODE_ENV === "development"
-    ? { devtool: "eval-source-map" }
-    : {}
+      ? { devtool: "eval-source-map" }
+      : {}
   ),
   entry: {
     main: "./src/index.js",
@@ -16,44 +16,41 @@ module.exports = {
   output: {
     filename: "bundle.[contenthash].js",
     path: path.resolve(__dirname, "dist"),
+    assetModuleFilename: "[name][ext]",
   },
   module: {
     rules: [
       {
         test: /\.css$/,
         use: [
-          'style-loader',
-          'css-loader',
+          "style-loader",
+          "css-loader",
           {
-            loader: 'postcss-loader',
+            loader: "postcss-loader",
             options: {
               postcssOptions: {
-                plugins: [ 'tailwindcss', 'autoprefixer' ]
-              }
-            }
-          }
-        ]
+                plugins: ["tailwindcss", "autoprefixer"],
+              },
+            },
+          },
+        ],
       },
-      {
-        test: /\.(woff2?|svg)$/,
-        use: {
-          loader: 'file-loader',
-          options: { name: "[name].[ext]", }
-        },
-      },
+      { test: /\.(woff2?|svg)$/, type: "asset/resource" },
+      { test: /.svelte$/, use: "svelte-loader" },
     ],
   },
   optimization: {
     minimize: process.env.NODE_ENV === "production",
-    minimizer: [ new TerserPlugin({ extractComments: false }) ],
-    usedExports: true
+    minimizer: [new TerserPlugin({ extractComments: false })],
+    usedExports: true,
   },
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      template: "./src/index.jinja.html",
+      title: "TARS Documentation · rossjrw.com",
       filename: "index.html",
       chunks: ["main"],
+      meta: { viewport: "width=device-width, initial-scale=1" },
     }),
   ],
-};
+}

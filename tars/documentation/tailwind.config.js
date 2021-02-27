@@ -1,7 +1,7 @@
-const plugin = require("tailwindcss/plugin");
+const plugin = require("tailwindcss/plugin")
 
 module.exports = {
-  purge: [ './src/**/*.html' ],
+  purge: ["./src/**/*.svelte"],
   theme: {
     extend: {
       colors: {
@@ -15,29 +15,29 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['"Libre Franklin"', 'sans-serif'],
+        sans: ["\"Libre Franklin\"", "sans-serif"],
       },
     },
   },
   plugins: [
     plugin(({ addUtilities }) => {
       addUtilities({
-        '.link-line': {
-          'display': 'inline-block',
-          'text-decoration': 'underline',
-          'text-decoration-style': 'dotted',
-          'text-decoration-thickness': '1px'
-        }
+        ".link-line": {
+          display: "inline-block",
+          "text-decoration": "underline",
+          "text-decoration-style": "dotted",
+          "text-decoration-thickness": "1px",
+        },
       })
       addUtilities(
         {
-          '.link-line-hover': {
-            'text-decoration-style': 'solid',
-            'text-decoration-thickness': '2px',
-          }
+          ".link-line-hover": {
+            "text-decoration-style": "solid",
+            "text-decoration-thickness": "2px",
+          },
         },
-        { variants: ['hover'] }
+        { variants: ["hover"] },
       )
-    })
-  ]
+    }),
+  ],
 }
