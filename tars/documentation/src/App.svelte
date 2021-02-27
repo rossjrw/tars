@@ -2,22 +2,8 @@
   import Page from "./Page.svelte"
   import "@fontsource/libre-franklin/latin-400.css"
   import "@fontsource/libre-franklin/latin-700.css"
+  import "./style.css"
 </script>
-
-<style global lang="postcss">
-  @tailwind base;
-  @tailwind components;
-  @tailwind utilities;
-
-  p {
-    @apply mb-2;
-  }
-
-  h2 {
-    @apply font-bold;
-    @apply text-7xl;
-  }
-</style>
 
 <aside class="sticky h-screen top-0 bottom-0 flex flex-col
               bg-primary-dark md:w-72 lg:w-96">

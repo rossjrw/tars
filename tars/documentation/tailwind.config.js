@@ -1,7 +1,7 @@
 const plugin = require("tailwindcss/plugin")
 
 module.exports = {
-  purge: ["./src/**/*.{svelte,js}"],
+  purge: ["./src/**/*.{svelte,js,css}"],
   theme: {
     extend: {
       colors: {

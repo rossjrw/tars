@@ -3,12 +3,12 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
 const TerserPlugin = require("terser-webpack-plugin")
 
+const dev = process.env.NODE_ENV === "development"
+
 module.exports = {
   mode: process.env.NODE_ENV,
   ...(
-    process.env.NODE_ENV === "development"
-      ? { devtool: "eval-source-map" }
-      : {}
+    dev ? { devtool: "eval-source-map" } : {}
   ),
   entry: {
     main: "./src/index.js",
@@ -25,6 +25,14 @@ module.exports = {
         use: [
           "style-loader",
           "css-loader",
+          {
+            loader: "postcss-loader",
+            options: {
+              postcssOptions: {
+                plugins: ["tailwindcss", "autoprefixer"],
+              },
+            },
+          },
         ],
       },
       { test: /\.(woff2?|svg)$/, type: "asset/resource" },
@@ -33,11 +41,7 @@ module.exports = {
         use: {
           loader: "svelte-loader",
           options: {
-            preprocess: require("svelte-preprocess")({
-              postcss: {
-                plugins: [require("tailwindcss"), require("autoprefixer")],
-              },
-            })
+            compilerOptions: { dev },
           }
         }
       },
