@@ -1,0 +1,2 @@
+# Mark the docs dir as being scannable by GitHub Linguist
+tars/documentation/**/* -linguist-documentation
