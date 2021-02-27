@@ -35,12 +35,16 @@ def get_info_from_command(command_class):
         'help': dedent_docstring(command_class.__doc__),
         'defers_to': command_class.defers_to,
         'arguments': [
-            {**arg, 'help': dedent_docstring(arg['help'])}
+            {
+                **arg,
+                'help': dedent_docstring(arg['help']),
+                'type': arg['type'].__name__,
+            }
             for arg in command_class.arguments
             if arg.get('mode', "") != 'hidden'
         ],
-        'aliases': COMMANDS_REGISTRY.list_command_aliases(
-            command_class=command_class
+        'aliases': list(
+            COMMANDS_REGISTRY.list_command_aliases(command_class=command_class)
         ),
     }
     return info

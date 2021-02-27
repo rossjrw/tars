@@ -28,12 +28,11 @@ def matches_regex(validation_regex, validation_reason):
         validation_regex = re.compile(validation_regex)
 
     def string_matches_regex_type(arg_value, pattern=validation_regex):
-        """Checks whether an argument matches a regex and returns the argument
-        as a string."""
         if not pattern.match(arg_value):
             raise argparse.ArgumentTypeError(validation_reason)
         return arg_value
 
+    string_matches_regex_type.__name__ = validation_reason
     return string_matches_regex_type
 
 

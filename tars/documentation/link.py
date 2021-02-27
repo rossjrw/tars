@@ -5,6 +5,8 @@ Links together command documentation by replacing @-commands.
 
 import re
 
+from markdown import markdown
+
 from tars.helpers.config import CONFIG
 
 
@@ -64,6 +66,10 @@ def process_links(command_infos, other_texts):
     replace_link(replace_section)
     replace_link(replace_command)
     replace_link(replace_argument)
+
+    # It's not a link replacement but this is the easiest place to implement
+    # this
+    replace_link(compile_markdown)
 
     return command_infos, other_texts
 
@@ -148,3 +154,8 @@ def replace_argument(string, *, command_infos, command_id, **_):
         return "[`--{0}`](#{1}-{0})".format(argument_name, command_id.lower())
 
     return re.sub(r"@argument\(([^)]*)\)", replace, string)
+
+
+def compile_markdown(string, **_):
+    """Converts a Markdown string to HTML."""
+    return markdown(string)
