@@ -94,7 +94,6 @@ class User(Command):
             flags=['user'],
             type=str,
             nargs='+',
-            required=True,
             help="""The name of the user.""",
         )
     ]
@@ -115,13 +114,7 @@ class Tag(Command):
 
     command_name = "tag"
     arguments = [
-        dict(
-            flags=['tag'],
-            type=str,
-            nargs=None,
-            required=True,
-            help="""The chosen tag.""",
-        )
+        dict(flags=['tag'], type=str, nargs=None, help="""The chosen tag.""",)
     ]
 
     def execute(self, irc_c, msg, cmd):

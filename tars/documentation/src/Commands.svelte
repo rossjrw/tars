@@ -10,14 +10,17 @@
       <h3 class="mt-12">
         {#each info.aliases as alias}<span>{alias}</span>{/each}
       </h3>
-      {@html info.help}
-      {#if info.arguments.length > 0}
-        <ul>
-          {#each info.arguments as arg}
-            <li>{arg.flags}</li>
-          {/each}
-        </ul>
-      {/if}
+      <div class="command-info">
+        <pre>..{info.usage}</pre>
+        {@html info.help}
+        {#if info.arguments.length > 0}
+          <ul>
+            {#each info.arguments as arg}
+              <li>{arg.flags}</li>
+            {/each}
+          </ul>
+        {/if}
+      </div>
     </div>
   {/each}
 </section>

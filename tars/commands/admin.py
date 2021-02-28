@@ -162,7 +162,8 @@ class Update(Command):
 class Say(Command):
     """Make the bot send a message somewhere.
 
-    @example(..say #tars hello there!)
+    @example(..say #tars hello there!)(make the bot say "hello there!" in
+    `#tars`.)
     """
 
     command_name = "say"

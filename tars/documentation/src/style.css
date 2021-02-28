@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* Style text */
-p {
+p, pre {
   @apply mb-4;
 }
 section a {
@@ -12,6 +12,22 @@ section a {
   @apply text-primary-bright;
   @apply hover:text-primary-light;
   @apply hover:link-line-hover;
+  @apply inline;
+}
+
+/* Style code blocks */
+code, pre {
+  @apply bg-primary-dark;
+  @apply rounded-md;
+}
+code {
+  @apply px-1.5;
+  @apply py-1;
+  @apply text-sm;
+}
+pre {
+  @apply whitespace-normal;
+  @apply px-3 py-1;
 }
 
 /* Style headers */
@@ -55,7 +71,7 @@ section {
   @apply max-w-4xl;
   @apply mx-auto;
 }
-#intro p, #commands p, #commands ul, #commands ol {
+#intro p, #commands p, #commands ul, #commands ol, #commands pre {
   @apply max-w-2xl;
   @apply mx-auto;
 }

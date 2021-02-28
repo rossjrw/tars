@@ -46,6 +46,7 @@ def get_info_from_command(command_class):
         'aliases': list(
             COMMANDS_REGISTRY.list_command_aliases(command_class=command_class)
         ),
+        'usage': command_class().get_parser().get_usage(),
     }
     return info
 
