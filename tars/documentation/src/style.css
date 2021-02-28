@@ -10,7 +10,7 @@ section a {
   @apply link-line;
   @apply font-bold;
   @apply text-primary-bright;
-  @apply hover:text-primary-light;
+  @apply hover:text-primary-lighter;
   @apply hover:link-line-hover;
   @apply inline;
 }
@@ -31,7 +31,7 @@ pre {
   @apply px-3 py-1;
 }
 .example strong {
-  @apply text-primary-light
+  @apply text-primary-lighter;
 }
 
 /* Style headers */
@@ -63,7 +63,7 @@ h3 {
 
 /* Spacing between the sections */
 section {
-  @apply my-12
+  @apply my-12;
 }
 
 /* Give text a good reading width, but make the titles slightly wider */
@@ -81,23 +81,32 @@ section {
 }
 
 /* Lists */
-ol {
-  @apply list-decimal;
+ul, ol {
   @apply pl-8;
   @apply -mt-2;
 }
-ol > li {
+ul {
+  @apply list-disc;
+}
+ol {
+  @apply list-decimal;
+}
+
+ul > li, ol > li {
   @apply mb-2;
 }
-ol > li::marker {
+ul > li::marker {
   @apply text-primary-light;
+}
+ol > li::marker {
+  @apply text-primary-lighter;
 }
 
 /* Emphasise the first line of each command.
  * This is the bit that is the help message on the command line */
 .command p:first-of-type {
   @apply font-bold;
-  @apply text-primary-light;
+  @apply text-primary-lighter;
   @apply text-xl;
 }
 
