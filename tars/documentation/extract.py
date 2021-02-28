@@ -29,6 +29,7 @@ def get_info_from_command(command_class):
     if command_class.command_name is None:
         # This command does not want to be documented
         return None
+    basecommand = command_class.__mro__[1]
     info = {
         'id': command_class.__name__,
         'name': command_class.command_name,
@@ -42,11 +43,17 @@ def get_info_from_command(command_class):
             }
             for arg in command_class.arguments
             if arg.get('mode', "") != 'hidden'
+            and (
+                # Do not include arguments from parent commands
+                basecommand is Command
+                or arg not in basecommand.arguments
+            )
         ],
         'aliases': list(
             COMMANDS_REGISTRY.list_command_aliases(command_class=command_class)
         ),
         'usage': command_class().get_parser().get_usage(),
+        'base': basecommand.__name__,
     }
     return info
 

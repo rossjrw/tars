@@ -1,5 +1,11 @@
 <script>
   import docs from "../build/docs.json"
+
+  docs.infos.forEach(info => {
+    info.subcommands = docs.infos.filter(
+      otherInfo => otherInfo.base === info.id
+    ).map(otherInfo => otherInfo.id)
+  })
 </script>
 
 <h2>command reference</h2>
@@ -11,8 +17,15 @@
         {#each info.aliases as alias}<span>{alias}</span>{/each}
       </h3>
       <div class="command-info">
-        <pre>..{info.usage}</pre>
+        {#if info.base === "Command"}
+          <pre>..{info.usage}</pre>
+        {/if}
         {@html info.help}
+        {#if info.base !== "Command"}
+          <p>
+            This command extends {info.base} and supports all of its arguments.
+          </p>
+        {/if}
         {#if info.arguments.length > 0}
           <ul>
             {#each info.arguments as arg}
