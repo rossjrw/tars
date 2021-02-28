@@ -45,19 +45,19 @@ class Pingall(Command):
             choices=["~", "&", "@", "%", "+"],
             help="""The op level target.
 
-            Use this argument to choose who is pinged by op level in the
-            channel. For example, @example(..pingall -t @) will ping all
-            operators in the channel, and all ranks above that (admins and
-            owners).
+            Use this argument to restrict who is pinged by their op level in
+            the channel.
+
+            @example(..pingall -t @)(pings all operators in the channel, and
+            all ranks above that (admins and owners).)
 
             The choices are the same as the symbols used on IRC:
 
-            * `~`: Channel owners.
-            * `&`: Channel admins and above.
-            * `@`: Channel operators and above.
-            * `%`: Channel half-ops and above.
-            * `+`: Voiced users (and all users with a role).
-            * Not specified: all users in the channel.
+            * `~` &mdash; Channel owners.
+            * `&` &mdash; Channel admins and above.
+            * `@` &mdash; Channel operators and above.
+            * `%` &mdash; Channel half-ops and above.
+            * `+` &mdash; Voiced users (and all users with a role).
             """,
         ),
     ]

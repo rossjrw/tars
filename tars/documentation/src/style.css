@@ -26,8 +26,12 @@ code {
   @apply text-sm;
 }
 pre {
+  @apply inline-block;
   @apply whitespace-normal;
   @apply px-3 py-1;
+}
+.example strong {
+  @apply text-primary-light
 }
 
 /* Style headers */

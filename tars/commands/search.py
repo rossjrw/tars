@@ -154,7 +154,7 @@ class Search(Command):
             The parent page's slug must be given exactly (e.g. `-p
             antimemetics-division-hub`). The entire parent tree will be
             checked - the page will be found even if it's a great-grandchild
-            of the **--parent**.""",
+            of the @argument(--parent).""",
         ),
         dict(
             flags=['--summary', '--summarise', '-u'],
