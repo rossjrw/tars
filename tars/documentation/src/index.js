@@ -1,5 +1,3 @@
-import "./logo.min.svg"
-
 import App from "./App.svelte"
 
 const app = new App({
@@ -7,7 +5,7 @@ const app = new App({
 })
 
 document.body.classList.add(
-  "bg-primary-dim", "flex", "relative", "text-gray-100",
+  "bg-primary-dim", "flex", "relative", "text-green-50"
 )
 
 export default app

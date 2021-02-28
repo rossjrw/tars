@@ -2,28 +2,93 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Style text */
 p {
   @apply mb-4;
 }
+section a {
+  @apply link-line;
+  @apply font-bold;
+  @apply text-primary-bright;
+  @apply hover:text-primary-light;
+  @apply hover:link-line-hover;
+}
 
+/* Style headers */
+h1 {
+  @apply font-bold;
+  @apply text-9xl;
+  @apply text-center;
+  @apply text-primary-bright;
+}
 h2 {
   @apply font-bold;
   @apply text-7xl;
-  @apply text-primary;
-}
-
-h3 {
-  @apply font-bold;
-  @apply text-5xl;
-  @apply text-primary-dark;
-  @apply mb-4;
-}
-h3 span::after, h3 span::before {
+  @apply text-center;
   @apply text-primary-light;
 }
-h3 span::before {
+h3 {
+  @apply font-bold;
+  @apply text-3xl;
+  @apply text-primary-bright;
+  @apply mb-4;
+}
+
+#intro h3 {
+  @apply text-primary-light;
+}
+#commands h3 {
+  @apply text-5xl;
+}
+
+/* Spacing between the sections */
+section {
+  @apply my-12
+}
+
+/* Give text a good reading width, but make the titles slightly wider */
+#intro h3 {
+  @apply max-w-3xl;
+  @apply mx-auto;
+}
+#commands h3 {
+  @apply max-w-4xl;
+  @apply mx-auto;
+}
+#intro p, #commands p, #commands ul, #commands ol {
+  @apply max-w-2xl;
+  @apply mx-auto;
+}
+
+/* Lists */
+ol {
+  @apply list-decimal;
+  @apply pl-8;
+  @apply -mt-2;
+}
+ol > li {
+  @apply mb-2;
+}
+ol > li::marker {
+  @apply text-primary-light;
+}
+
+/* Emphasise the first line of each command.
+ * This is the bit that is the help message on the command line */
+.command p:first-of-type {
+  @apply font-bold;
+  @apply text-primary-light;
+  @apply text-xl;
+}
+
+/* Connect aliases in command titles */
+#commands h3 span::after,
+#commands h3 span::before {
+  @apply text-primary-light;
+}
+#commands h3 span::before {
   content: ".."
 }
-h3 span:not(:last-of-type):after {
+#commands h3 span:not(:last-of-type):after {
   content: ", "
 }

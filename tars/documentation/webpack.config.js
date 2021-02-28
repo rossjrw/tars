@@ -14,7 +14,7 @@ module.exports = {
     main: "./src/index.js",
   },
   output: {
-    filename: "bundle.[contenthash].js",
+    filename: "bundle.[name].js",
     path: path.resolve(__dirname, "dist"),
     assetModuleFilename: "[name][ext]",
   },
@@ -51,9 +51,12 @@ module.exports = {
     minimize: process.env.NODE_ENV === "production",
     minimizer: [new TerserPlugin({ extractComments: false })],
     usedExports: true,
+    splitChunks: {
+      chunks: 'all',
+    },
   },
   plugins: [
-    new CleanWebpackPlugin(),
+    // new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       title: "TARS Documentation · rossjrw.com",
       filename: "index.html",

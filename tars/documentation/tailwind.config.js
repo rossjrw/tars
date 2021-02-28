@@ -27,6 +27,7 @@ module.exports = {
           "text-decoration": "underline",
           "text-decoration-style": "dotted",
           "text-decoration-thickness": "1px",
+          "text-underline-offset": "0.2rem",
         },
       })
       addUtilities(
