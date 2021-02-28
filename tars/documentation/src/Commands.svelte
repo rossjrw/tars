@@ -26,6 +26,14 @@
             This command extends {info.base} and supports all of its arguments.
           </p>
         {/if}
+        {#if info.subcommands.length > 0}
+          <p>
+            This command is extended by
+            {new Intl.ListFormat("en").format(info.subcommands)}, which
+            {info.subcommands.length === 1 ? "inherits" : "inherit"} all of its
+            arguments.
+          </p>
+        {/if}
         {#if info.arguments.length > 0}
           {#each info.arguments as arg}
             <h4 id={arg.id}>
