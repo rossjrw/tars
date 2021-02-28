@@ -64,7 +64,11 @@ class ArgumentParser(argparse.ArgumentParser):
 
     def print_help(self, _file=None):
         """Reply with help instead of printing to console"""
-        raise CommandParsingHelp(self.format_usage()[7:])
+        raise CommandParsingHelp(self.get_usage())
+
+    def get_usage(self):
+        """Gets the usage string for this command."""
+        return self.format_usage()[7:]
 
 
 class HelpFormatter(argparse.HelpFormatter):
@@ -111,11 +115,11 @@ class Command(ABC):
     # A string to prepend to the start of the arguments (useful for aliases)
     arguments_prepend = ""
 
-    def __init__(self, message):
+    def __init__(self):
         self.args = None
-        # This method is called for all commands when they are instantiated.
-        # Commands must not define their own __init__.
-        # message is a string representing the message arguments.
+
+    def parse(self, message):
+        """Parses a command message to command arguments."""
         # The message does not contain the command name.
         # self.args will become the parsed Namespace object.
 

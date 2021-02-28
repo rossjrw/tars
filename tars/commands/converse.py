@@ -62,7 +62,8 @@ class Converse(Command):
             command_class = tars.commands.COMMANDS_REGISTRY.get_command(
                 'search'
             )
-            command = command_class(cmd.message)
+            command = command_class()
+            command.parse(cmd.message)
             command.execute(irc_c, msg, cmd)
             return
         if msg.message.lower() == "{}!".format(CONFIG.nick.lower()):

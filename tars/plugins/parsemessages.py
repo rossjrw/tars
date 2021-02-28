@@ -29,9 +29,10 @@ def try_command(irc_c, msg, cmd, command_name=None):
         command_class = tars.commands.COMMANDS_REGISTRY.get_command(
             command_name
         )
-        # Instantiate the command with the command message to parse it like a
-        # command line
-        command = command_class(cmd.message)
+        # Instantiate the command
+        command = command_class()
+        # Parse the message used to call the command like a command line
+        command.parse(cmd.message)
         # Execute the command
         command.execute(irc_c, msg, cmd)
         return 0
