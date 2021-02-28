@@ -37,7 +37,7 @@ class Shortest(Command):
     happens for, please let me know.
     """
 
-    command_name = ["shortest"]
+    command_name = "shortest"
     arguments = [
         dict(
             flags=['--url', '-u'],

@@ -1,4 +1,4 @@
-<header class="bg-primary text-center text-primary-bright py-6">
+<header class="bg-primary text-center text-primary-bright pb-6 pt-10">
   <h1 class="text-9xl font-bold">
     TARS
   </h1>

@@ -15,7 +15,7 @@ class Alias(Command):
 
     An alias is an alternate name for yourself. These names are currently only
     used for @command(seen) and to stop the bot from pinging you in search
-    results (@command(search), @command(showmore)) and gibs (@command(gib)).
+    results (@command(search) and @command(showmore)) and gibs (@command(gib)).
 
     This command lets you view, add and remove your aliases.
 

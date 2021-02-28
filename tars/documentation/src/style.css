@@ -71,7 +71,7 @@ section {
   @apply max-w-4xl;
   @apply mx-auto;
 }
-#intro p, #commands p, #commands ul, #commands ol, #commands pre {
+#intro p, #commands .command-info {
   @apply max-w-2xl;
   @apply mx-auto;
 }
