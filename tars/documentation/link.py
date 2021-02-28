@@ -166,21 +166,23 @@ def replace_argument(string, *, command_infos, command_id, **_):
 
     def replace(match):
         argument_name = match.group(1).lstrip("-")
-        assert (
-            sum(
-                len(
-                    [
-                        arg
-                        for arg in info['arguments']
-                        if arg['flags'][0].lstrip("-") == argument_name
-                    ]
+        matching_args = [
+            arg
+            for info in command_infos
+            if info['id'] == command_id
+            for arg in info['arguments']
+            if arg['flags'][0].lstrip("-") == argument_name
+        ]
+        if len(matching_args) != 1:
+            raise TypeError(
+                "{} argument{} named {} in {}".format(
+                    "more than one" if len(matching_args) > 0 else "no",
+                    "" if len(matching_args) > 0 else "s",
+                    argument_name,
+                    command_id,
                 )
-                for info in command_infos
-                if info['id'] == command_id
             )
-            > 0
-        ), "no argument named {} in {}".format(argument_name, command_id)
-        return "[`--{0}`](#{1}-{0})".format(argument_name, command_id.lower())
+        return "[`--{}`](#{})".format(argument_name, matching_args[0]['id'])
 
     return re.sub(r"@argument\(([^)]*)\)", replace, string)
 

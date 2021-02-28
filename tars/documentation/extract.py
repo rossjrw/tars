@@ -37,6 +37,9 @@ def get_info_from_command(command_class):
         'defers_to': command_class.defers_to,
         'arguments': [
             {
+                'id': "{}-{}".format(
+                    command_class.__name__.lower(), arg['flags'][0].lstrip("-")
+                ),
                 **arg,
                 'help': dedent_docstring(arg['help']),
                 'type': arg['type'].__name__,

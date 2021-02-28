@@ -27,11 +27,12 @@
           </p>
         {/if}
         {#if info.arguments.length > 0}
-          <ul>
-            {#each info.arguments as arg}
-              <li>{arg.flags}</li>
-            {/each}
-          </ul>
+          {#each info.arguments as arg}
+            <h4 id={arg.id}>
+              {#each arg.flags as flag}<span>{flag}</span>{/each}
+            </h4>
+            {@html arg.help}
+          {/each}
         {/if}
       </div>
     </div>
