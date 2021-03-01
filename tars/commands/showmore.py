@@ -32,8 +32,8 @@ class Showmore(Command):
 
     1. Picking a result will remove it from the list; for example, you can
     repeatedly issue @example(.sm 1) to iterate through the list. TARS does not
-    remove results from the list; repeating issuing @example(.sm 1) will always
-    get you the same article.
+    remove results from the list; repeating @example(.sm 1) will always get you
+    the same article.
     2. Each user has their own list which other users cannot access. TARS
     stores list per-channel, so anyone in that channel can access them.
     """

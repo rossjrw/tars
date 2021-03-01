@@ -15,26 +15,41 @@ class Shortest(Command):
     """Find the shortest search term for the page at URL, or the page named
     TITLE.
 
-    Looks through the database and plays golf with article titles. Can be
+    Looks through the database and plays golf with article titles to find the
+    shortest search query that uniquely matches the selected article. Can be
     pretty slow, so give it a moment.
 
     Usually (but not always) returns two results: 'single string' and 'multi
     string'.
 
-    TARS enables you to search for articles by a string that can contain
-    spaces, using quotemarks, for example @example(.s "hello there") will
-    search for an article whose title literally contains the string "hello
-    there". The 'single string' result refers to this method.
+    The 'single string' result is a single phrase that contains spaces, which
+    can make it difficult to search for. You can use these results in a search
+    query with TARS by wrapping it in quotes. You may be able to use them in a
+    search query with Secretary_Helen by replacing the spaces with underscores,
+    which match any character.
 
-    TARS can also search for articles by multiple strings, delimited by spaces,
-    and this is also the only search method supported by other bots such as
-    Secretary_Helen and Crom. The search @example(.s hello there) will search
-    for an article whose titles contains both "hello" and "there" individually.
-    The 'multi string' result refers to this method.
+    @example(.s "lve ")(the shortest single-string search that uniquely matches
+    [_SCP-1313: Solve For Bear_](http://scp-wiki.wikidot.com/scp-1313) as of
+    March 2021.)
+
+    The 'multi string' result is a set of phrases, each of which do not
+    contain any spaces. This enables you to pass them directly to a search to
+    find articles that contain all of those strings.
+
+    @example(.s sol be)(the shortest multi-string search that uniquely matches
+    _SCP-1313: Solve For Bear_ as of March 2021.)
 
     If it takes TARS more than three minutes to calculate the shortest search
     for something, it will be kicked from IRC. If you find an article this
     happens for, please let me know.
+
+    @command(shortest) only generates searches that use the `title` argument of
+    @command(search). Generating searches that use other arguments might be
+    more efficient but it would be a lot less fun &mdash; plus it reduces the
+    changes of being able to use that search with other bots to impress people.
+
+    When counting the length of the results to report only the shortest, spaces
+    are counted but quotemarks are not.
     """
 
     command_name = "shortest"

@@ -164,14 +164,14 @@ class Tell(Command):
     sending a message with one bot, only for it to take forever to arrive
     because most of the other user's interactions are with another bot.
 
-    You can send a message to any user on SkipIRC using MemoServ with
-    @example(/ms send nick <message>), which will even tell you when they've
-    read it.
-
     If you write a tell in a channel with TARS but no other bot that TARS
     knows, it will call you a dumbass. This will hopefully prompt you to
     rewrite your message elsewhere. If TARS didn't respond at all, you might
     not notice and go on with your life, and the message would never be sent.
+
+    You can send a message to any user on SkipIRC using MemoServ with
+    @example(/ms send [nick] [message...]), which will even tell you when
+    they've read it.
     """
 
     command_name = "tell"

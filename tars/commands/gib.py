@@ -45,13 +45,6 @@ class Gib(Command):
     TARS keeps a list of all gibs it's made. It will never make the same gib
     twice. It will also never make a gib that's identical to an existing
     message.
-
-    @example(.gib -u Croquembouche)(make a sentence only using messages spoken
-    by Croquembouche.)
-
-    @example(.gib -u Croquembouche TARS -x moo -l 200 -s 2)(make a sentence
-    only using messages spoken by Croquembouche or TARS which contain the word
-    "moo", that's at least 200 characters long, with a coherency of 2.)
     """
 
     command_name = "gib"
@@ -66,6 +59,12 @@ class Gib(Command):
             Only messages said by the named users will be used to construct the
             gib. If not provided, defaults to all users. Add a hyphen to the
             start of the user's name to exclude them but include everyone else.
+
+            @example(.gib -u Croquembouche TARS)(construct a gib from messages
+            said by either Croquembouche or TARS.)
+
+            @example(.gib -u -Secretary_Helen)(construct a gib from messages
+            said by anyone but Secretary_Helen.)
             """,
         ),
         dict(
@@ -88,8 +87,10 @@ class Gib(Command):
             help="""Filter source messages by regex match.
 
             Only messages that match the provided regular expression will be
-            used to construct the gib. Can be used for simple word matches,
-            e.g. @example(.gib -x hello).
+            used to construct the gib. Often used for simple word matches.
+
+            @example(.gib -x hello)(constructs a gib only from messages that
+            contain "hello".)
             """,
         ),
         dict(
