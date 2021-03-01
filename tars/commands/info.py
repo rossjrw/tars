@@ -21,7 +21,6 @@ class Help(Command):
     """Provides documentation for bot usage."""
 
     command_name = "help"
-    defers_to = ["jarvis", "Secretary_Helen"]
     arguments = [
         dict(
             flags=['command'],

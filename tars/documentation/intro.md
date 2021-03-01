@@ -24,23 +24,36 @@ TARS' command prefix is `..`, so commands look like @example(..gib) and
 
 You can also issue commands by pinging TARS, e.g. @example(TARS: s scp-3211).
 
-### Deferral (to other bots)
+### Deferral to other bots
 
-If someone posts a command like @command(.help) in a channel, if there are
-multiple bots there, they may all try to respond at once!
+TARS is built to be compatible with the current primary SCP IRC bot, DrMagnus'
+[Secretary_Helen](http://helenbot.wikidot.com/), and to provide an unobtrusive
+user experience when used in tandem with her.
 
-TARS is built to be compatible with the current primary SCP IRC bot: DrMagnus'
-Secretary_Helen, and to provide an unobtrusive user experience when used in
-tandem with her. As a result, TARS also supports the command prefix `.` (e.g.
-@example(.search)). However, for commands that Secretary_Helen implements, this
-only works when Secretary_Helen is _not_ present in the room. When she is
-present, that command is expected to be parsed by her, and TARS will shut up
-and let her speak.
+The goal is that a user on SkipIRC shouldn't have to care which bot
+specifically is in the channel they want to run a command in &mdash; common
+commands should just work. If there are multiple bots in a channel, only one
+of them should respond to a command &mdash; any more than that would annoying.
 
-To force TARS to parse a command, either ping it at the start of the message,
-or prefix the command with two dots (`..`).
+For a smooth experience for users used to Secretary_Helen, TARS also supports
+her command prefix `.` (e.g. @example(.search)). However, for commands that
+both bots implement, this only works when she is _not_ present in the channel.
+When she _is_ present, TARS assumes that the user intended for that command to
+be parsed by her &mdash; TARS will shut up and let her speak. The exception to
+this is @command(help).
 
-### Adding TARS to your channel
+Each command on this page is marked with whether or not it defers to
+Secretary_Helen, but you can also consult [her
+documentation](http://helenbot.wikidot.com/usage) to be sure which commands
+conflict.
+
+TARS should play nicely with other bots, too. Let me know if you have one on
+the network.
+
+To force TARS to parse a command regardless of other bots, either ping it at
+the start of the message, or use its command prefix (two dots: `..`).
+
+### Inviting TARS to your channel
 
 You can add TARS to your SkipIRC channel using @command(join). You don't need
 to ask my permission for this.
@@ -48,5 +61,6 @@ to ask my permission for this.
 ### Deploying TARS yourself
 
 Theoretically another instance of TARS could be deployed on SkipIRC, or an
-instance deployed on another IRC network altogether. There are instructions for
-getting set up on the @repo(repository).
+instance deployed on another IRC network altogether. If you're interested in
+doing this, there are instructions for getting set up on the @repo(repository).
+I welcome any pull requests that result from your experiments!
