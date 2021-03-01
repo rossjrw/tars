@@ -7,7 +7,8 @@
     "eslint:recommended"
   ],
   "parserOptions": {
-    "sourceType": "module"
+    "sourceType": "module",
+    "ecmaVersion": 12
   },
   "plugins": ["svelte3"],
   "rules": {
@@ -15,8 +16,7 @@
       "warn", { "argsIgnorePattern": "^_" }
     ],
     "prefer-template": "error",
-    "quotes": ["warn", "double"],
-    "comma-dangle": ["error", "always-multiline"]
+    "quotes": ["warn", "double"]
   },
   "overrides": [
     {

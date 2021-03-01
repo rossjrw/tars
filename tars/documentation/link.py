@@ -37,7 +37,8 @@ def process_links(command_infos, other_texts):
         only be used in command or argument documentation, not other text.
 
         @section(name)
-        Links to the section with the given name.
+        Links to the section with the given name. Note that the 'name' of a
+        section here is the first word in its title.
 
     All commands may include newlines in their text, which will be ignored in
     the output (by definition as per Markdown).
@@ -189,4 +190,16 @@ def replace_argument(string, *, command_infos, command_id, **_):
 
 def compile_markdown(string, **_):
     """Converts a Markdown string to HTML."""
-    return markdown(string)
+    html = markdown(string)
+
+    def insert_header_id(match):
+        link = match.group(2).lower().split(" ")[0]
+        return """<{0} id="{1}">{2}</{0}>""".format(
+            match.group(1), link, match.group(2)
+        )
+
+    html = re.sub(
+        r"^<(h[1-4])>(.*)</\1>$", insert_header_id, html, flags=re.MULTILINE
+    )
+    print(html)
+    return html

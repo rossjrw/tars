@@ -16,12 +16,12 @@
   }
 </script>
 
-<h2>command reference</h2>
+<h2 id="commands">Command Reference</h2>
 
-<section id="commands">
+<section>
   {#each docs.infos as info}
-    <div class="command" id={info.id.toLowerCase()}>
-      <h3 class="mt-12">
+    <div class="command">
+      <h3 class="mt-12" name={info.name} id={info.id.toLowerCase()}>
         {#each info.aliases as alias}
           <span>..</span><span>{alias}</span><span>, </span>
         {/each}
