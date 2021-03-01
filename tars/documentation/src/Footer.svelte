@@ -3,7 +3,7 @@
 </script>
 
 <footer class="bg-primary-darker h-72 flex flex-col text-center
-        justify-center">
+               justify-center">
   <p>
     <b>TARS</b> by Croquembouche
   </p>
