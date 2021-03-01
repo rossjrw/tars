@@ -49,25 +49,29 @@ h2 {
 }
 h3 {
   @apply font-bold;
-  @apply text-3xl;
+  @apply text-5xl;
   @apply text-primary-bright;
+  @apply mb-4;
+}
+h4 {
+  @apply font-bold;
+  @apply text-4xl;
+  @apply text-primary-lighter;
   @apply mb-4;
 }
 
 #intro h3 {
   @apply text-primary-light;
-}
-#commands h3 {
-  @apply text-5xl;
+  @apply text-3xl;
 }
 
 /* Spacing between the sections */
 section {
-  @apply my-12;
+  @apply my-24;
 }
 
 /* Give text a good reading width, but make the titles slightly wider */
-#intro h3 {
+#intro h3, #commands h4 {
   @apply max-w-3xl;
   @apply mx-auto;
 }
@@ -75,7 +79,7 @@ section {
   @apply max-w-4xl;
   @apply mx-auto;
 }
-#intro p, #commands .command-info {
+#intro p, .command > :not(h3):not(h4) {
   @apply max-w-2xl;
   @apply mx-auto;
 }
@@ -110,14 +114,20 @@ ol > li::marker {
   @apply text-xl;
 }
 
-/* Connect aliases in command titles */
-#commands h3 span::after,
-#commands h3 span::before {
+/* Style aliases in command titles */
+#commands h3 span:nth-child(3n-2),
+#commands h3 span:nth-child(3n) {
   @apply text-primary-light;
 }
-#commands h3 span::before {
-  content: ".."
+#commands h3 span:last-child {
+  @apply hidden;
 }
-#commands h3 span:not(:last-of-type):after {
-  content: ", "
+
+/* Style flags in argument titles */
+#commands h4 span:nth-child(3n-2),
+#commands h4 span:nth-child(3n) {
+  @apply text-primary;
+}
+#commands h4 span:last-child {
+  @apply hidden;
 }
