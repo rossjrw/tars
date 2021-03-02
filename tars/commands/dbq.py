@@ -149,14 +149,16 @@ class Seen(Command):
 
             Aliases of this user will also be searched for.
 
-            When using -f or -c, the nick can be omitted here, in which case a
-            nick is expected after -f or -c.
+            When using @argument(first) or @argument(count), the nick can be
+            omitted here, in which case a nick is expected at the end of the
+            command.
             """,
         ),
         dict(
             flags=['--first', '-f'],
             type=str,
             nargs='?',
+            metavar="nick",
             help="""Shows when the user was first seen.
 
             The username can come after this argument, in which case it
@@ -167,6 +169,7 @@ class Seen(Command):
             flags=['--count', '-c'],
             type=str,
             nargs='?',
+            metavar="nick",
             help="""Counts the number of times this user has been seen.
 
             The username can come after this argument, in which case it

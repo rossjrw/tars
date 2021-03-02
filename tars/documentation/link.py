@@ -26,7 +26,8 @@ def process_links(command_infos, other_texts):
         @example(text)(description)
         Block-level example - formats the text as a command example with an
         explanation. Must be the only thing on the line, but may contain
-        parentheses.
+        parentheses. If the description contains a single hyphen it will be
+        considered empty.
 
         @command(alias)
         Links to the given command. The string provided may be any alias and
@@ -107,10 +108,13 @@ def replace_block_example(string, **_):
     """
 
     def replace(match):
-        return "<span {}>**Example:** {} **&mdash;** {}</span>".format(
-            "class=\"example\"",
+        return "> **Example:** {}{}".format(
             replace_inline_example(match.group(1), allow_paren=True),
-            match.group(2),
+            (
+                " **&mdash;** {}".format(match.group(2))
+                if match.group(2) != "-"
+                else ""
+            ),
         )
 
     return re.compile(

@@ -12,8 +12,7 @@ from tars.helpers.error import CommandError, MyFaultError
 
 
 class Shortest(Command):
-    """Find the shortest search term for the page at URL, or the page named
-    TITLE.
+    """Find the shortest search term for the page with the given URL or title.
 
     Looks through the database and plays golf with article titles to find the
     shortest search query that uniquely matches the selected article. Can be
@@ -59,7 +58,16 @@ class Shortest(Command):
             type=str,
             nargs=None,
             help="""The 'fullname' or 'slug' of an article as seen in its URL,
-            e.g. 'scp-173'.""",
+            e.g. 'scp-173'.
+
+            Does exactly the same thing as @argument(title), except it first
+            looks up the existing title of the article you specified.
+
+            If the provided value contains a `/`, only text after the `/` is
+            used. This allows you to use full Wiki URLs.
+
+            @example(..shortest -u scp-1313)(-)
+            """,
         ),
         dict(
             flags=['--title', '-t'],
@@ -71,6 +79,8 @@ class Shortest(Command):
             already-existing article. You can use this to see whether or not
             there will be an easy search for your article before you post it,
             which may help you avoid terrible titles like "Tower" or "Why?".
+
+            @example(..shortest -t "Solve For Bear")(-)
             """,
         ),
     ]
