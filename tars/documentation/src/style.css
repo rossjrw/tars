@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* Style text */
-p, pre {
+p, .usage {
   @apply mb-4;
 }
 section a {
@@ -16,7 +16,7 @@ section a {
 }
 
 /* Style code blocks */
-code, pre {
+code, .usage {
   @apply bg-primary-dark;
   @apply rounded-md;
 }
@@ -25,12 +25,12 @@ code {
   @apply py-1;
   @apply text-sm;
 }
-pre {
-  @apply inline-block;
-  @apply whitespace-normal;
-  @apply px-3 py-1;
+
+/* Examples */
+blockquote {
+  @apply px-8;
 }
-.example strong {
+blockquote strong {
   @apply text-primary-lighter;
 }
 
@@ -52,7 +52,7 @@ h3 {
   @apply font-bold;
   @apply text-5xl;
   @apply text-primary-bright;
-  @apply mb-4;
+  @apply mb-6;
 }
 h4 {
   @apply font-bold;
@@ -105,30 +105,4 @@ ul > li::marker {
 }
 ol > li::marker {
   @apply text-primary-lighter;
-}
-
-/* Emphasise the first line of each command.
- * This is the bit that is the help message on the command line */
-.command p:first-of-type {
-  @apply font-bold;
-  @apply text-primary-lighter;
-  @apply text-xl;
-}
-
-/* Style aliases in command titles */
-.command h3 span:nth-child(3n-2),
-.command h3 span:nth-child(3n) {
-  @apply text-primary-light;
-}
-.command h3 span:last-child {
-  @apply hidden;
-}
-
-/* Style flags in argument titles */
-.command h4 span:nth-child(3n-2),
-.command h4 span:nth-child(3n) {
-  @apply text-primary;
-}
-.command h4 span:last-child {
-  @apply hidden;
 }

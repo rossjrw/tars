@@ -16,6 +16,36 @@
   }
 </script>
 
+<style>
+  /* Emphasise the first line of each command.
+   * This is the bit that is the help message on the command line */
+  .command > :global(p:first-of-type) {
+    @apply font-bold;
+    @apply text-primary-lighter;
+    @apply text-xl;
+  }
+
+  /* Aliases in command titles */
+  h3 span:nth-child(3n-2),
+  h3 span:nth-child(3n) {
+    @apply text-primary-light;
+  }
+  h3 span:last-child {
+    @apply hidden;
+  }
+
+  /* Flags in argument titles */
+  h4 span:nth-child(3n-2),
+  h4 span:nth-child(3n) {
+    @apply text-primary;
+  }
+  h4 span:last-child {
+    @apply hidden;
+  }
+
+  /* Usage blocks */
+</style>
+
 <h2 id="commands">Command Reference</h2>
 
 <section>
@@ -27,8 +57,10 @@
         {/each}
       </h3>
       {#if info.base === "Command"}
-        <div>
-          <pre>..{info.usage}</pre>
+        <div class="usage px-5 py-3">
+          <pre class="p-0 inline-block whitespace-normal">
+            ..{info.usage}
+          </pre>
         </div>
       {/if}
       {@html info.help}
