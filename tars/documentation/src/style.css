@@ -85,24 +85,71 @@ section {
   @apply mx-auto;
 }
 
+/* Sidebar */
+nav ul {
+  @apply ml-4
+}
+nav li {
+  @apply my-2;
+  @apply text-primary;
+}
+
 /* Lists */
-ul, ol {
+main ul, ol {
   @apply pl-8;
   @apply -mt-2;
 }
-ul {
+main ul {
   @apply list-disc;
 }
 ol {
   @apply list-decimal;
 }
 
-ul > li, ol > li {
+main ul > li, ol > li {
   @apply mb-2;
 }
-ul > li::marker {
+main ul > li::marker {
   @apply text-primary-light;
 }
 ol > li::marker {
   @apply text-primary-lighter;
+}
+
+/* Sidebar links */
+nav li {
+  @apply m-0;
+  @apply text-primary-light;
+}
+nav a {
+  @apply block;
+  @apply rounded-md;
+  @apply p-1;
+}
+nav li:hover a {
+  @apply bg-primary-dim;
+  @apply text-primary-lighter;
+}
+
+/* Currently active link */
+nav li:nth-of-type(10), nav li:nth-of-type(10)::marker, /* XXX TEMP */
+nav .selected, nav.selected::marker {
+  @apply text-primary-bright;
+}
+
+/* Indendation for commands and arguments */
+nav li.h3, nav li.h4 {
+  @apply list-disc;
+  @apply ml-6
+}
+nav li.h4 {
+  @apply ml-12;
+  @apply text-sm;
+  @apply text-primary;
+}
+nav li::marker {
+  @apply text-primary-darker;
+}
+nav li:hover::marker {
+  @apply text-primary-light;
 }

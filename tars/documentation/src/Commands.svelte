@@ -79,7 +79,7 @@
       {/if}
       {#if info.arguments.length > 0}
         {#each info.arguments as arg}
-          <h4 id={arg.id}>
+          <h4 id={arg.id} name={splitFlag(arg.flags[0]).join("")}>
             {#each arg.flags.map(splitFlag) as flag}
               <span>{flag[0]}</span><span>{flag[1]}</span><span>, </span>
             {/each}

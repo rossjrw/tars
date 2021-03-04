@@ -9,7 +9,7 @@ module.exports = {
           bright: "#f7f197",
           lighter: "#acdca6",
           light: "#8fbc8f",
-          DEFAULT: "#68916F",
+          DEFAULT: "#7CA77F",
           dim: "#40654f",
           dark: "#29453e",
           darker: "#1b2f2b",
