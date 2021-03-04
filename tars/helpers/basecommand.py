@@ -8,6 +8,7 @@ import copy
 import shlex
 import re
 
+import tars.commands
 from tars.helpers.error import (
     CommandParsingError,
     CommandError,
@@ -117,6 +118,19 @@ class Command(ABC):
 
     def __init__(self):
         self.args = None
+        # All commands must be registered
+        if (
+            self.__class__.__name__
+            not in tars.commands.COMMANDS_REGISTRY.list_all_commands()
+        ):
+            raise ValueError(
+                "command {} is not registered".format(self.__class__.__name__)
+            )
+        self._canonical_alias = tars.commands.COMMANDS_REGISTRY.list_command_aliases(
+            command_class=self.__class__
+        )[
+            0
+        ]
 
     def parse(self, message):
         """Parses a command message to command arguments."""
@@ -151,9 +165,9 @@ class Command(ABC):
                 "{}. {}".format(
                     str(e),
                     "Use '..help' for full documentation."
-                    if self.command_name == Command.command_name
+                    if self.command_name is None
                     else "Use '..help {}' for this command's documentation.".format(
-                        self.command_name
+                        self._canonical_alias
                     ),
                 )
             ) from e
@@ -166,9 +180,9 @@ class Command(ABC):
                     else " — {} {}".format(
                         self.__doc__.splitlines()[0],
                         "Use '..help' for full documentation."
-                        if self.command_name == Command.command_name
+                        if self.command_name is None
                         else "Use '..help {}' for this command's documentation.".format(
-                            self.command_name
+                            self._canonical_alias
                         ),
                     ),
                 )
@@ -178,7 +192,7 @@ class Command(ABC):
         """Returns the argument parser for this command."""
 
         parser = ArgumentParser(
-            prog=type(self).command_name,
+            prog=self._canonical_alias,
             description=type(self).__doc__,
             formatter_class=help_formatter,
         )

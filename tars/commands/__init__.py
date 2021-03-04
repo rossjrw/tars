@@ -11,7 +11,8 @@ registered here.
 Add commands to the following dict.
 The key must be the filename.
 The value must be a dict of commands in that file.
-Those values must be a set of aliases for that command.
+Those values must be a list of aliases for that command, of which the first is
+considered the command's canonical alias.
 
 COMMANDS_REGISTRY = {
     "file": {"Commandname": {"alias1","alias2"}}
@@ -24,60 +25,60 @@ COMMANDS_REGISTRY = CommandsRegistry(
     {
         # Searching
         "search": {
-            "Search": {"search", "sea", "s"},
-            "Regexsearch": {"regexsearch", "rsearch", "rsea", "rs"},
-            "Tags": {"tags"},
-            "Lastcreated": {"lastcreated", "lc", "l"},
+            "Search": ["search", "sea", "s"],
+            "Regexsearch": ["regexsearch", "rsearch", "rsea", "rs"],
+            "Tags": ["tags"],
+            "Lastcreated": ["lastcreated", "lc", "l"],
         },
-        "showmore": {"Showmore": {"showmore", "sm", "pick"},},
-        "shortest": {"Shortest": {"shortest"}},
+        "showmore": {"Showmore": ["showmore", "sm", "pick"],},
+        "shortest": {"Shortest": ["shortest"]},
         # Database manipulation
-        "propagate": {"Propagate": {"propagate", "prop"},},
-        "dbq": {"Query": {"query", "dbq"}, "Seen": {"seen", "lastseen"},},
-        "refactor": {"Refactor": {"refactor"},},
-        "nick": {"Alias": {"alias"},},
+        "propagate": {"Propagate": ["propagate", "prop"],},
+        "dbq": {"Query": ["dbq"], "Seen": ["seen", "lastseen"],},
+        "refactor": {"Refactor": ["refactor"],},
+        "nick": {"Alias": ["alias"],},
         # Staff tools
-        "pingall": {"Pingall": {"pingall"},},
-        "promote": {"Promote": {"promote"},},
+        "pingall": {"Pingall": ["pingall"],},
+        "promote": {"Promote": ["promote"],},
         # Internal commands
         "admin": {
-            "Kill": {"kys"},
-            "Join": {"join", "rejoin"},
-            "Leave": {"leave", "part"},
-            "Reload": {"reload"},
-            "Say": {"say"},
-            "Config": {"config"},
-            "Reboot": {"reboot"},
-            "Debug": {"debug"},
-            "Update": {"update"},
-            "Helenhere": {"checkhelen", "helenhere"},
+            "Kill": ["kill", "kys"],
+            "Join": ["join", "rejoin"],
+            "Leave": ["leave", "part"],
+            "Reload": ["reload"],
+            "Say": ["say"],
+            "Config": ["config"],
+            "Reboot": ["reboot"],
+            "Debug": ["debug"],
+            "Update": ["update"],
+            "Helenhere": ["helenhere"],
         },
-        "converse": {"Converse": {"converse"},},
+        "converse": {"Converse": ["converse"],},
         # Information retrieval
         "info": {
-            "Help": {"help"},
-            "Status": {"tars", "version", "status", "uptime"},
-            "Github": {"github", "gh"},
-            "User": {"user"},
-            "Tag": {"tag"},
+            "Help": ["help"],
+            "Status": ["status", "tars"],
+            "Github": ["github", "gh"],
+            "User": ["user"],
+            "Tag": ["tag"],
         },
         "gimmick": {
-            "Reptile": {"reptile", "rep"},
-            "Fish": {"fish", "reptile+", "rep+"},
-            "Bear": {"bear"},
-            "Cat": {"cat"},
-            "Balls": {"balls"},
-            "Narcissism": {"rounderhouse", "jazstar", "themightymcb"},
-            "Password": {"password", "passcode"},
-            "Hug": {"hug", "hugtars"},
-            "Fiction": {"isthisreal"},
-            "Idea": {"idea"},
-            "Punctuation": {"punctuation", "punc", "blackbox"},
-            "Tell": {"tell"},
+            "Reptile": ["reptile", "rep"],
+            "Fish": ["fish", "reptile+", "rep+"],
+            "Bear": ["bear"],
+            "Cat": ["cat"],
+            "Balls": ["balls"],
+            "Narcissism": ["rounderhouse", "jazstar", "themightymcb"],
+            "Password": ["passcode"],
+            "Hug": ["hug", "hugtars"],
+            "Fiction": ["isthisreal"],
+            "Idea": ["idea"],
+            "Punctuation": ["punctuation", "punc", "blackbox"],
+            "Tell": ["tell"],
         },
         # Other
         "gib": {
-            "Gib": {"gibber", "gib", "big", "goob", "boog", "gob", "bog"},
+            "Gib": ["gib", "gibber", "big", "goob", "boog", "gob", "bog"],
         },
     }
 )

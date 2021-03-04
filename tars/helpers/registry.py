@@ -86,19 +86,36 @@ class CommandsRegistry:
     def list_command_aliases(
         self, file=None, command=None, *, command_class=None
     ):
-        """Gets the set of a command's aliases from the registry.
+        """Gets the list of a command's aliases from the registry.
 
         Can search either by filename and command name, or by command class
         lookup.
         """
         if command_class is not None:
             assert issubclass(command_class, Command)
-            return {
-                alias: command
-                for alias, command in self._aliased_commands.items()
-                if command is command_class
-            }.keys()
+            for filename in self._registry:
+                file_commands = self._registry[filename]
+                if command_class.__name__ in file_commands:
+                    return file_commands[command_class.__name__]
+            raise ValueError("no aliases found for {}".format(command_class))
         return self._registry[file][command]
+
+    def list_all_commands(self):
+        """List all registered commands regardless of file."""
+        return [
+            command
+            for file in self._registry
+            for command in self._registry[file]
+        ]
+
+    def list_all_aliases(self):
+        """List all registered aliases regardless of command."""
+        return [
+            alias
+            for file in self._registry
+            for command in self._registry[file]
+            for alias in self._registry[file][command]
+        ]
 
     def get_command(self, alias):
         """Gets the command that has the given alias."""
