@@ -20,7 +20,7 @@ start_time = time.time()
 class Help(Command):
     """Provides documentation for bot usage."""
 
-    command_name = "help"
+    command_name = "Help"
     arguments = [
         dict(
             flags=['command'],
@@ -43,7 +43,7 @@ class Help(Command):
 class Status(Command):
     """Shows how long the bot has been alive for."""
 
-    command_name = "status"
+    command_name = "Status"
 
     def execute(self, irc_c, msg, cmd):
         msg.reply(
@@ -86,7 +86,7 @@ class Github(Command):
 class User(Command):
     """Provides a link to a user's Wikidot page."""
 
-    command_name = "user"
+    command_name = "Link to user"
     defers_to = ["Secretary_Helen"]
     arguments = [
         dict(
@@ -111,7 +111,7 @@ class Tag(Command):
     See also @command(tags), which is unrelated.
     """
 
-    command_name = "tag"
+    command_name = "List tagged"
     arguments = [
         dict(flags=['tag'], type=str, nargs=None, help="""The chosen tag.""",)
     ]

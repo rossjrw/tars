@@ -26,7 +26,7 @@ class Propagate(Command):
     articles.
     """
 
-    command_name = "propagate"
+    command_name = "Update database"
     arguments = [
         dict(
             flags=['--sample'],

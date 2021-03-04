@@ -38,7 +38,7 @@ class Showmore(Command):
     stores list per-channel, so anyone in that channel can access them.
     """
 
-    command_name = "showmore"
+    command_name = "Show more"
     defers_to = ["jarvis", "Secretary_Helen"]
     arguments = [
         dict(

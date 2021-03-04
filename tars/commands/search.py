@@ -55,7 +55,7 @@ class Search(Command):
     returns the one that most needs extra attention.)
     """
 
-    command_name = "search"
+    command_name = "Search the Wiki"
     defers_to = ["jarvis", "Secretary_Helen"]
     arguments = [
         dict(
@@ -579,14 +579,14 @@ class Regexsearch(Search):
     'the'.)
     """
 
-    command_name = "regexsearch"
+    command_name = "Search by regex"
     arguments_prepend = "--regex"
 
 
 class Tags(Search):
     """Search by tags. Equivalent to `.s -t [tag]`."""
 
-    command_name = "tags"
+    command_name = "Search by tags"
     arguments_prepend = "--tags"
 
 
@@ -597,7 +597,7 @@ class Lastcreated(Search):
     Croquembouche.)
     """
 
-    command_name = "lastcreated"
+    command_name = "Last created"
     arguments_prepend = "--order recent --limit 3 --rating >-10"
 
 

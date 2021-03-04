@@ -138,7 +138,7 @@ class Seen(Command):
     For privacy reasons, only checks the current channel.
     """
 
-    command_name = "seen"
+    command_name = "Last seen"
     defers_to = ["Secretary_Helen"]
     arguments = [
         dict(

@@ -18,7 +18,7 @@ class Pingall(Command):
     send a message to everyone in the room.
     """
 
-    command_name = "pingall"
+    command_name = "Ping everyone"
     arguments = [
         dict(
             flags=['--message', '-m'],

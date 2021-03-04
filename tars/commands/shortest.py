@@ -51,7 +51,7 @@ class Shortest(Command):
     are counted but quotemarks are not.
     """
 
-    command_name = "shortest"
+    command_name = "Find shortest search"
     arguments = [
         dict(
             flags=['--url', '-u'],

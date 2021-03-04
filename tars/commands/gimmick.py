@@ -15,7 +15,7 @@ from tars.helpers.basecommand import Command
 class Idea(Command):
     """Generates a random SCP idea using Mikroscopic's idea generator."""
 
-    command_name = "idea"
+    command_name = "Idea generator"
 
     def execute(self, irc_c, msg, cmd):
         msg.reply(
@@ -31,7 +31,7 @@ class Idea(Command):
 class Hug(Command):
     """Shows your appreciation for TARS physically."""
 
-    command_name = "hug"
+    command_name = "Hug the bot"
 
     def execute(self, irc_c, msg, cmd):
         if msg.sender == "Jazstar":
@@ -107,7 +107,7 @@ class Narcissism(Command):
 class Password(Command):
     """Helpful hints for newbies for finding the passcode."""
 
-    command_name = "passcode"
+    command_name = "Passcode help"
 
     def execute(self, irc_c, msg, cmd):
         msg.reply("look harder fuckwit")
@@ -117,7 +117,7 @@ class Fiction(Command):
     """Links to a useful repository for newbies who are wondering if SCP is
     actually real."""
 
-    command_name = "fiction"
+    command_name = "Is this real?"
 
     def execute(self, irc_c, msg, cmd):
         msg.reply("https://www.youtube.com/watch?v=ioGoPOAxkCg")
@@ -150,7 +150,7 @@ class Balls(Command):
 class Punctuation(Command):
     """Quick copy-pastes for common but hard-to-find characters."""
 
-    command_name = "punctuation"
+    command_name = "Punctuation"
 
     def execute(self, irc_c, msg, cmd):
         msg.reply("dot: · en: – em: — blackbox: █")
@@ -174,7 +174,7 @@ class Tell(Command):
     they've read it.
     """
 
-    command_name = "tell"
+    command_name = "Tell"
     defers_to = ["jarvis", "Secretary_Helen"]
 
     def execute(self, irc_c, msg, cmd):

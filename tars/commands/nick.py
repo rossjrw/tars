@@ -22,7 +22,7 @@ class Alias(Command):
     Aliases cannot be shared.
     """
 
-    command_name = "alias"
+    command_name = "Register alias"
     arguments = [
         dict(
             flags=['nick'],

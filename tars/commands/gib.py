@@ -47,7 +47,7 @@ class Gib(Command):
     message.
     """
 
-    command_name = "gib"
+    command_name = "Gib"
     defers_to = ["jarvis"]
     arguments = [
         dict(

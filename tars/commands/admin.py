@@ -19,7 +19,7 @@ from tars.helpers.defer import defer
 class Helenhere(Command):
     """Checks whether or not Secretary_Helen is in the channel."""
 
-    command_name = "helenhere"
+    command_name = "Is Helen here?"
 
     def execute(self, msg, cmd):
         if defer.check(cmd, 'Secretary_Helen'):
@@ -31,7 +31,7 @@ class Helenhere(Command):
 class Kill(Command):
     """Shut down the bot."""
 
-    command_name = "kill"
+    command_name = "Kill"
     defers_to = ["jarvis", "Secretary_Helen"]
 
     def execute(self, irc_c, msg, cmd):
@@ -51,7 +51,7 @@ class Join(Command):
     restricted to users with elevated permissions.
     """
 
-    command_name = "join"
+    command_name = "Join a channel"
     defers_to = ["jarvis", "Secretary_Helen"]
     arguments = [
         dict(
@@ -79,7 +79,7 @@ class Leave(Command):
     kicking it will not work, as it will come back when it is rebooted.
     """
 
-    command_name = "leave"
+    command_name = "Leave a channel"
     defers_to = ["jarvis", "Secretary_Helen"]
     arguments = [
         dict(
@@ -117,7 +117,7 @@ class Leave(Command):
 class Reload(Command):
     """Reload the bot's commands."""
 
-    command_name = "reload"
+    command_name = "Reload"
 
     def execute(self, irc_c, msg, cmd):
         # do nothing - this is handled by parsemessage
@@ -127,7 +127,7 @@ class Reload(Command):
 class Reboot(Command):
     """Reboots the whole bot."""
 
-    command_name = "reboot"
+    command_name = "Reboot"
     defers_to = ["jarvis", "Secretary_Helen"]
 
     def execute(self, irc_c, msg, cmd):
@@ -142,7 +142,7 @@ class Reboot(Command):
 class Update(Command):
     """Update the bot from the Git repository."""
 
-    command_name = "update"
+    command_name = "Update"
     defers_to = ["jarvis", "Secretary_Helen"]
 
     def execute(self, irc_c, msg, cmd):
@@ -166,7 +166,6 @@ class Say(Command):
     `#tars`.)
     """
 
-    command_name = "say"
     arguments = [
         dict(
             flags=['recipient'],
@@ -224,9 +223,6 @@ class Say(Command):
 
 
 class Config(Command):
-
-    command_name = "config"
-
     def execute(self, irc_c, msg, cmd):
         msg.reply("http://scp-sandbox-3.wikidot.com/collab:tars")
         # TODO update this to final page (or src from .conf?)

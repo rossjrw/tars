@@ -104,7 +104,7 @@ class Command(ABC):
     its internal argparse object. If this text appears outside of TARS' source
     code, something has gone wrong."""
 
-    # The canonical name of this command, lowercase
+    # The name of this command as it will appear in documentation
     command_name = None
 
     # List of arguments that can be passed to this command; argparse syntax
