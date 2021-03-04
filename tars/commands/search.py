@@ -68,8 +68,8 @@ class Search(Command):
             quotemarks (`"`) will be treated as a single word. If you leave
             @argument(title) empty, then it will match all pages, and you'll
             need to specify more criteria. If you actually need to search for
-            quotemarks, escape them with a backslash - e.g. `.s \\'The
-            Administrator\\'`.""",
+            quotemarks, escape them with a backslash - e.g. `.s \\"The
+            Administrator\\"`.""",
         ),
         dict(
             flags=['--regex', '-x'],
