@@ -158,6 +158,6 @@ nav li:hover::marker {
 }
 
 /* Currently active link */
-nav .selected, nav .selected::marker {
+nav li.selected, nav li.selected::marker {
   @apply text-primary-bright;
 }

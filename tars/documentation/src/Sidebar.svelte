@@ -1,20 +1,28 @@
 <script>
   import { onMount, tick } from "svelte"
 
+  let sidebar
   let sidebarList
 
   // Wait for everything else to render before constructing the sidebar
   onMount(async () => {
     await tick()
-    makeSidebarList()
+    const observer = new IntersectionObserver(highlightLinks, {
+      root: null,
+      threshold: 0,
+      rootMargin: "-30px 0px -30px 0px",
+    })
+    makeSidebarList(observer)
   })
 
-  function makeSidebarList () {
+  /**
+   * Construct the sidebar by iterating the document's sections.
+   * Each section should have an id, a name, and a data-role indicating its
+   * nest depths (section, command or argument).
+   */
+  function makeSidebarList (observer) {
     const sections = document.getElementsByTagName("section")
 
-    // Construct the sidebar by iterating the document's sections.
-    // Each section should have an id, a name, and a data-role indicating its
-    // nest depths (section, command or argument).
     Array.from(sections).forEach(section => {
       const id = section.id
       if (!id) {
@@ -34,7 +42,39 @@
 
       // Add the item to the sidebar
       sidebarList.appendChild(item)
+
+      // Watch the section for intersection with the viewport
+      observer.observe(section)
     })
+  }
+
+  /**
+   * Respond to Intersection Observer events to highlight and unhighlight the
+   * appropriate links in the sidebar.
+   */
+  function highlightLinks (entries) {
+    if (sidebarList == null) {
+      return
+    }
+    entries.forEach(entry => {
+      const link = sidebarList.querySelector(`[href="#${entry.target.id}"]`)
+      if (link == null) {
+        return
+      }
+      if (entry.isIntersecting) {
+        link.parentElement.classList.add("selected")
+      } else {
+        link.parentElement.classList.remove("selected")
+      }
+    })
+    // Scroll the lowest visible element into view
+    const lastLink = [...sidebarList.querySelectorAll(".selected")].pop()
+    if (lastLink != null) {
+      sidebar.scroll({
+        top: lastLink.offsetTop - sidebar.offsetHeight / 2,
+        behavior: "smooth",
+      })
+    }
   }
 </script>
 
@@ -43,7 +83,8 @@
   <h1 class="text-7xl my-6 text-center font-bold text-primary-light">
     TARS
   </h1>
-  <nav id="sidebar" class="w-full overflow-y-scroll text-primary">
+  <nav bind:this={sidebar}
+       class="w-full overflow-y-scroll text-primary relative">
     <ul bind:this={sidebarList}
         class="mx-1 p-2">
     </ul>
