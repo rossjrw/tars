@@ -19,7 +19,7 @@
 <style>
   /* Emphasise the first line of each command.
    * This is the bit that is the help message on the command line */
-  .command > :global(p:first-of-type) {
+  section[data-role=command] > :global(p:first-of-type) {
     @apply font-bold;
     @apply text-primary-lighter;
     @apply text-xl;
@@ -46,12 +46,12 @@
   /* Usage blocks */
 </style>
 
-<h2 id="commands">Command Reference</h2>
+<section id=commands data-role=section name="Command Reference">
+  <h2>Command Reference</h2>
 
-<section>
   {#each docs.infos as info}
-    <div class="command">
-      <h3 class="mt-12" name={info.name} id={info.id.toLowerCase()}>
+    <section id={info.id.toLowerCase()} name="{info.name}" data-role=command>
+      <h3 class="mt-12">
         {#each info.aliases as alias}
           <span>..</span><span>{alias}</span><span>, </span>
         {/each}
@@ -79,14 +79,18 @@
       {/if}
       {#if info.arguments.length > 0}
         {#each info.arguments as arg}
-          <h4 id={arg.id} name={splitFlag(arg.flags[0]).join("")}>
-            {#each arg.flags.map(splitFlag) as flag}
-              <span>{flag[0]}</span><span>{flag[1]}</span><span>, </span>
-            {/each}
-          </h4>
-          {@html arg.help}
+          <section id={arg.id}
+                   data-role=argument
+                   name={splitFlag(arg.flags[0]).join("")}>
+            <h4>
+              {#each arg.flags.map(splitFlag) as flag}
+                <span>{flag[0]}</span><span>{flag[1]}</span><span>, </span>
+              {/each}
+            </h4>
+            {@html arg.help}
+          </section>
         {/each}
       {/if}
-    </div>
+    </section>
   {/each}
 </section>

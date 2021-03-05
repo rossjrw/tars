@@ -10,17 +10,17 @@
   })
 
   function makeSidebarList () {
-    const headers = document.querySelectorAll("h2, h3, h4")
-    Array.from(headers).forEach(header => {
-      const id = header.id
+    const sections = document.getElementsByTagName("section")
+
+    // Construct the sidebar by iterating the document's sections.
+    // Each section should have an id, a name, and a data-role indicating its
+    // nest depths (section, command or argument).
+    Array.from(sections).forEach(section => {
+      const id = section.id
       if (!id) {
         return
       }
-      const name = (
-        header.hasAttribute("name") ?
-        header.getAttribute("name") :
-        header.textContent
-      )
+      const name = section.getAttribute("name")
 
       // Construct the anchor link
       const link = document.createElement("a")
@@ -29,7 +29,7 @@
 
       // Construct the sidebar list item
       const item = document.createElement("li")
-      item.classList.add(header.tagName.toLowerCase())
+      item.classList.add(section.dataset.role)
       item.appendChild(link)
 
       // Add the item to the sidebar

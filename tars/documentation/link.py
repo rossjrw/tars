@@ -84,6 +84,9 @@ def process_links(command_infos, other_texts):
     replace_link(replace_command)
     replace_link(replace_argument)
 
+    # Add sections, but only in the other_texts bit
+    other_texts = [wrap_headers_in_sections(text) for text in other_texts]
+
     # It's not a link replacement but this is the easiest place to implement
     # this
     replace_link(compile_markdown)
@@ -192,18 +195,47 @@ def replace_argument(string, *, command_infos, command_id, **_):
     return re.sub(r"@argument\(([^)]*)\)", replace, string)
 
 
-def compile_markdown(string, **_):
-    """Converts a Markdown string to HTML."""
-    html = markdown(string)
+def wrap_headers_in_sections(string):
+    """Wraps headers and their contents in <section> tags."""
 
-    def insert_header_id(match):
-        link = match.group(2).lower().split(" ")[0]
-        return """<{0} id="{1}">{2}</{0}>""".format(
-            match.group(1), link, match.group(2)
+    def replace(match):
+        href = match.group(2).lower().split(" ")[0]
+        name = match.group(2)
+        role = "other"
+        # markdown=1 is needed for the "Markdown in HTML" extension which
+        # allows markdown to be inside HTML tags
+        return "<section {} markdown=1>\n{} {}{}\n</section>\n".format(
+            """id={} name="{}" data-role={}""".format(href, name, role),
+            match.group(1),
+            match.group(2),
+            match.group(3),
         )
 
-    html = re.sub(
-        r"^<(h[1-4])>(.*)</\1>$", insert_header_id, html, flags=re.MULTILINE
+    pattern = re.compile(
+        r"""
+        (?:^|\n)         # Assert start of string or just after a newline
+        (?<!>\n)         # Assert not followed by a >, which indicates the end
+                         #   of a section and therefore that the header that
+                         #   follows it has already been wrapped
+        (\#{1,6})\s(.*)  # Match a header of a given level and its text
+        ([\S\s]*?)       # Match everything that comes after the header
+        (?=              # End at one of the following:
+          \n\1\s         #   1. A header of the same level
+          |\n<\/section> #   2. A closing section tag
+          |\n*$          #   3. The end of the string
+        )
+        """,
+        re.VERBOSE,
     )
-    print(html)
+    while True:
+        output = pattern.sub(replace, string)
+        if output == string:
+            break
+        string = output
+    return output
+
+
+def compile_markdown(string, **_):
+    """Converts a Markdown string to HTML."""
+    html = markdown(string, extensions=['md_in_html'])
     return html

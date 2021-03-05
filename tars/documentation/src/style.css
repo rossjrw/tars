@@ -67,20 +67,28 @@ h4 {
 }
 
 /* Spacing between the sections */
-section {
+section[data-role=section] {
   @apply my-24;
+}
+section[data-role=command] {
+  @apply my-16;
+}
+section[data-role=argument], section[data-role=other] {
+  @apply my-8;
 }
 
 /* Give text a good reading width, but make the titles slightly wider */
-.intro h3, .command h4 {
+.intro h3, section[data-role=command] h4 {
   @apply max-w-3xl;
   @apply mx-auto;
 }
-.command h3 {
+section[data-role=command] h3 {
   @apply max-w-4xl;
   @apply mx-auto;
 }
-.intro p, .command > :not(h3):not(h4) {
+.intro p,
+section[data-role=command] > :not(h3):not(section),
+section[data-role=argument] > :not(h4) {
   @apply max-w-2xl;
   @apply mx-auto;
 }
@@ -131,18 +139,13 @@ nav li:hover a {
   @apply text-primary-lighter;
 }
 
-/* Currently active link */
-nav li:nth-of-type(10), nav li:nth-of-type(10)::marker, /* XXX TEMP */
-nav .selected, nav.selected::marker {
-  @apply text-primary-bright;
-}
-
 /* Indendation for commands and arguments */
-nav li.h3, nav li.h4 {
+nav li.other, nav li.command {
   @apply list-disc;
   @apply ml-6
 }
-nav li.h4 {
+nav li.argument {
+  @apply list-disc;
   @apply ml-12;
   @apply text-sm;
   @apply text-primary;
@@ -152,4 +155,9 @@ nav li::marker {
 }
 nav li:hover::marker {
   @apply text-primary-light;
+}
+
+/* Currently active link */
+nav .selected, nav .selected::marker {
+  @apply text-primary-bright;
 }

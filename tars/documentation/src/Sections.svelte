@@ -2,8 +2,8 @@
   import docs from "../build/docs.json"
 </script>
 
-<section class="intro">
-  <h2 id="intro" class="hidden">Introduction</h2>
+<section class="intro" id=intro data-role=section name="Introduction">
+  <h2 class="hidden">Introduction</h2>
 
   {@html docs.other}
 </section>
