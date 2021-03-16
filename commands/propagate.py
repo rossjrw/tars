@@ -3,6 +3,8 @@
 For propagating the database with wiki data.
 """
 
+import gevent
+
 from helpers.api import SCPWiki
 from helpers.error import CommandError
 from helpers.parse import nickColor
@@ -66,6 +68,8 @@ class propagate:
                     # Don't want to track fragments
                     continue
                 DB.add_article(page, commit=False)
+            # Give the API a moment to rest
+            gevent.sleep(5)
         DB.commit()
 
     @classmethod
