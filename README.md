@@ -99,12 +99,13 @@ optional):
       provided string matches regex `rgx` (can be a Pattern or a string); if it
       does not, rejects the argument with the given reason. The reason should
       complete the sentence "Argument rejected because the value..."
-* `defers_to`: A list of IRC nicks; if any of these nicks are present in the
-  channel when the command would be executed, it will not be.
 * `permission`: The permission level required to run this command (currently
   boolean, with `true` indicating only a Controller can run it).
 * `arguments_prepend`: A string that will be prepended to arguments passed to
   this command. Useful for setting defaults for subcommands.
+* `aliases`: A list of string aliases for this command. A command with no
+  aliases cannot be called. A subcommand with no defined aliases will use the
+  same aliases as its parent command which probably isn't very useful.
 
 The class' docstring is used as documentation for the command, although only
 the first line will appear on the command line.

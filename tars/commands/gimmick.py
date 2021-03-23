@@ -13,9 +13,11 @@ from tars.helpers.basecommand import Command
 
 
 class Idea(Command):
-    """Generates a random SCP idea using Mikroscopic's idea generator."""
+    """Generates a random SCP idea using
+    [Mikroscopic's idea generator](https://scp-generator.herokuapp.com)."""
 
     command_name = "Idea generator"
+    aliases = ["idea"]
 
     def execute(self, irc_c, msg, cmd):
         msg.reply(
@@ -32,6 +34,7 @@ class Hug(Command):
     """Shows your appreciation for TARS physically."""
 
     command_name = "Hug the bot"
+    aliases = ["hug", "hugtars"]
 
     def execute(self, irc_c, msg, cmd):
         if msg.sender == "Jazstar":
@@ -43,6 +46,8 @@ class Hug(Command):
 
 
 class Reptile(Command):
+    aliases = ["reptile", "rep"]
+
     def execute(self, irc_c, msg, cmd):
         repeat = 31 if msg.sender == "CuteGirl" else 2
         output = ""
@@ -52,6 +57,8 @@ class Reptile(Command):
 
 
 class Fish(Command):
+    aliases = ["fish", "reptile+", "rep+"]
+
     def execute(self, irc_c, msg, cmd):
         repeat = 2
         output = ""
@@ -61,6 +68,8 @@ class Fish(Command):
 
 
 class Bear(Command):
+    aliases = ["bear"]
+
     def execute(self, irc_c, msg, cmd):
         repeat = 2
         output = ""
@@ -70,6 +79,8 @@ class Bear(Command):
 
 
 class Cat(Command):
+    aliases = ["cat"]
+
     def execute(self, irc_c, msg, cmd):
         repeat = 2
         output = ""
@@ -95,6 +106,8 @@ class Cat(Command):
 
 
 class Narcissism(Command):
+    aliases = ["rounderhouse", "jazstar", "themightymcb"]
+
     def execute(self, irc_c, msg, cmd):
         if cmd.command == "rounderhouse":
             msg.reply(emojize(":red_circle::house:"))
@@ -108,6 +121,7 @@ class Password(Command):
     """Helpful hints for newbies for finding the passcode."""
 
     command_name = "Passcode help"
+    aliases = ["passcode"]
 
     def execute(self, irc_c, msg, cmd):
         msg.reply("look harder fuckwit")
@@ -118,12 +132,15 @@ class Fiction(Command):
     actually real."""
 
     command_name = "Is this real?"
+    aliases = ["isthisreal"]
 
     def execute(self, irc_c, msg, cmd):
         msg.reply("https://www.youtube.com/watch?v=ioGoPOAxkCg")
 
 
 class Balls(Command):
+    aliases = ["balls"]
+
     def execute(self, irc_c, msg, cmd):
         repeat = randint(2, 15)
         output = ""
@@ -151,6 +168,7 @@ class Punctuation(Command):
     """Quick copy-pastes for common but hard-to-find characters."""
 
     command_name = "Punctuation"
+    aliases = ["punctuation", "punc", "blackbox"]
 
     def execute(self, irc_c, msg, cmd):
         msg.reply("dot: · en: – em: — blackbox: █")
@@ -175,7 +193,7 @@ class Tell(Command):
     """
 
     command_name = "Tell"
-    defers_to = ["jarvis", "Secretary_Helen"]
+    aliases = ["tell"]
 
     def execute(self, irc_c, msg, cmd):
         msg.reply("{}: dumbass".format(msg.sender))

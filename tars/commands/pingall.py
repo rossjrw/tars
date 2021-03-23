@@ -19,6 +19,7 @@ class Pingall(Command):
     """
 
     command_name = "Ping everyone"
+    aliases = ["pingall"]
     arguments = [
         dict(
             flags=['--message', '-m'],

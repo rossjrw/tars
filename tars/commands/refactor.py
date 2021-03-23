@@ -27,6 +27,7 @@ class Refactor(Command):
     """
 
     has_refactored = False
+    aliases = ["refactor"]
     arguments = [
         dict(
             flags=['--force'],

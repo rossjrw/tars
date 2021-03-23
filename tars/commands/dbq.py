@@ -25,6 +25,7 @@ class Query(Command):
     console.
     """
 
+    aliases = ["dbq"]
     arguments = [
         dict(
             flags=['--tables'],
@@ -139,7 +140,7 @@ class Seen(Command):
     """
 
     command_name = "Last seen"
-    defers_to = ["Secretary_Helen"]
+    aliases = ["seen", "lastseen"]
     arguments = [
         dict(
             flags=['nick'],

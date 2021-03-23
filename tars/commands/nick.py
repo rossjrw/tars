@@ -23,6 +23,7 @@ class Alias(Command):
     """
 
     command_name = "Register alias"
+    aliases = ["alias"]
     arguments = [
         dict(
             flags=['nick'],

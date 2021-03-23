@@ -56,7 +56,7 @@ class Search(Command):
     """
 
     command_name = "Search the Wiki"
-    defers_to = ["jarvis", "Secretary_Helen"]
+    aliases = ["search", "sea", "s"]
     arguments = [
         dict(
             flags=['title'],
@@ -580,6 +580,7 @@ class Regexsearch(Search):
     """
 
     command_name = "Search by regex"
+    aliases = ["regexsearch", "rsearch", "rsea", "rs"]
     arguments_prepend = "--regex"
 
 
@@ -587,6 +588,7 @@ class Tags(Search):
     """Search by tags. Equivalent to `.s -t [tag]`."""
 
     command_name = "Search by tags"
+    aliases = ["tags"]
     arguments_prepend = "--tags"
 
 
@@ -598,6 +600,7 @@ class Lastcreated(Search):
     """
 
     command_name = "Last created"
+    aliases = ["lastcreated", "lc", "l"]
     arguments_prepend = "--order recent --limit 3 --rating >-10"
 
 

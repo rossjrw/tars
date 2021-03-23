@@ -31,6 +31,7 @@ def chunks(array, length):
 class Converse(Command):
     """An internal command used to respond to non-command messages."""
 
+    aliases = ["converse"]
     arguments = [
         dict(
             flags=['message'],

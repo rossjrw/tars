@@ -27,6 +27,7 @@ class Propagate(Command):
     """
 
     command_name = "Update database"
+    aliases = ["propagate", "prop"]
     arguments = [
         dict(
             flags=['--sample'],

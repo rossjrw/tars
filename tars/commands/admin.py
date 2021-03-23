@@ -20,6 +20,7 @@ class Helenhere(Command):
     """Checks whether or not Secretary_Helen is in the channel."""
 
     command_name = "Is Helen here?"
+    aliases = ["helenhere"]
 
     def execute(self, msg, cmd):
         if defer.check(cmd, 'Secretary_Helen'):
@@ -32,7 +33,7 @@ class Kill(Command):
     """Shut down the bot."""
 
     command_name = "Kill"
-    defers_to = ["jarvis", "Secretary_Helen"]
+    aliases = ["kill", "kys"]
 
     def execute(self, irc_c, msg, cmd):
         if not defer.controller(cmd):
@@ -52,7 +53,7 @@ class Join(Command):
     """
 
     command_name = "Join a channel"
-    defers_to = ["jarvis", "Secretary_Helen"]
+    aliases = ["join", "rejoin"]
     arguments = [
         dict(
             flags=['channel'],
@@ -80,7 +81,7 @@ class Leave(Command):
     """
 
     command_name = "Leave a channel"
-    defers_to = ["jarvis", "Secretary_Helen"]
+    aliases = ["leave", "part"]
     arguments = [
         dict(
             flags=['channel'],
@@ -118,6 +119,7 @@ class Reload(Command):
     """Reload the bot's commands."""
 
     command_name = "Reload"
+    aliases = ["reload"]
 
     def execute(self, irc_c, msg, cmd):
         # do nothing - this is handled by parsemessage
@@ -128,7 +130,7 @@ class Reboot(Command):
     """Reboots the whole bot."""
 
     command_name = "Reboot"
-    defers_to = ["jarvis", "Secretary_Helen"]
+    aliases = ["reboot"]
 
     def execute(self, irc_c, msg, cmd):
         if not defer.controller(cmd):
@@ -143,7 +145,7 @@ class Update(Command):
     """Update the bot from the Git repository."""
 
     command_name = "Update"
-    defers_to = ["jarvis", "Secretary_Helen"]
+    aliases = ["update"]
 
     def execute(self, irc_c, msg, cmd):
         if not defer.controller(cmd):
@@ -166,6 +168,7 @@ class Say(Command):
     `#tars`.)
     """
 
+    aliases = ["say"]
     arguments = [
         dict(
             flags=['recipient'],
@@ -223,12 +226,16 @@ class Say(Command):
 
 
 class Config(Command):
+    aliases = ["config"]
+
     def execute(self, irc_c, msg, cmd):
         msg.reply("http://scp-sandbox-3.wikidot.com/collab:tars")
         # TODO update this to final page (or src from .conf?)
 
 
 class Debug(Command):
+    aliases = ["debug"]
+
     def execute(self, irc_c, msg, cmd):
         # msg.reply(", ".join("%s: %s" % item for item in vars(msg).items()))
         pass

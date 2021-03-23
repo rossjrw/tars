@@ -48,7 +48,7 @@ class Gib(Command):
     """
 
     command_name = "Gib"
-    defers_to = ["jarvis"]
+    aliases = ["gib", "gibber", "big", "goob", "boog", "gob", "bog"]
     arguments = [
         dict(
             flags=['--user', '-u', '--author', '-a'],
