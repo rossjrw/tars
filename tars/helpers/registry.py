@@ -22,7 +22,7 @@ class CommandsRegistry:
     """Wrapper for the object that contains all the registered commands."""
 
     def __init__(self, registry):
-        """The input registry should be a dict of dicts of sets."""
+        """The input registry should be a dict of lists."""
         # The registry contains the command locations and aliases as declared
         # by the bot owner
         self._registry = registry
@@ -61,9 +61,7 @@ class CommandsRegistry:
                     self._aliased_commands.update(
                         {
                             alias: command_class
-                            for alias in self.list_command_aliases(
-                                file, command_name
-                            )
+                            for alias in command_class.aliases
                         }
                     )
                     # Extend the internal command store with this command's
@@ -81,24 +79,7 @@ class CommandsRegistry:
 
     def list_registered_commands(self, file):
         """Gets the list of registered commands in the given command file."""
-        return self._registry[file].keys()
-
-    def list_command_aliases(
-        self, file=None, command=None, *, command_class=None
-    ):
-        """Gets the list of a command's aliases from the registry.
-
-        Can search either by filename and command name, or by command class
-        lookup.
-        """
-        if command_class is not None:
-            assert issubclass(command_class, Command)
-            for filename in self._registry:
-                file_commands = self._registry[filename]
-                if command_class.__name__ in file_commands:
-                    return file_commands[command_class.__name__]
-            raise ValueError("no aliases found for {}".format(command_class))
-        return self._registry[file][command]
+        return self._registry[file]
 
     def list_all_commands(self):
         """List all registered commands regardless of file."""

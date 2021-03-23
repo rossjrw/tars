@@ -107,6 +107,9 @@ class Command(ABC):
     # The name of this command as it will appear in documentation
     command_name = None
 
+    # The aliases that can be used to call this command
+    aliases = []
+
     # List of arguments that can be passed to this command; argparse syntax
     arguments = []
 
@@ -126,11 +129,11 @@ class Command(ABC):
             raise ValueError(
                 "command {} is not registered".format(self.__class__.__name__)
             )
-        self._canonical_alias = tars.commands.COMMANDS_REGISTRY.list_command_aliases(
-            command_class=self.__class__
-        )[
-            0
-        ]
+        if len(self.aliases) == 0:
+            raise ValueError(
+                "command {} has no aliases".format(self.__class__.__name__)
+            )
+        self._canonical_alias = self.aliases[0]
 
     def parse(self, message):
         """Parses a command message to command arguments."""

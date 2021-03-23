@@ -52,9 +52,7 @@ def get_info_from_command(command_class):
                 or arg not in basecommand.arguments
             )
         ],
-        'aliases': COMMANDS_REGISTRY.list_command_aliases(
-            command_class=command_class
-        ),
+        'aliases': command_class.aliases,
         'usage': command_class().get_parser().get_usage(),
         'base': basecommand.__name__,
     }
