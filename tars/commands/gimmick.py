@@ -13,8 +13,11 @@ from tars.helpers.basecommand import Command
 
 
 class Idea(Command):
-    """Generates a random SCP idea using
-    [Mikroscopic's idea generator](https://scp-generator.herokuapp.com)."""
+    """Generates a random SCP idea.
+
+    This uses
+    [Mikroscopic's idea generator](https://scp-generator.herokuapp.com).
+    """
 
     command_name = "Idea generator"
     aliases = ["idea"]
