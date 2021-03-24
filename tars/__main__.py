@@ -30,7 +30,15 @@ def get_args_from_command_line():
         'config',
         type=str,
         nargs=None,
-        help="""The config file for the bot.""",
+        help="""The config file (YAML) for the bot.""",
+    )
+    parser.add_argument(
+        '--deferral',
+        type=str,
+        nargs=None,
+        default=None,
+        help="""The config file (TOML) for which commands defer to other
+        bots.""",
     )
     parser.add_argument(
         '--docs',
@@ -41,11 +49,6 @@ def get_args_from_command_line():
     return parser.parse_args()
 
 
-def get_config_from_command_line():
-    """Gets the specified config file name from the command line invocation"""
-    return get_args_from_command_line().config
-
-
 if __name__ == "__main__":
     args = get_args_from_command_line()
     if args.docs:
@@ -54,7 +57,7 @@ if __name__ == "__main__":
         build()
     else:
         # Run the bot
-        config = get_config_from_command_line()
+        config = get_args_from_command_line().config
         # Pyaib wants the config file name and the path separately
         config_path, _, config_file = config.rpartition("/")
         takeover(IrcBot(config_file, config_path))

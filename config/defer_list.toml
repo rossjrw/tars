@@ -1,7 +1,7 @@
 # This file lists commands that conflict with other bots on the network.
 # TARS will not respond to these commands unless that bot is not present.
 
-[[bot]]
+[[bots]]
 name = "Secretary_Helen"
 last_updated = "2021-03-23"
 prefix = "."
