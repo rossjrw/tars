@@ -13,7 +13,6 @@ from tars.helpers.basecommand import Command, matches_regex
 from tars.helpers.greetings import kill_bye
 from tars.helpers.error import CommandError
 from tars.helpers.database import DB
-from tars.helpers.defer import defer
 
 
 class Kill(Command):
@@ -21,11 +20,9 @@ class Kill(Command):
 
     command_name = "Kill"
     aliases = ["kill", "kys"]
+    permission = True
 
     def execute(self, irc_c, msg, cmd):
-        if not defer.controller(cmd):
-            raise CommandError("I'm afriad I can't let you do that.")
-            return
         msg.reply(kill_bye())
         irc_c.RAW("QUIT See you on the other side")
         irc_c.client.die()
@@ -118,11 +115,9 @@ class Reboot(Command):
 
     command_name = "Reboot"
     aliases = ["reboot"]
+    permission = True
 
     def execute(self, irc_c, msg, cmd):
-        if not defer.controller(cmd):
-            raise CommandError("I'm afriad I can't let you do that.")
-            return
         msg.reply("Rebooting...")
         irc_c.RAW("QUIT Rebooting, will be back soon!")
         os.execl(sys.executable, sys.executable, *sys.argv)
@@ -133,11 +128,9 @@ class Update(Command):
 
     command_name = "Update"
     aliases = ["update"]
+    permission = True
 
     def execute(self, irc_c, msg, cmd):
-        if not defer.controller(cmd):
-            raise CommandError("I'm afriad I can't let you do that.")
-            return
         msg.reply("Updating...")
         try:
             g = git.cmd.Git(".")
@@ -156,6 +149,7 @@ class Say(Command):
     """
 
     aliases = ["say"]
+    permission = True
     arguments = [
         dict(
             flags=['recipient'],
@@ -186,9 +180,6 @@ class Say(Command):
     ]
 
     def execute(self, irc_c, msg, cmd):
-        if not defer.controller(cmd):
-            raise CommandError("I'm afriad I can't let you do that.")
-            return
         message = " ".join(self['message'])
         if message.startswith("/"):
             if msg.raw_channel != self['recipient']:

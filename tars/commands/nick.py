@@ -6,7 +6,7 @@ For handling aliases and stuff like that.
 from tars.helpers.basecommand import Command
 from tars.helpers.database import DB
 from tars.helpers.error import CommandError, MyFaultError
-from tars.helpers.defer import defer
+from tars.helpers.defer import is_controller
 from tars.helpers.config import CONFIG
 
 
@@ -80,7 +80,7 @@ class Alias(Command):
         if len(self['add']) > 0:
             if self[
                 'nick'
-            ].lower() != msg.sender.lower() and not defer.controller(cmd):
+            ].lower() != msg.sender.lower() and not is_controller(cmd):
                 raise CommandError("You can't add an alias for someone else.")
             for alias in self['add']:
                 if DB.add_alias(user_id, alias, 1):
@@ -101,7 +101,7 @@ class Alias(Command):
         if len(self['remove']) > 0:
             if self[
                 'nick'
-            ].lower() != msg.sender.lower() and not defer.controller(cmd):
+            ].lower() != msg.sender.lower() and not is_controller(cmd):
                 raise CommandError(
                     "You can't remove an alias from someone else."
                 )
@@ -120,7 +120,7 @@ class Alias(Command):
         if 'wikiname' in self:
             if self[
                 'nick'
-            ].lower() != msg.sender.lower() and not defer.controller(cmd):
+            ].lower() != msg.sender.lower() and not is_controller(cmd):
                 raise CommandError("You can't change someone else's wikiname.")
             # The wikiname might be taken by another user
             wikiname_owner = DB.get_wikiname_owner(self['wikiname'])

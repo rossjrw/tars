@@ -41,9 +41,15 @@ def should_defer(cmd):
 
 
 def is_controller(cmd):
-    """Limit this command only to controllers."""
+    """Checks if the sender of the given command is a bot controller.
+
+    Avoid using this if possible. Prefer defining permission levels on commands
+    and arguments. Only use this if finer control is needed (e.g. if the
+    permission level depends on the value of an argument).
+    """
     return cmd.sender in DB.get_controllers()
 
 
 def get_users(irc_c, channel):
+    """Issues a NAMES request to the IRC server for the given channel."""
     irc_c.RAW("NAMES {}".format(channel))

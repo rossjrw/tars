@@ -7,7 +7,7 @@ from pyaib.signals import await_signal
 
 from tars.helpers.basecommand import Command, matches_regex
 from tars.helpers.database import DB
-from tars.helpers.defer import defer
+from tars.helpers.defer import get_users
 from tars.helpers.error import CommandError, MyFaultError
 
 
@@ -20,6 +20,8 @@ class Pingall(Command):
 
     command_name = "Ping everyone"
     aliases = ["pingall"]
+    # TODO extend this to channel operator (or at least voiced)
+    permission = True
     arguments = [
         dict(
             flags=['--message', '-m'],
@@ -36,6 +38,7 @@ class Pingall(Command):
             flags=['--channel'],
             type=matches_regex("^#", "must be a channel"),
             mode='hidden',
+            permission=True,
             help="""The channel for the NAMES request.""",
         ),
         dict(
@@ -64,21 +67,12 @@ class Pingall(Command):
     ]
 
     def execute(self, irc_c, msg, cmd):
-        # TODO extend this to channel operator (or at least voiced)
-        if not defer.controller(cmd):
-            raise CommandError("You're not authorised to do that")
-
         if 'channel' in self:
-            if not defer.controller(cmd):
-                raise MyFaultError(
-                    "You're not authorised to extract the "
-                    "nicks of another channel"
-                )
             channel = self['channel']
         else:
             channel = msg.raw_channel
         # Issue a fresh NAMES request and await the response
-        defer.get_users(irc_c, channel)
+        get_users(irc_c, channel)
         try:
             response = await_signal(irc_c, 'NAMES_RESPONSE', timeout=5.0)
             # returned data is the channel name
