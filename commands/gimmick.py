@@ -150,4 +150,7 @@ class tell:
     def command(cls, irc_c, msg, cmd):
         if defer.check(cmd, 'jarvis', 'Secretary_Helen'):
             return
-        msg.reply("{}: dumbass".format(msg.sender))
+        msg.reply(
+            "{}: I don't support .tell - try using MemoServ: "
+            "/ms send [nick] [message...]".format(msg.sender)
+        )
