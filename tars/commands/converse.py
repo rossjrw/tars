@@ -14,11 +14,11 @@ import string
 
 from fuzzywuzzy import fuzz
 
-import tars.commands
 from tars.helpers.basecommand import Command
 from tars.helpers.config import CONFIG
 from tars.helpers.database import DB
 from tars.helpers.greetings import acronym, greet, greets
+from tars.plugins.parsemessages import try_command
 
 
 def chunks(array, length):
@@ -56,15 +56,10 @@ class Converse(Command):
 
         if cmd.message.startswith("?? "):
             # CROM compatibility
+            # Override defer by pretending the bot was pinged
+            cmd.ping = True
             # Manually parse and instantiate a search command
-            # Duplication of code in plugins/parsemessages.py - TODO unify
-            command_class = tars.commands.COMMANDS_REGISTRY.get_command(
-                'search'
-            )
-            command = command_class()
-            command.parse(cmd.message)
-            command.execute(irc_c, msg, cmd)
-            return
+            return try_command(irc_c, cmd.message[3:], cmd, 'search')
         if msg.message.lower() == "{}!".format(CONFIG.nick.lower()):
             msg.reply("{}!".format(msg.nick))
             return
