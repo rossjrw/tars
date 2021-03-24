@@ -63,19 +63,19 @@ class ParsedCommand:
         # What was the command?
         pattern = r"""
             ^                  # Start of command
-            (?P<signal>        # Punctuation to denote command (signal)
-                [!\.]{{{},2}}  # Amount of required signal depends on ping
-            )                  # End signal group
+            (?P<prefix>        # Punctuation to denote command (prefix)
+                [!\.]{{{},2}}  # Amount of required prefix depends on ping
+            )                  # End prefix group
             (?P<cmd>           # Command name
-                [^!\.\s]+      # Any character but not signal or whitespace
+                [^!\.\s]+      # Any character but not prefix or whitespace
             )                  # End command name group
             (?P<rest>.*)       # Rest of the command (arguments)
             $"""
         if self.ping:
-            # If the bot was pinged, do not require a signal
+            # If the bot was pinged, do not require a prefix
             pattern = pattern.format(0)
         else:
-            # If the bot was not pinged, require a signal
+            # If the bot was not pinged, require a prefix
             pattern = pattern.format(1)
         pattern = re.compile(pattern, re.VERBOSE)
         match = pattern.search(self.message)
@@ -84,7 +84,7 @@ class ParsedCommand:
             self.command = match.group('cmd').strip().lower()
             self.message = match.group('rest').strip()
             # if >1 punctuation used, override defer
-            if len(match.group('signal')) > 1:
+            if len(match.group('prefix')) > 1:
                 self.force = True
 
 
