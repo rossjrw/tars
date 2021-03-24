@@ -12,6 +12,7 @@ import tars.commands
 
 from tars.helpers import parse
 from tars.helpers.config import CONFIG
+from tars.helpers import defer
 from tars.helpers.error import (
     CommandError,
     CommandNotExistError,
@@ -21,7 +22,8 @@ from tars.helpers.error import (
 
 
 def try_command(irc_c, msg, cmd, command_name=None):
-    """Execute the command of the given name."""
+    """Execute the command of the given name. Returns an int indicating whether
+    the command was successful."""
     if command_name is None:
         command_name = cmd.command
     try:
@@ -29,6 +31,9 @@ def try_command(irc_c, msg, cmd, command_name=None):
         command_class = tars.commands.COMMANDS_REGISTRY.get_command(
             command_name
         )
+        # Check if the command should defer to another bot
+        if defer.should_defer(cmd):
+            return 1
         # Instantiate the command
         command = command_class()
         # Parse the message used to call the command like a command line

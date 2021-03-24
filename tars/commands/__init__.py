@@ -40,7 +40,6 @@ COMMANDS_REGISTRY = CommandsRegistry(
             "Reboot",
             "Debug",
             "Update",
-            "Helenhere",
         ],
         "converse": ["Converse",],
         # Information retrieval

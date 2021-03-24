@@ -16,19 +16,6 @@ from tars.helpers.database import DB
 from tars.helpers.defer import defer
 
 
-class Helenhere(Command):
-    """Checks whether or not Secretary_Helen is in the channel."""
-
-    command_name = "Is Helen here?"
-    aliases = ["helenhere"]
-
-    def execute(self, msg, cmd):
-        if defer.check(cmd, 'Secretary_Helen'):
-            msg.reply("Yep, I can see Helen.")
-        else:
-            msg.reply("Nope, I can't see Helen.")
-
-
 class Kill(Command):
     """Shut down the bot."""
 
