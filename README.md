@@ -126,7 +126,7 @@ following arguments (which can be named anything):
   * `ping`: Whether the bot was pinged by this message.
   * `command`: The command name as typed by the user (may differ from the
     canonical `command_name`).
-  * `force`: Whether to bypass the defer step.
+  * `prefix`: The prefix used to call the command e.g. `..`.
 
 To create a subcommand, create a new class that extends the parent command,
 with its own docstring and `command_name`. I recommend using

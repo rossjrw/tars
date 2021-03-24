@@ -62,7 +62,7 @@ def try_command(irc_c, msg, cmd, command_name=None):
             )
         # need to log the error somewhere - why not #tars?
         irc_c.PRIVMSG(
-            "#tars",
+            CONFIG['channels']['home'],
             "\x02Error report:\x0F {} issued `{}` → `{}`".format(
                 msg.sender, msg.message, e
             ),

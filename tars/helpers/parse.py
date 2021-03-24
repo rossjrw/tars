@@ -34,7 +34,7 @@ class ParsedCommand:
         self.ping = False  # was the bot pinged?
         self.command = None  # if command, then the command name
         self.message = None  # message text excluding ping and command name
-        self.force = False  # whether to bypass defer
+        self.prefix = None  # Prefix used to call this command
         self.context = irc_c
 
         # Was someone pinged?
@@ -83,9 +83,9 @@ class ParsedCommand:
             # Remove command from the message
             self.command = match.group('cmd').strip().lower()
             self.message = match.group('rest').strip()
-            # if >1 punctuation used, override defer
+            # Store the prefix so defer can use it, if there was one
             if len(match.group('prefix')) > 1:
-                self.force = True
+                self.prefix = match.group('prefix')
 
 
 # Parse a nick to its IRCCloud colour

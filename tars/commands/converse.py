@@ -18,7 +18,6 @@ import tars.commands
 from tars.helpers.basecommand import Command
 from tars.helpers.config import CONFIG
 from tars.helpers.database import DB
-from tars.helpers.defer import defer
 from tars.helpers.greetings import acronym, greet, greets
 
 
@@ -137,7 +136,11 @@ class Converse(Command):
             if raw_acronym not in existing_acronyms:
                 msg.reply(bold_acronym)
                 if msg.raw_channel != CONFIG['channels']['home']:
-                    defer.report(cmd, bold_acronym)
+                    cmd.context.RAW(
+                        "PRIVMSG {} {}".format(
+                            CONFIG['channels']['home'], bold_acronym
+                        )
+                    )
                 with open(CONFIG['converse']['acronyms'], 'w') as acro_file:
                     acros.append(
                         {
