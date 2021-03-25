@@ -18,7 +18,7 @@ from tars.helpers.basecommand import Command
 from tars.helpers.config import CONFIG
 from tars.helpers.database import DB
 from tars.helpers.greetings import acronym, greet, greets
-from tars.plugins.parsemessages import try_command
+from tars.plugins import parsemessages
 
 
 def chunks(array, length):
@@ -59,7 +59,9 @@ class Converse(Command):
             # Override defer by pretending the bot was pinged
             cmd.ping = True
             # Manually parse and instantiate a search command
-            return try_command(irc_c, cmd.message[3:], cmd, 'search')
+            return parsemessages.try_command(
+                irc_c, cmd.message[3:], cmd, 'search'
+            )
         if msg.message.lower() == "{}!".format(CONFIG.nick.lower()):
             msg.reply("{}!".format(msg.nick))
             return
