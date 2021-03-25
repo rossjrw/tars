@@ -141,7 +141,14 @@ alias, or it won't be able to be called.
 
 Other considerations:
 
-* `nargs` must be either 0 or not present if the `type` is `bool`.
+* Arguments may not pass an `action` to the argparse parser.
+* Creating boolean arguments is a little different to normal argparse usage.
+  Normally, you would set `default=False` and `action='store_true'`, omitting a
+  type. Here, just set `type=bool`; this is a special case and the action and
+  default value will be handled automatically. `nargs` must be 0 or omitted.
+* A boolean arg is always present (and an `'arg' in self` check will always
+  return `true`) regardless of whether it was actually specified. If it was not
+  specified, its value is `false`.
 * Most `nargs` values will result in a list being created, except for
   `nargs=None`, which expects a single value and returns it directly.
 * The default value for `nargs` of `*` and `+` is an empty list, even if no
@@ -150,9 +157,6 @@ Other considerations:
   self` will return `false`; if it _is_ present but no values were provided,
   `'argname' in self` will return `true`, even though either way the value is
   identical (`[]` for `"*"` and `XXX TODO` for `"?"`).
-* A boolean arg is always present (and an `'arg' in self` check will always
-  return `true`) regardless of whether it was actually specified. If it was not
-  specified, its value is `false`.
 
 ## Other bits
 
