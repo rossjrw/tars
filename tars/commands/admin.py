@@ -212,8 +212,20 @@ class Config(Command):
 
 
 class Debug(Command):
+    """Debug command"""
+
     aliases = ["debug"]
+
+    arguments = [
+        dict(
+            flags=["--restricted"],
+            permission=True,
+            type=bool,
+            help="""This argument has elevated permissions.""",
+        )
+    ]
 
     def execute(self, irc_c, msg, cmd):
         # msg.reply(", ".join("%s: %s" % item for item in vars(msg).items()))
-        pass
+
+        msg.reply("Debugged")
