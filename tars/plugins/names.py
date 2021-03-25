@@ -12,7 +12,7 @@ from pyaib.plugins import observe, plugin_class
 from pyaib.signals import emit_signal
 from tars.helpers.parse import nickColor
 from tars.helpers.database import DB
-from tars.helpers.defer import defer
+from tars.helpers.defer import get_users
 
 
 def nameprint(text, error=False):
@@ -72,10 +72,10 @@ class Names:
     @observe('IRC_MSG_JOIN')
     def join_names(self, irc_c, msg):
         # make sure the names are always up to date
-        defer.get_users(irc_c, msg.raw_channel)
+        get_users(irc_c, msg.raw_channel)
 
     @observe('IRC_MSG_PART')
     def part_names(self, irc_c, msg):
         # make sure the names are always up to date
         for channel in DB.get_all_channels():
-            defer.get_users(irc_c, channel)
+            get_users(irc_c, channel)

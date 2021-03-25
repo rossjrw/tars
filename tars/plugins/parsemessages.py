@@ -12,7 +12,7 @@ import tars.commands
 
 from tars.helpers import parse
 from tars.helpers.config import CONFIG
-from tars.helpers import defer
+from tars.helpers.defer import should_defer, make_permission_checker
 from tars.helpers.error import (
     CommandError,
     CommandNotExistError,
@@ -32,7 +32,7 @@ def try_command(irc_c, msg, cmd, command_name=None):
             command_name
         )
         # Check if the command should defer to another bot
-        if defer.should_defer(cmd):
+        if should_defer(cmd):
             return 1
         # Instantiate the command
         command = command_class()

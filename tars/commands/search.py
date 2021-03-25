@@ -18,7 +18,6 @@ import pendulum as pd
 from tars.commands.gib import Gib
 from tars.commands.showmore import Showmore
 from tars.helpers.basecommand import Command
-from tars.helpers.defer import defer
 from tars.helpers.api import GOOGLE_CSE_API_KEY, GOOGLE_CSE_ID
 from tars.helpers.error import CommandError, isint
 from tars.helpers.database import DB
