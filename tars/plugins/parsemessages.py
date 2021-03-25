@@ -34,8 +34,11 @@ def try_command(irc_c, msg, cmd, command_name=None):
         # Check if the command should defer to another bot
         if should_defer(cmd):
             return 1
+        # Construct a function to validate if the user has permission to do
+        # something
+        permission_checker = make_permission_checker(cmd)
         # Instantiate the command
-        command = command_class()
+        command = command_class(permission_checker)
         # Parse the message used to call the command like a command line
         command.parse(cmd.message)
         # Execute the command
