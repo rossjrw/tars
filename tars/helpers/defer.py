@@ -1,6 +1,7 @@
 """defer.py
 
-For checking whether a command should defer to jarvis or Secretary_Helen.
+For checking whether a command should defer to jarvis or Secretary_Helen, and
+also for checking user permissions.
 """
 
 # jarvis: "Page not found."
@@ -18,9 +19,9 @@ def should_defer(cmd):
     The command does not execute if the prefix and alias are shared by another
     bot, unless the bot was pinged.
     """
-    # If there is no command string, what?
+    # If there is no command string, there's no need to defer
     if cmd.command is None:
-        raise ValueError("command is None")
+        return False
     # If the bot was pinged, forget everything else - this command is happening
     if cmd.ping:
         return False
@@ -53,3 +54,15 @@ def is_controller(cmd):
 def get_users(irc_c, channel):
     """Issues a NAMES request to the IRC server for the given channel."""
     irc_c.RAW("NAMES {}".format(channel))
+
+
+def make_permission_checker(cmd):
+    """Constructs and returns a function that will check if the current IRC
+    context matches the provided permission level."""
+    # The permission level can currently either be True or False
+    def permission_checker(permission_level):
+        if permission_level:
+            return is_controller(cmd)
+        return True
+
+    return permission_checker
