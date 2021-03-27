@@ -142,9 +142,7 @@ class Command(ABC):
         # Now check that the executor has permission to use the command
         if not self._permission_checker(self.permission):
             raise MyFaultError(
-                "You don't have permission to use ..{}".format(
-                    self._canonical_alias
-                )
+                "You don't have permission to use that command."
             )
 
     def _make_argument_action(self, type, permission_level):
