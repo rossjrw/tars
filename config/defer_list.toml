@@ -2,6 +2,11 @@
 # TARS will not respond to these commands unless that bot is not present.
 
 [[bots]]
+name = "CASE"
+prefix = ".."
+commands = ["debug"]
+
+[[bots]]
 name = "Secretary_Helen"
 last_updated = "2021-03-23"
 prefix = "."
