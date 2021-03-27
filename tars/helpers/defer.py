@@ -30,11 +30,14 @@ def should_defer(cmd):
     defer_configs = [
         config
         for config in CONFIG['deferral']
-        if config['name'] in members and config['prefix'] == cmd.prefix
+        if config['name'] in members
+        and config['name'] != CONFIG['nick']
+        and config['prefix'] == cmd.prefix
     ]
     # Check if this command has the same name as any matching commands
     if any(
-        cmd.command.lower() in [command.lower() for command in config.commands]
+        cmd.command.lower()
+        in [command.lower() for command in config['commands']]
         for config in defer_configs
     ):
         return True
