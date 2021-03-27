@@ -50,6 +50,19 @@ def get_args_from_command_line():
 
 
 if __name__ == "__main__":
+    # When rebooting, we are being executed as script rather than as module
+    try:
+        import tars
+
+        print("Bot starting")
+    except ImportError:
+        print("Bot rebooting")
+        # Add dir to path to simulate being a module
+        import os
+        import sys
+
+        path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+        sys.path.insert(0, path)
     args = get_args_from_command_line()
     if args.docs:
         from tars.documentation.build import build
