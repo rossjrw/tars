@@ -12,7 +12,7 @@ import markovify
 from tars.helpers.basecommand import Command, matches_regex, regex_type
 from tars.helpers.config import CONFIG
 from tars.helpers.database import DB
-from tars.helpers.defer import defer
+from tars.helpers.defer import is_controller
 from tars.helpers.error import CommandError, MyFaultError
 
 _URL_PATT = (
@@ -48,7 +48,7 @@ class Gib(Command):
     """
 
     command_name = "Gib"
-    defers_to = ["jarvis"]
+    aliases = ["gib", "gibber", "big", "goob", "boog", "gob", "bog"]
     arguments = [
         dict(
             flags=['--user', '-u', '--author', '-a'],
@@ -206,7 +206,7 @@ class Gib(Command):
             if (
                 msg.raw_channel is not None
                 and channel != msg.raw_channel
-                and not defer.controller(cmd)
+                and not is_controller(cmd)
             ):
                 raise CommandError(
                     "You can only gib the current channel (or "

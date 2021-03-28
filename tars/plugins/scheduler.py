@@ -8,7 +8,7 @@ from functools import partial
 from apscheduler.schedulers.gevent import GeventScheduler
 from pyaib.plugins import plugin_class
 
-from tars.commands.propagate import propagate
+from tars.commands.propagate import Propagate
 from tars.helpers.config import CONFIG
 
 
@@ -27,7 +27,7 @@ class Schedule:
 
         # Scheduled full wiki update
         self.scheduler.add_job(
-            propagate.get_wiki_data,
+            Propagate.get_wiki_data,
             'cron',
             kwargs={'reply': log_propagation_message},
             **self.cron_to_kwargs(
@@ -37,7 +37,7 @@ class Schedule:
 
         # Scheduled recent pages update
         self.scheduler.add_job(
-            propagate.get_wiki_data,
+            Propagate.get_wiki_data,
             'cron',
             kwargs={'reply': log_propagation_message, 'seconds': 259200},
             **self.cron_to_kwargs(

@@ -14,7 +14,6 @@ from tars.helpers.basecommand import Command
 from tars.helpers.error import CommandError, MyFaultError
 from tars.helpers.parse import nickColor
 from tars.helpers.database import DB
-from tars.helpers.defer import defer
 
 
 class Query(Command):
@@ -25,6 +24,7 @@ class Query(Command):
     console.
     """
 
+    aliases = ["dbq"]
     arguments = [
         dict(
             flags=['--tables'],
@@ -55,6 +55,7 @@ class Query(Command):
             flags=['--sql'],
             type=str,
             nargs='+',
+            permission=True,
             help="""Issue an SQL statement to the database.
 
             This should only be used for read-only queries. @command(refactor)
@@ -120,8 +121,6 @@ class Query(Command):
                         "I don't know anything called '{}'.".format(search)
                     )
         elif len(self['sql']) > 0:
-            if not defer.controller(cmd):
-                raise CommandError("I'm afriad I can't let you do that.")
             try:
                 DB.print_selection(" ".join(self['sql']), 'str' in self)
                 msg.reply("Printing that selection to console")
@@ -139,7 +138,7 @@ class Seen(Command):
     """
 
     command_name = "Last seen"
-    defers_to = ["Secretary_Helen"]
+    aliases = ["seen", "lastseen"]
     arguments = [
         dict(
             flags=['nick'],

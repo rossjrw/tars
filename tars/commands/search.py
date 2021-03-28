@@ -18,7 +18,6 @@ import pendulum as pd
 from tars.commands.gib import Gib
 from tars.commands.showmore import Showmore
 from tars.helpers.basecommand import Command
-from tars.helpers.defer import defer
 from tars.helpers.api import GOOGLE_CSE_API_KEY, GOOGLE_CSE_ID
 from tars.helpers.error import CommandError, isint
 from tars.helpers.database import DB
@@ -56,7 +55,7 @@ class Search(Command):
     """
 
     command_name = "Search the Wiki"
-    defers_to = ["jarvis", "Secretary_Helen"]
+    aliases = ["search", "sea", "s"]
     arguments = [
         dict(
             flags=['title'],
@@ -580,6 +579,7 @@ class Regexsearch(Search):
     """
 
     command_name = "Search by regex"
+    aliases = ["regexsearch", "rsearch", "rsea", "rs"]
     arguments_prepend = "--regex"
 
 
@@ -587,6 +587,7 @@ class Tags(Search):
     """Search by tags. Equivalent to `.s -t [tag]`."""
 
     command_name = "Search by tags"
+    aliases = ["tags"]
     arguments_prepend = "--tags"
 
 
@@ -598,6 +599,7 @@ class Lastcreated(Search):
     """
 
     command_name = "Last created"
+    aliases = ["lastcreated", "lc", "l"]
     arguments_prepend = "--order recent --limit 3 --rating >-10"
 
 

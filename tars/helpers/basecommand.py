@@ -14,6 +14,7 @@ from tars.helpers.error import (
     CommandError,
     CommandParsingHelp,
     CommandUsageMessage,
+    MyFaultError,
 )
 
 
@@ -107,16 +108,19 @@ class Command(ABC):
     # The name of this command as it will appear in documentation
     command_name = None
 
+    # The aliases that can be used to call this command
+    aliases = []
+
+    # The permission level required to call this command
+    permission = False
+
     # List of arguments that can be passed to this command; argparse syntax
     arguments = []
-
-    # The names of the bots that this command defers to
-    defers_to = []
 
     # A string to prepend to the start of the arguments (useful for aliases)
     arguments_prepend = ""
 
-    def __init__(self):
+    def __init__(self, permission_checker):
         self.args = None
         # All commands must be registered
         if (
@@ -126,11 +130,42 @@ class Command(ABC):
             raise ValueError(
                 "command {} is not registered".format(self.__class__.__name__)
             )
-        self._canonical_alias = tars.commands.COMMANDS_REGISTRY.list_command_aliases(
-            command_class=self.__class__
-        )[
-            0
-        ]
+        if len(self.aliases) == 0:
+            raise ValueError(
+                "command {} has no aliases".format(self.__class__.__name__)
+            )
+        self._canonical_alias = self.aliases[0]
+        # Verify that the permission checker is a function
+        if not callable(permission_checker):
+            raise TypeError("permission_checker must be callable")
+        self._permission_checker = permission_checker
+        # Now check that the executor has permission to use the command
+        if not self._permission_checker(self.permission):
+            raise MyFaultError(
+                "You don't have permission to use that command."
+            )
+
+    def _make_argument_action(self, type, permission_level):
+        """Constructs and returns an argparse action. The action first
+        validates the arguments' usage against the permission checker and then
+        stores the arguments into the namespace."""
+        outer = self
+        if type is bool:
+            ParentAction = argparse._StoreTrueAction
+        else:
+            ParentAction = argparse._StoreAction
+
+        class Action(ParentAction):
+            def __call__(self, parser, namespace, values, option_string=None):
+                # Check this argument's permission against the context
+                if not outer._permission_checker(permission_level):
+                    raise MyFaultError(
+                        "You don't have permission to use the {} "
+                        "argument.".format(option_string)
+                    )
+                super().__call__(parser, namespace, values, option_string)
+
+        return Action
 
     def parse(self, message):
         """Parses a command message to command arguments."""
@@ -199,30 +234,35 @@ class Command(ABC):
         # arguments is a list of dicts
         # flags[], type, nargs, mode, help, choices
         for arg in copy.deepcopy(type(self).arguments):
-            # 1. Handle the mode, if present
+            # Check that actions have not been specified
+            if 'action' in arg:
+                raise TypeError("arguments may not specify an action")
+            # Construct the action with a default permission level
+            arg['action'] = self._make_argument_action(
+                arg['type'], arg.pop('permission', Command.permission)
+            )
+            # Handle the mode, if present
             if 'mode' in arg:
                 mode = arg.pop('mode')
                 if mode == 'hidden':
                     arg['help'] = argparse.SUPPRESS
                 else:
                     raise ValueError("Unknown mode: {}".format(mode))
-            # 2. Handle the type
+            # Handle the type
             if arg['type'] is bool:
-                if 'nargs' in arg and arg['nargs'] != 0:
+                if 'nargs' in arg and arg.pop('nargs') != 0:
                     raise ValueError("bool args must be 0 or not present")
-                arg['default'] = False
-                arg['action'] = 'store_true'
+                # The type has already been used to construct the Action, and
+                # bool as a type is misleading otherwise, so ditch it
                 arg.pop('type')
-                arg.pop('nargs', None)
-            # Other types are self-sufficient
-            # 3. Handle the flags
+            # Handle the flags
             flags = arg.pop('flags')
             assert all([" " not in f for f in flags])
             assert all([isinstance(f, str) for f in flags])
-            # 4. Handle the docstring
+            # Handle the docstring
             if 'help' not in arg:
                 raise ValueError("arg must have help string")
-            # 5. Handle the nargs
+            # Handle the nargs
             if 'nargs' in arg:
                 # Assign sensible defaults
                 if 'default' not in arg:

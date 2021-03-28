@@ -13,31 +13,16 @@ from tars.helpers.basecommand import Command, matches_regex
 from tars.helpers.greetings import kill_bye
 from tars.helpers.error import CommandError
 from tars.helpers.database import DB
-from tars.helpers.defer import defer
-
-
-class Helenhere(Command):
-    """Checks whether or not Secretary_Helen is in the channel."""
-
-    command_name = "Is Helen here?"
-
-    def execute(self, msg, cmd):
-        if defer.check(cmd, 'Secretary_Helen'):
-            msg.reply("Yep, I can see Helen.")
-        else:
-            msg.reply("Nope, I can't see Helen.")
 
 
 class Kill(Command):
     """Shut down the bot."""
 
     command_name = "Kill"
-    defers_to = ["jarvis", "Secretary_Helen"]
+    aliases = ["kill", "kys"]
+    permission = True
 
     def execute(self, irc_c, msg, cmd):
-        if not defer.controller(cmd):
-            raise CommandError("I'm afriad I can't let you do that.")
-            return
         msg.reply(kill_bye())
         irc_c.RAW("QUIT See you on the other side")
         irc_c.client.die()
@@ -52,7 +37,7 @@ class Join(Command):
     """
 
     command_name = "Join a channel"
-    defers_to = ["jarvis", "Secretary_Helen"]
+    aliases = ["join", "rejoin"]
     arguments = [
         dict(
             flags=['channel'],
@@ -80,7 +65,7 @@ class Leave(Command):
     """
 
     command_name = "Leave a channel"
-    defers_to = ["jarvis", "Secretary_Helen"]
+    aliases = ["leave", "part"]
     arguments = [
         dict(
             flags=['channel'],
@@ -118,6 +103,7 @@ class Reload(Command):
     """Reload the bot's commands."""
 
     command_name = "Reload"
+    aliases = ["reload"]
 
     def execute(self, irc_c, msg, cmd):
         # do nothing - this is handled by parsemessage
@@ -128,12 +114,10 @@ class Reboot(Command):
     """Reboots the whole bot."""
 
     command_name = "Reboot"
-    defers_to = ["jarvis", "Secretary_Helen"]
+    aliases = ["reboot"]
+    permission = True
 
     def execute(self, irc_c, msg, cmd):
-        if not defer.controller(cmd):
-            raise CommandError("I'm afriad I can't let you do that.")
-            return
         msg.reply("Rebooting...")
         irc_c.RAW("QUIT Rebooting, will be back soon!")
         os.execl(sys.executable, sys.executable, *sys.argv)
@@ -143,12 +127,10 @@ class Update(Command):
     """Update the bot from the Git repository."""
 
     command_name = "Update"
-    defers_to = ["jarvis", "Secretary_Helen"]
+    aliases = ["update"]
+    permission = True
 
     def execute(self, irc_c, msg, cmd):
-        if not defer.controller(cmd):
-            raise CommandError("I'm afriad I can't let you do that.")
-            return
         msg.reply("Updating...")
         try:
             g = git.cmd.Git(".")
@@ -166,6 +148,8 @@ class Say(Command):
     `#tars`.)
     """
 
+    aliases = ["say"]
+    permission = True
     arguments = [
         dict(
             flags=['recipient'],
@@ -196,9 +180,6 @@ class Say(Command):
     ]
 
     def execute(self, irc_c, msg, cmd):
-        if not defer.controller(cmd):
-            raise CommandError("I'm afriad I can't let you do that.")
-            return
         message = " ".join(self['message'])
         if message.startswith("/"):
             if msg.raw_channel != self['recipient']:
@@ -223,12 +204,28 @@ class Say(Command):
 
 
 class Config(Command):
+    aliases = ["config"]
+
     def execute(self, irc_c, msg, cmd):
         msg.reply("http://scp-sandbox-3.wikidot.com/collab:tars")
         # TODO update this to final page (or src from .conf?)
 
 
 class Debug(Command):
+    """Debug command"""
+
+    aliases = ["debug"]
+
+    arguments = [
+        dict(
+            flags=["--restricted"],
+            permission=True,
+            type=bool,
+            help="""This argument has elevated permissions.""",
+        )
+    ]
+
     def execute(self, irc_c, msg, cmd):
         # msg.reply(", ".join("%s: %s" % item for item in vars(msg).items()))
-        pass
+
+        msg.reply("Debugged")

@@ -12,6 +12,7 @@ import tars.commands
 
 from tars.helpers import parse
 from tars.helpers.config import CONFIG
+from tars.helpers.defer import should_defer, make_permission_checker
 from tars.helpers.error import (
     CommandError,
     CommandNotExistError,
@@ -21,7 +22,8 @@ from tars.helpers.error import (
 
 
 def try_command(irc_c, msg, cmd, command_name=None):
-    """Execute the command of the given name."""
+    """Execute the command of the given name. Returns an int indicating whether
+    the command was successful."""
     if command_name is None:
         command_name = cmd.command
     try:
@@ -29,8 +31,14 @@ def try_command(irc_c, msg, cmd, command_name=None):
         command_class = tars.commands.COMMANDS_REGISTRY.get_command(
             command_name
         )
+        # Check if the command should defer to another bot
+        if should_defer(cmd):
+            return 1
+        # Construct a function to validate if the user has permission to do
+        # something
+        permission_checker = make_permission_checker(cmd)
         # Instantiate the command
-        command = command_class()
+        command = command_class(permission_checker)
         # Parse the message used to call the command like a command line
         command.parse(cmd.message)
         # Execute the command
@@ -62,7 +70,7 @@ def try_command(irc_c, msg, cmd, command_name=None):
             )
         # need to log the error somewhere - why not #tars?
         irc_c.PRIVMSG(
-            "#tars",
+            CONFIG['channels']['home'],
             "\x02Error report:\x0F {} issued `{}` → `{}`".format(
                 msg.sender, msg.message, e
             ),

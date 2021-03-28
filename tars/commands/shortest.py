@@ -52,6 +52,7 @@ class Shortest(Command):
     """
 
     command_name = "Find shortest search"
+    aliases = ["shortest"]
     arguments = [
         dict(
             flags=['--url', '-u'],

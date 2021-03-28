@@ -14,12 +14,11 @@ import string
 
 from fuzzywuzzy import fuzz
 
-import tars.commands
 from tars.helpers.basecommand import Command
 from tars.helpers.config import CONFIG
 from tars.helpers.database import DB
-from tars.helpers.defer import defer
 from tars.helpers.greetings import acronym, greet, greets
+from tars.plugins import parsemessages
 
 
 def chunks(array, length):
@@ -31,6 +30,7 @@ def chunks(array, length):
 class Converse(Command):
     """An internal command used to respond to non-command messages."""
 
+    aliases = ["converse"]
     arguments = [
         dict(
             flags=['message'],
@@ -56,15 +56,12 @@ class Converse(Command):
 
         if cmd.message.startswith("?? "):
             # CROM compatibility
+            # Override defer by pretending the bot was pinged
+            cmd.ping = True
             # Manually parse and instantiate a search command
-            # Duplication of code in plugins/parsemessages.py - TODO unify
-            command_class = tars.commands.COMMANDS_REGISTRY.get_command(
-                'search'
+            return parsemessages.try_command(
+                irc_c, cmd.message[3:], cmd, 'search'
             )
-            command = command_class()
-            command.parse(cmd.message)
-            command.execute(irc_c, msg, cmd)
-            return
         if msg.message.lower() == "{}!".format(CONFIG.nick.lower()):
             msg.reply("{}!".format(msg.nick))
             return
@@ -136,7 +133,11 @@ class Converse(Command):
             if raw_acronym not in existing_acronyms:
                 msg.reply(bold_acronym)
                 if msg.raw_channel != CONFIG['channels']['home']:
-                    defer.report(cmd, bold_acronym)
+                    cmd.context.RAW(
+                        "PRIVMSG {} {}".format(
+                            CONFIG['channels']['home'], bold_acronym
+                        )
+                    )
                 with open(CONFIG['converse']['acronyms'], 'w') as acro_file:
                     acros.append(
                         {

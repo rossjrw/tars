@@ -11,7 +11,6 @@ TARS will not allow you to refactor a 2nd time unless you issue .reload again.
 
 from tars.helpers.basecommand import Command
 from tars.helpers.database import DB
-from tars.helpers.defer import defer
 from tars.helpers.error import CommandError
 
 
@@ -27,6 +26,8 @@ class Refactor(Command):
     """
 
     has_refactored = False
+    aliases = ["refactor"]
+    permission = True
     arguments = [
         dict(
             flags=['--force'],
@@ -47,9 +48,6 @@ class Refactor(Command):
     ]
 
     def execute(self, irc_c, msg, cmd):
-        if not defer.controller(cmd):
-            raise CommandError("I'm afriad I can't let you do that.")
-            return
         if Refactor.has_refactored and not self['force']:
             raise CommandError("Already refactored once this reload.")
         try:

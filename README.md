@@ -42,7 +42,7 @@ TARS requires at least Python 3.5.2.
 ## Usage
 
 ```shell
-pipenv run python3 -m tars path/to/config
+pipenv run python3 -m tars [config file] --deferral [deferral config]
 ```
 
 The config files I use are in `config/`.
@@ -56,8 +56,11 @@ defined by the key `irc_password` in `keys.secret.toml`.
 ## Building documentation
 
 ```shell
-pipenv run python3 -m tars path/to/config --docs
+pipenv run python3 -m tars [config file] --deferral [deferral config] --docs
 ```
+
+Information from the main config and the deferral config are used in the
+documentation, so they should be provided for the most accurate output.
 
 ## Testing
 
@@ -99,12 +102,13 @@ optional):
       provided string matches regex `rgx` (can be a Pattern or a string); if it
       does not, rejects the argument with the given reason. The reason should
       complete the sentence "Argument rejected because the value..."
-* `defers_to`: A list of IRC nicks; if any of these nicks are present in the
-  channel when the command would be executed, it will not be.
 * `permission`: The permission level required to run this command (currently
   boolean, with `true` indicating only a Controller can run it).
 * `arguments_prepend`: A string that will be prepended to arguments passed to
   this command. Useful for setting defaults for subcommands.
+* `aliases`: A list of string aliases for this command. A command with no
+  aliases cannot be called. A subcommand with no defined aliases will use the
+  same aliases as its parent command which probably isn't very useful.
 
 The class' docstring is used as documentation for the command, although only
 the first line will appear on the command line.
@@ -125,7 +129,7 @@ following arguments (which can be named anything):
   * `ping`: Whether the bot was pinged by this message.
   * `command`: The command name as typed by the user (may differ from the
     canonical `command_name`).
-  * `force`: Whether to bypass the defer step.
+  * `prefix`: The prefix used to call the command e.g. `..`.
 
 To create a subcommand, create a new class that extends the parent command,
 with its own docstring and `command_name`. I recommend using
@@ -140,7 +144,14 @@ alias, or it won't be able to be called.
 
 Other considerations:
 
-* `nargs` must be either 0 or not present if the `type` is `bool`.
+* Arguments may not pass an `action` to the argparse parser.
+* Creating boolean arguments is a little different to normal argparse usage.
+  Normally, you would set `default=False` and `action='store_true'`, omitting a
+  type. Here, just set `type=bool`; this is a special case and the action and
+  default value will be handled automatically. `nargs` must be 0 or omitted.
+* A boolean arg is always present (and an `'arg' in self` check will always
+  return `true`) regardless of whether it was actually specified. If it was not
+  specified, its value is `false`.
 * Most `nargs` values will result in a list being created, except for
   `nargs=None`, which expects a single value and returns it directly.
 * The default value for `nargs` of `*` and `+` is an empty list, even if no
@@ -149,9 +160,6 @@ Other considerations:
   self` will return `false`; if it _is_ present but no values were provided,
   `'argname' in self` will return `true`, even though either way the value is
   identical (`[]` for `"*"` and `XXX TODO` for `"?"`).
-* A boolean arg is always present (and an `'arg' in self` check will always
-  return `true`) regardless of whether it was actually specified. If it was not
-  specified, its value is `false`.
 
 ## Other bits
 

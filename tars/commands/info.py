@@ -12,7 +12,6 @@ from tars.helpers.basecommand import Command
 from tars.helpers.config import CONFIG
 from tars.helpers.error import CommandError
 from tars.helpers.greetings import acronym
-from tars.helpers.defer import defer
 
 start_time = time.time()
 
@@ -21,6 +20,7 @@ class Help(Command):
     """Provides documentation for bot usage."""
 
     command_name = "Help"
+    aliases = ["help"]
     arguments = [
         dict(
             flags=['command'],
@@ -44,6 +44,7 @@ class Status(Command):
     """Shows how long the bot has been alive for."""
 
     command_name = "Status"
+    aliases = ["status", "tars"]
 
     def execute(self, irc_c, msg, cmd):
         msg.reply(
@@ -63,6 +64,7 @@ class Status(Command):
 class Github(Command):
     """Links to the bot's repository."""
 
+    aliases = ["github", "gh"]
     arguments = [
         dict(
             flags=['section'],
@@ -87,7 +89,7 @@ class User(Command):
     """Provides a link to a user's Wikidot page."""
 
     command_name = "Link to user"
-    defers_to = ["Secretary_Helen"]
+    aliases = ["user"]
     arguments = [
         dict(
             flags=['user'],
@@ -112,6 +114,7 @@ class Tag(Command):
     """
 
     command_name = "List tagged"
+    aliases = ["tag"]
     arguments = [
         dict(flags=['tag'], type=str, nargs=None, help="""The chosen tag.""",)
     ]

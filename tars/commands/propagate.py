@@ -8,7 +8,6 @@ from tars.helpers.basecommand import Command
 from tars.helpers.error import CommandError
 from tars.helpers.parse import nickColor
 from tars.helpers.database import DB
-from tars.helpers.defer import defer
 
 
 def prop_print(text):
@@ -27,6 +26,7 @@ class Propagate(Command):
     """
 
     command_name = "Update database"
+    aliases = ["propagate", "prop"]
     arguments = [
         dict(
             flags=['--sample'],
@@ -36,6 +36,7 @@ class Propagate(Command):
         dict(
             flags=['--all'],
             type=bool,
+            permission=True,
             help="""Propagate all pages on the wiki.""",
         ),
         dict(
@@ -65,8 +66,6 @@ class Propagate(Command):
             msg.reply("Adding sample data...")
             Propagate.get_wiki_data_for_pages(samples, reply=msg.reply)
         elif self['all']:
-            if not defer.controller(cmd):
-                raise CommandError("I'm afriad I can't let you do that.")
             Propagate.get_wiki_data(reply=msg.reply)
         elif 'seconds' in self:
             Propagate.get_wiki_data(reply=msg.reply, seconds=self['seconds'])

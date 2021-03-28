@@ -39,7 +39,7 @@ class Showmore(Command):
     """
 
     command_name = "Show more"
-    defers_to = ["jarvis", "Secretary_Helen"]
+    aliases = ["showmore", "sm", "pick"]
     arguments = [
         dict(
             flags=['index'],
