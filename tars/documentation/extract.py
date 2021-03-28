@@ -7,6 +7,7 @@ import re
 
 from tars.commands import COMMANDS_REGISTRY
 from tars.helpers.basecommand import Command
+from tars.helpers.defer import deferred_bots_for_alias
 
 
 def get_command_info():
@@ -23,38 +24,43 @@ def get_command_info():
     return infos
 
 
-def get_info_from_command(command_class):
+def get_info_from_command(ThisCommand):
     """Extracts information about a command from its class."""
-    assert issubclass(command_class, Command)
-    if command_class.command_name is None:
+    assert issubclass(ThisCommand, Command)
+    if ThisCommand.command_name is None:
         # This command does not want to be documented
         return None
-    basecommand = command_class.__mro__[1]
+    # Get the command's parent
+    ParentCommand = ThisCommand.__mro__[1]
     info = {
-        'id': command_class.__name__,
-        'name': command_class.command_name,
-        'help': dedent_docstring(command_class.__doc__),
-        'defers_to': command_class.defers_to,
+        'id': ThisCommand.__name__,
+        'name': ThisCommand.command_name,
+        'help': dedent_docstring(ThisCommand.__doc__),
         'arguments': [
             {
                 'id': "{}-{}".format(
-                    command_class.__name__.lower(), arg['flags'][0].lstrip("-")
+                    ThisCommand.__name__.lower(), arg['flags'][0].lstrip("-")
                 ),
                 **arg,
                 'help': dedent_docstring(arg['help']),
                 'type': arg['type'].__name__,
             }
-            for arg in command_class.arguments
+            for arg in ThisCommand.arguments
             if arg.get('mode', "") != 'hidden'
             and (
                 # Do not include arguments from parent commands
-                basecommand is Command
-                or arg not in basecommand.arguments
+                ParentCommand is Command
+                or arg not in ParentCommand.arguments
             )
         ],
-        'aliases': command_class.aliases,
-        'usage': command_class().get_parser().get_usage(),
-        'base': basecommand.__name__,
+        'aliases': ThisCommand.aliases,
+        'defers_to': {
+            alias: deferred_bots_for_alias(alias)
+            for alias in ThisCommand.aliases
+            if len(deferred_bots_for_alias(alias).keys()) > 0
+        },
+        'usage': ThisCommand(ignore_permission_check).get_parser().get_usage(),
+        'base': ParentCommand.__name__,
     }
     return info
 
@@ -64,8 +70,14 @@ def dedent_docstring(docstring):
     if docstring is None:
         return ""
     # Remove all indentation
-    # Note that this effectively disables Markdown features like code blocks -
-    # if I want these in the future, I will have to replace this with a less
-    # naive method. textwrap.dedent is not appropriate because the first line
-    # of a docstring has no indentation.
+    # Note that this effectively disables Markdown features like indented code
+    # blocks/lists - if I want these in the future, I will have to replace this
+    # with a less naive method. textwrap.dedent is not appropriate because the
+    # first line of a docstring typically has no indentation.
     return re.sub(r"\n[ \t]*", "\n", docstring)
+
+
+def ignore_permission_check(*_):
+    """A permission checker that ignores the permission level and always
+    passes."""
+    return True

@@ -44,6 +44,18 @@ def should_defer(cmd):
     return False
 
 
+def deferred_bots_for_alias(alias):
+    """Returns a dict where the keys are bot names whose commands have an alias
+    that conflicts with the provided alias, and the values are a list of
+    prefixes that would cause that conflict."""
+    return {
+        # TODO Support more prefixes than one
+        config['name']: [config['prefix']]
+        for config in CONFIG['deferral']
+        if alias.lower() in config['commands']
+    }
+
+
 def is_controller(cmd):
     """Checks if the sender of the given command is a bot controller.
 
