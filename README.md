@@ -42,7 +42,7 @@ TARS requires at least Python 3.5.2.
 ## Usage
 
 ```shell
-pipenv run python3 -m tars path/to/config
+pipenv run python3 -m tars [config file] --deferral [deferral config]
 ```
 
 The config files I use are in `config/`.
@@ -56,8 +56,11 @@ defined by the key `irc_password` in `keys.secret.toml`.
 ## Building documentation
 
 ```shell
-pipenv run python3 -m tars path/to/config --docs
+pipenv run python3 -m tars [config file] --deferral [deferral config] --docs
 ```
+
+Information from the main config and the deferral config are used in the
+documentation, so they should be provided for the most accurate output.
 
 ## Testing
 
