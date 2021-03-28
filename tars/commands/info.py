@@ -35,8 +35,8 @@ class Help(Command):
 
     def execute(self, irc_c, msg, cmd):
         msg.reply(
-            "Command documentation: https://git.io/TARS.help. Start a "
-            "command with .. to force me to respond."
+            "Command documentation: {}. Start a command with .. to force "
+            "me to respond.".format(CONFIG['documentation'])
         )
 
 

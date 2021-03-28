@@ -41,7 +41,7 @@ def bad_command(**kwargs):
         "Bad command, sorry.",
     ]
     message = kwargs['message'] if 'message' in kwargs else choice(response)
-    link = " See https://git.io/TARShelp for a list of commands."
+    link = " See {} for a list of commands.".format(CONFIG['documentation'])
     return message + link
 
 
