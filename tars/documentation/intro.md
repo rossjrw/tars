@@ -39,8 +39,7 @@ For a smooth experience for users used to Secretary_Helen, TARS also supports
 her command prefix `.` (e.g. @example(.search)). However, for commands that
 both bots implement, this only works when she is _not_ present in the channel.
 When she _is_ present, TARS assumes that the user intended for that command to
-be parsed by her &mdash; TARS will shut up and let her speak. The exception to
-this is @command(help).
+be parsed by her &mdash; TARS will shut up and let her speak.
 
 Each command on this page is marked with whether or not it defers to
 Secretary_Helen, but you can also consult [her
