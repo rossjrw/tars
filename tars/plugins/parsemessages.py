@@ -8,7 +8,7 @@ from importlib import reload
 from pyaib.plugins import observe, plugin_class
 
 # Import entire commands module so that it can be reloaded
-import tars.commands
+from tars import commands
 
 from tars.helpers import parse
 from tars.helpers.config import CONFIG
@@ -28,9 +28,12 @@ def try_command(irc_c, msg, cmd, command_name=None):
         command_name = cmd.command
     try:
         # Get the command class from the command registry
-        command_class = tars.commands.COMMANDS_REGISTRY.get_command(
-            command_name
-        )
+        try:
+            command_class = commands.COMMANDS_REGISTRY.get_command_by_alias(
+                command_name
+            )
+        except KeyError as error:
+            raise CommandNotExistError from error
         # Check if the command should defer to another bot
         if should_defer(cmd):
             return 1
@@ -86,7 +89,7 @@ def execute_commands(irc_c, msg, cmds, command_name=None):
             # special case for .reload - needs high priority
             msg.reply("Reloading commands...")
             try:
-                reload(tars.commands)
+                reload(commands)
             except:
                 msg.reply("Reload failed.")
                 raise

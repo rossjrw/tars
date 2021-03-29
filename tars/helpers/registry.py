@@ -7,7 +7,6 @@ from importlib import import_module, reload
 import sys
 
 from tars.helpers.basecommand import Command
-from tars.helpers.error import CommandNotExistError
 
 
 def cmdprint(text, error=False):
@@ -98,10 +97,8 @@ class CommandsRegistry:
             for alias in self._registry[file][command]
         ]
 
-    def get_command(self, alias):
+    def get_command_by_alias(self, alias):
         """Gets the command that has the given alias."""
-        if alias not in self._aliased_commands:
-            raise CommandNotExistError(alias)
         return self._aliased_commands[alias]
 
     def get_command_by_name(self, name):
