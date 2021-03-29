@@ -91,8 +91,8 @@ class Help(Command):
         if self['argument'] == "":
             # Command specified, argument not specified
             msg.reply(
-                "{}: {} {}".format(
-                    anchor[0].command_name,
+                "Command: \x02..{}\x0F — {} {}".format(
+                    anchor[0].aliases[0],
                     anchor[0].get_intro(),
                     Help.specific_docs.format(anchor[0].__name__.lower()),
                 )
@@ -101,15 +101,16 @@ class Help(Command):
             # Command specified, argument specified
             if len(anchor) == 1:
                 raise MyFaultError(
-                    "{} doesn't have an argument named '{}'. {}".format(
+                    "The \x02..{}\x0F command doesn't have an argument named "
+                    "'{}'. {}".format(
                         anchor[0].command_name,
                         self['argument'],
                         Help.specific_docs.format(anchor[0].__name__.lower()),
                     )
                 )
             msg.reply(
-                "{} / {}: {} {}".format(
-                    anchor[0].command_name,
+                "Command: \x02..{}\x0F · argument: \x02{}\x0F — {} {}".format(
+                    anchor[0].aliases[0],
                     anchor[1]['flags'][0],
                     anchor[0].get_intro(argument=anchor[1]),
                     Help.specific_docs.format(
