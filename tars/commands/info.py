@@ -79,8 +79,6 @@ class Help(Command):
         self['alias'] = self['alias'].strip(".")
         self['argument'] = self['argument'].strip("-")
         # If a command has been specified, link to specific help for it
-        # TODO This only handles commands/arguments with a defined name and
-        # docstring for now
         anchor = Help.anchor(self['alias'], self['argument'])
         if len(anchor) == 0:
             raise MyFaultError(
@@ -90,11 +88,22 @@ class Help(Command):
             )
         if self['argument'] == "":
             # Command specified, argument not specified
+            if anchor[0].__doc__ is None:
+                raise MyFaultError(
+                    "That command exists, but is not documented. {}".format(
+                        Help.full_docs
+                    )
+                )
             msg.reply(
                 "Command: \x02..{}\x0F — {} {}".format(
                     anchor[0].aliases[0],
                     anchor[0].get_intro(),
-                    Help.specific_docs.format(anchor[0].__name__.lower()),
+                    Help.specific_docs.format(anchor[0].__name__.lower())
+                    if anchor[0].command_name is not None
+                    else "{} ({})".format(
+                        Help.full_docs,
+                        "this command is hidden from documentation",
+                    ),
                 )
             )
         else:
@@ -103,14 +112,17 @@ class Help(Command):
                 raise MyFaultError(
                     "The \x02..{}\x0F command doesn't have an argument named "
                     "'{}'. {}".format(
-                        anchor[0].command_name,
+                        anchor[0].aliases[0],
                         self['argument'],
                         Help.specific_docs.format(anchor[0].__name__.lower()),
                     )
                 )
             msg.reply(
-                "Command: \x02..{}\x0F · argument: \x02{}\x0F — {} {}".format(
+                "Command: \x02..{}\x0F · {}: \x02{}\x0F — {} {}".format(
                     anchor[0].aliases[0],
+                    "optional argument"
+                    if anchor[1]['flags'][0].startswith("-")
+                    else "positional argument",
                     anchor[1]['flags'][0],
                     anchor[0].get_intro(argument=anchor[1]),
                     Help.specific_docs.format(
@@ -120,6 +132,11 @@ class Help(Command):
                                 anchor[1]['flags'][0].strip("-"),
                             ]
                         )
+                    )
+                    if anchor[1].get('mode', None) != 'hidden'
+                    else "{} ({})".format(
+                        Help.specific_docs.format(anchor[0].__name__.lower()),
+                        "this argument is hidden from documentation",
                     ),
                 )
             )
