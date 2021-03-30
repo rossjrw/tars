@@ -56,8 +56,8 @@ class Help(Command):
             help="""An argument of the given command to get specific help for.
 
             Gives a brief overview of the argument followed by a link to that
-            argument's full documentation. The argument can be preceded by
-            leading hyphens or not, it doesn't matter.
+            argument's full documentation. The argument must not be preceded by
+            leading hyphens.
 
             @example(..help help argument)(shows help for this command's
             @argument(argument) argument.)
