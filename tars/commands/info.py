@@ -65,14 +65,11 @@ class Help(Command):
         ),
     ]
 
-    full_docs = "Full documentation: {}".format(CONFIG['documentation'])
-    specific_docs = "Documentation: {}#{{}}".format(CONFIG['documentation'])
-
     def execute(self, irc_c, msg, cmd):
         if self['alias'] == "":
             msg.reply(
                 "{}. Start a command with .. to force me to respond.".format(
-                    Help.full_docs
+                    self._full_docs
                 )
             )
             return
@@ -83,29 +80,14 @@ class Help(Command):
         if len(anchor) == 0:
             raise MyFaultError(
                 "I have no commands with the alias '{}'. {}".format(
-                    self['alias'], Help.full_docs
+                    self['alias'], self._full_docs
                 )
             )
         if self['argument'] == "":
             # Command specified, argument not specified
             if anchor[0].__doc__ is None:
-                raise MyFaultError(
-                    "That command exists, but is not documented. {}".format(
-                        Help.full_docs
-                    )
-                )
-            msg.reply(
-                "Command: \x02..{}\x0F — {} {}".format(
-                    anchor[0].aliases[0],
-                    anchor[0].get_intro(),
-                    Help.specific_docs.format(anchor[0].__name__.lower())
-                    if anchor[0].command_name is not None
-                    else "{} ({})".format(
-                        Help.full_docs,
-                        "this command is hidden from documentation",
-                    ),
-                )
-            )
+                raise MyFaultError(anchor[0].make_command_help_string())
+            msg.reply(anchor[0].make_command_help_string())
         else:
             # Command specified, argument specified
             if len(anchor) == 1:
@@ -114,32 +96,10 @@ class Help(Command):
                     "'{}'. {}".format(
                         anchor[0].aliases[0],
                         self['argument'],
-                        Help.specific_docs.format(anchor[0].__name__.lower()),
+                        self._specific_docs.format(anchor[0].__name__.lower()),
                     )
                 )
-            msg.reply(
-                "Command: \x02..{}\x0F · {}: \x02{}\x0F — {} {}".format(
-                    anchor[0].aliases[0],
-                    "optional argument"
-                    if anchor[1]['flags'][0].startswith("-")
-                    else "positional argument",
-                    anchor[1]['flags'][0],
-                    anchor[0].get_intro(argument=anchor[1]),
-                    Help.specific_docs.format(
-                        "-".join(
-                            [
-                                anchor[0].__name__.lower(),
-                                anchor[1]['flags'][0].strip("-"),
-                            ]
-                        )
-                    )
-                    if anchor[1].get('mode', None) != 'hidden'
-                    else "{} ({})".format(
-                        Help.specific_docs.format(anchor[0].__name__.lower()),
-                        "this argument is hidden from documentation",
-                    ),
-                )
-            )
+            msg.reply(anchor[0].make_argument_help_string(anchor[1]))
 
     @staticmethod
     def anchor(alias, argument=None):
