@@ -97,33 +97,23 @@ class Command(ABC, ParsingMixin, IntrospectionMixin):
         try:
             # Can throw ArgumentError
             self.args = parser.parse_intermixed_args(message)
-        except CommandParsingError as e:
+        except CommandParsingError as error:
             raise CommandError(
                 "{}. {}".format(
-                    str(e),
-                    "Use '..help' for full documentation."
+                    str(error).capitalize(),
+                    self._full_docs
                     if self.command_name is None
-                    else "Use '..help {}' for this command's documentation.".format(
-                        self._canonical_alias
+                    else self._specific_docs.format(
+                        self.__class__.__name__.lower()
                     ),
                 )
-            ) from e
-        except CommandParsingHelp as e:
-            raise CommandUsageMessage(
-                "{}{}".format(
-                    "{}".format(str(e)),
-                    ""
-                    if self.__doc__ is None
-                    else " — {} {}".format(
-                        self.__doc__.splitlines()[0],
-                        "Use '..help' for full documentation."
-                        if self.command_name is None
-                        else "Use '..help {}' for this command's documentation.".format(
-                            self._canonical_alias
-                        ),
-                    ),
-                )
-            ) from e
+            ) from error
+        except CommandParsingHelp as error:
+            # The error contains the get_usage string but I'm going to just
+            # ignore that
+            raise (
+                MyFaultError if self.__doc__ is None else CommandUsageMessage
+            )(self.make_command_help_string()) from error
 
     def __contains__(self, arg):
         """Checks for argument presence"""

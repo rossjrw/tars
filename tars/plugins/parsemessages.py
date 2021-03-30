@@ -62,7 +62,7 @@ def try_command(irc_c, msg, cmd, command_name=None):
         msg.reply("\x02Sorry!\x0F {}".format(str(e)))
         return 1
     except CommandUsageMessage as e:
-        msg.reply("\x02Command usage:\x0F {}".format(str(e)))
+        msg.reply(str(e))
         return 1
     except Exception as e:
         if msg.raw_channel != CONFIG.channels.home:
