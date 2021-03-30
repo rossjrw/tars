@@ -8,7 +8,7 @@ import time
 
 import platform, distro
 
-# from tars.commands import COMMANDS_REGISTRY
+from tars import commands
 from tars.helpers.basecommand import Command
 from tars.helpers.config import CONFIG
 from tars.helpers.error import CommandError, MyFaultError
@@ -76,7 +76,9 @@ class Help(Command):
         self['alias'] = self['alias'].strip(".")
         self['argument'] = self['argument'].strip("-")
         # If a command has been specified, link to specific help for it
-        anchor = Help.anchor(self['alias'], self['argument'])
+        anchor = commands.COMMANDS_REGISTRY.anchor(
+            self['alias'], self['argument']
+        )
         if len(anchor) == 0:
             raise MyFaultError(
                 "I have no commands with the alias '{}'. {}".format(
@@ -100,29 +102,6 @@ class Help(Command):
                     )
                 )
             msg.reply(anchor[0].make_argument_help_string(anchor[1]))
-
-    @staticmethod
-    def anchor(alias, argument=None):
-        """Makes the anchor that will link to the given command or the given
-        argument.
-
-        Returns a tuple of length 0 if the command does not exist, length 1 if
-        the command exists but the argument doesn't, and length 2 if they both
-        exist. The first item is the command class, the second item is the
-        argument.
-        """
-        from tars.commands import COMMANDS_REGISTRY
-
-        try:
-            command = COMMANDS_REGISTRY.get_command_by_alias(alias)
-        except KeyError:
-            return ()
-        if argument is None:
-            return (command,)
-        argument = command.get_argument(argument)
-        if argument is None:
-            return (command,)
-        return (command, argument)
 
 
 class Status(Command):

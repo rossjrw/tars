@@ -104,3 +104,23 @@ class CommandsRegistry:
     def get_command_by_name(self, name):
         """Gets a command by its class name."""
         return self._commands[name]
+
+    def anchor(self, alias, argument=None):
+        """Makes the anchor that will link to the given command or the given
+        argument.
+
+        Returns a tuple of length 0 if the command does not exist, length 1 if
+        the command exists but the argument doesn't, and length 2 if they both
+        exist. The first item is the command class, the second item is the
+        argument.
+        """
+        try:
+            command = self.get_command_by_alias(alias)
+        except KeyError:
+            return ()
+        if argument is None:
+            return (command,)
+        argument = command.get_argument(argument)
+        if argument is None:
+            return (command,)
+        return (command, argument)
