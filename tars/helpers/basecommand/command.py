@@ -88,9 +88,8 @@ class Command(ABC, ParsingMixin, IntrospectionMixin):
         except ValueError as e:
             # raised if shlex detects fucked up quotemarks
             # message = message.split()
-            raise CommandError(
-                "Unmatched quotemark. Use \\\" to escape a "
-                "literal quotemark."
+            raise CommandParsingError(
+                "Unmatched quotemark. Use \\\" to escape a literal quotemark"
             ) from e
         message = [w.replace("<<APOS>>", "'") for w in message]
         message = [w.replace("<<QUOT>>", '"') for w in message]
