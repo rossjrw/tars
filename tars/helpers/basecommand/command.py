@@ -29,11 +29,15 @@ class Command(ABC, ParsingMixin, IntrospectionMixin):
     its internal argparse object. If this text appears outside of TARS' source
     code, something has gone wrong."""
 
-    # The name of this command as it will appear in documentation
+    # The name of this command as it will appear in documentation; if None, it
+    # will not appear
     command_name = None
 
     # The aliases that can be used to call this command
     aliases = []
+
+    # Whether to suppress errors and help messages
+    suppress = False
 
     # The permission level required to call this command
     permission = False

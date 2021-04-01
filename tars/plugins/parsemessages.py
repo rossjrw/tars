@@ -57,33 +57,38 @@ def try_command(irc_c, msg, cmd, command_name=None):
             msg.reply("I don't know what '{}' means.".format(command_name))
             return 1
     except CommandParsingError as error:
-        msg.reply(
-            "\x02Parsing error:\x0F {}. {}".format(
-                str(error).capitalize(),
-                command_class.make_command_link() if command_class else "",
-            ).replace("Unrecognized arguments", "Unrecognised arguments"),
-        )
+        if not command_class.suppress:
+            msg.reply(
+                "\x02Parsing error:\x0F {}. {}".format(
+                    str(error).capitalize(),
+                    command_class.make_command_link() if command_class else "",
+                ).replace("Unrecognized arguments", "Unrecognised arguments"),
+            )
         return 1
     except CommandError as e:
-        msg.reply(
-            "\x02Invalid command:\x0F {} {}".format(
-                str(e), command.make_command_link() if command else ""
+        if not command_class.suppress:
+            msg.reply(
+                "\x02Invalid command:\x0F {} {}".format(
+                    str(e), command.make_command_link() if command else ""
+                )
             )
-        )
         return 1
     except MyFaultError as e:
-        msg.reply("\x02Sorry!\x0F {}".format(str(e)))
+        if not command_class.suppress:
+            msg.reply("\x02Sorry!\x0F {}".format(str(e)))
         return 1
     except CommandUsageMessage as e:
-        msg.reply(str(e))
+        if not command_class.suppress:
+            msg.reply(str(e))
         return 1
     except Exception as e:
         if msg.raw_channel != CONFIG.channels.home:
-            msg.reply(
-                "An unexpected error has occurred. "
-                "I've already reported it — you don't need to "
-                "do anything."
-            )
+            if not command_class.suppress:
+                msg.reply(
+                    "An unexpected error has occurred. "
+                    "I've already reported it — you don't need to "
+                    "do anything."
+                )
         # need to log the error somewhere - why not #tars?
         irc_c.PRIVMSG(
             CONFIG['channels']['home'],

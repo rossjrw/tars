@@ -31,6 +31,7 @@ class Converse(Command):
     """An internal command used to respond to non-command messages."""
 
     aliases = ["converse"]
+    suppress = True
     arguments = [
         dict(
             flags=['message'],
