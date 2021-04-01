@@ -8,36 +8,100 @@ import time
 
 import platform, distro
 
+from tars import commands
 from tars.helpers.basecommand import Command
 from tars.helpers.config import CONFIG
-from tars.helpers.error import CommandError
+from tars.helpers.error import CommandError, MyFaultError
 from tars.helpers.greetings import acronym
 
 start_time = time.time()
 
 
 class Help(Command):
-    """Provides documentation for bot usage."""
+    """Provides documentation for bot usage.
+
+    Will provide a link to this page. You can also choose to get more specific
+    help by specifying a command alias, in which case it will give a brief
+    overview of the command with that alias and then link to its specific
+    documentation. The link is the same as those that can be found in this
+    page's sidebar.
+    """
 
     command_name = "Help"
     aliases = ["help"]
     arguments = [
         dict(
-            flags=['command'],
+            flags=['alias'],
             type=str,
-            nargs=None,
+            nargs='?',
+            default="",
             help="""A command to get specific help for.
 
-            Will link to that part of the documentation directly.
+            Gives a brief overview of the command with this alias followed by a
+            link to that command's full documentation. The argument can be
+            preceded by leading dots or not, it doesn't matter.
+
+            @example(..help search)(shows help for @command(search).)
+
+            You can also do this by adding the `-?`, `-h` or `--help` argument to
+            _any_ command, for example @example(..search --help).
             """,
-        )
+        ),
+        dict(
+            flags=['argument'],
+            type=str,
+            nargs='?',
+            default="",
+            mode='hidden',
+            help="""An argument of the given command to get specific help for.
+
+            Gives a brief overview of the argument followed by a link to that
+            argument's full documentation. The argument must not be preceded by
+            leading hyphens.
+
+            @example(..help help argument)(shows help for this command's
+            @argument(argument) argument.)
+            """,
+        ),
     ]
 
     def execute(self, irc_c, msg, cmd):
-        msg.reply(
-            "Command documentation: {}. Start a command with .. to force "
-            "me to respond.".format(CONFIG['documentation'])
+        if self['alias'] == "":
+            msg.reply(
+                "{}. Start a command with .. to force me to respond.".format(
+                    self._full_docs
+                )
+            )
+            return
+        self['alias'] = self['alias'].strip(".")
+        self['argument'] = self['argument'].strip("-")
+        # If a command has been specified, link to specific help for it
+        anchor = commands.COMMANDS_REGISTRY.anchor(
+            self['alias'], self['argument']
         )
+        if len(anchor) == 0:
+            raise MyFaultError(
+                "I have no commands with the alias '{}'. {}".format(
+                    self['alias'], self._full_docs
+                )
+            )
+        if self['argument'] == "":
+            # Command specified, argument not specified
+            if anchor[0].__doc__ is None:
+                raise MyFaultError(anchor[0].make_command_help_string())
+            msg.reply(anchor[0].make_command_help_string())
+        else:
+            # Command specified, argument specified
+            if len(anchor) == 1:
+                raise MyFaultError(
+                    "The \x02..{}\x0F command doesn't have an argument named "
+                    "'{}'. {}".format(
+                        anchor[0].aliases[0],
+                        self['argument'],
+                        self._specific_docs.format(anchor[0].__name__.lower()),
+                    )
+                )
+            msg.reply(anchor[0].make_argument_help_string(anchor[1]))
 
 
 class Status(Command):

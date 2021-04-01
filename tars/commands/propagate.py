@@ -72,7 +72,7 @@ class Propagate(Command):
         elif len(self['slugs']) > 0:
             Propagate.get_wiki_data_for_pages(self['slugs'], reply=msg.reply)
         else:
-            raise CommandError("Bad command")
+            raise CommandError("No propagation target.")
         msg.reply("Done!")
 
     @staticmethod

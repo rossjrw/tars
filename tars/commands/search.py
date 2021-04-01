@@ -217,9 +217,6 @@ class Search(Command):
     ]
 
     def execute(self, irc_c, msg, cmd):
-        # check to see if there are any arguments
-        if len(self) == 1 and len(self['title']) == 0:
-            raise CommandError("Must specify at least one search term")
         # Set the return mode of the output
         selection = {
             'ignorepromoted': self['ignorepromoted'],
@@ -249,7 +246,7 @@ class Search(Command):
                 re.compile(regex)
             except re.error as e:
                 raise CommandError(
-                    "'{}' isn't a valid regular expression: {}".format(
+                    "'{}' isn't a valid regular expression: {}.".format(
                         regex, e
                     )
                 ) from e
@@ -285,12 +282,12 @@ class Search(Command):
             if ".." in rating:
                 rating = rating.split("..")
                 if len(rating) > 2:
-                    raise CommandError("Too many ratings in range")
+                    raise CommandError("Too many ratings in range.")
                 try:
                     rating = [int(x) for x in rating]
                 except ValueError as e:
                     raise CommandError(
-                        "Ratings in a range must be ints"
+                        "Ratings in a range must be integers."
                     ) from e
                 try:
                     ratings >= min(rating)
@@ -304,7 +301,7 @@ class Search(Command):
                     try:
                         rating = int(match.group('value'))
                     except ValueError as e:
-                        raise CommandError("Invalid rating comparison") from e
+                        raise CommandError("Invalid rating comparison.") from e
                     comp = match.group('comp')
                     try:
                         if comp == ">=":
@@ -319,7 +316,7 @@ class Search(Command):
                             ratings >= rating
                             ratings <= rating
                         else:
-                            raise CommandError("Unknown rating comparison")
+                            raise CommandError("Unknown rating comparison.")
                     except MinMaxError as e:
                         raise CommandError(str(e).format("rating")) from e
                 elif rating[0] in [">", "<", "="]:
@@ -329,7 +326,7 @@ class Search(Command):
                         try:
                             rating = int(match.group('value'))
                         except ValueError:
-                            raise CommandError("Invalid rating comparison")
+                            raise CommandError("Invalid rating comparison.")
                         comp = match.group('comp')
                         try:
                             if comp == ">=":
@@ -345,20 +342,20 @@ class Search(Command):
                                 ratings <= rating
                             else:
                                 raise CommandError(
-                                    "Unknown operator in rating comparison"
+                                    "Unknown operator in rating comparison."
                                 )
                         except MinMaxError as e:
                             raise CommandError(str(e).format("rating"))
                     else:
-                        raise CommandError("Invalid rating comparison")
+                        raise CommandError("Invalid rating comparison.")
                 else:
-                    raise CommandError("Invalid rating comparison")
+                    raise CommandError("Invalid rating comparison.")
             else:
                 try:
                     rating = int(rating)
                 except ValueError as e:
                     raise CommandError(
-                        "Rating must be a range, comparison, " "or number"
+                        "Rating must be a range, comparison, or number."
                     ) from e
                 # Assume =, assign both
                 try:
@@ -666,11 +663,13 @@ class MinMax:
     @staticmethod
     def throw(type):
         if type == 'discrep':
-            raise MinMaxError("Minimum {0} cannot be greater than maximum {0}")
+            raise MinMaxError(
+                "Minimum {0} cannot be greater than maximum {0}."
+            )
         if type == 'min':
-            raise MinMaxError("Can only have one minimum {0}")
+            raise MinMaxError("Can only have one minimum {0}.")
         if type == 'max':
-            raise MinMaxError("Can only have one maximum {0}")
+            raise MinMaxError("Can only have one maximum {0}.")
         raise ValueError("Unknown MinMaxError {}".format(type))
 
 
@@ -715,7 +714,7 @@ class DateRange:
         if ".." in self.input:
             self.input = self.input.split("..")
             if len(self.input) != 2:
-                raise CommandError("Date ranges must have 2 dates")
+                raise CommandError("Date ranges must have 2 dates.")
             # if the date is a manual range, convert to a DateRange
             self.max = []
             self.min = []
@@ -781,7 +780,7 @@ class DateRange:
             else:
                 raise CommandError(
                     "Unknown operator in absolute date "
-                    "comparison ({})".format(self.compare)
+                    "comparison ({}).".format(self.compare)
                 )
         elif re.match(r"([0-9]+[A-Za-z])+$", self.input):
             # the date is relative
@@ -818,12 +817,12 @@ class DateRange:
             else:
                 raise CommandError(
                     "Unknown operator in relative date "
-                    "comparison ({})".format(self.compare)
+                    "comparison ({}).".format(self.compare)
                 )
         else:
             raise CommandError(
                 "'{}' isn't a valid absolute or relative date "
-                "type".format(self.input)
+                "type.".format(self.input)
             )
 
     def date_is_absolute(self):
@@ -837,7 +836,7 @@ class DateRange:
             else:
                 raise CommandError(
                     "Absolute dates must be of the format "
-                    "YYYY, YYYY-MM or YYYY-MM-DD"
+                    "YYYY, YYYY-MM or YYYY-MM-DD."
                 )
         else:
             return True

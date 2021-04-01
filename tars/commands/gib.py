@@ -178,7 +178,7 @@ class Gib(Command):
             if msg.raw_channel is None:
                 # Happens when gibbing from PMs
                 raise CommandError(
-                    "Specify a channel to gib from with --channel/-c"
+                    "Specify a channel to gib from with --channel/-c."
                 )
             # Default channel is the current one
             self['channel'] = [msg.raw_channel]
@@ -200,8 +200,7 @@ class Gib(Command):
                 )
             ):
                 raise CommandError(
-                    "Both you and the bot must be in a channel "
-                    "in order to gib it."
+                    "We both must be in a channel in order to gib it."
                 )
             if (
                 msg.raw_channel is not None
@@ -210,7 +209,7 @@ class Gib(Command):
             ):
                 raise CommandError(
                     "You can only gib the current channel (or "
-                    "any channel from PMs)"
+                    "any channel from if you do it in PMs with me)."
                 )
         # Does the model need to be regenerated?
         if not self['nocache'] and all(

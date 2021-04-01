@@ -8,7 +8,7 @@ from importlib import reload
 from pyaib.plugins import observe, plugin_class
 
 # Import entire commands module so that it can be reloaded
-import tars.commands
+from tars import commands
 
 from tars.helpers import parse
 from tars.helpers.config import CONFIG
@@ -16,6 +16,7 @@ from tars.helpers.defer import should_defer, make_permission_checker
 from tars.helpers.error import (
     CommandError,
     CommandNotExistError,
+    CommandParsingError,
     MyFaultError,
     CommandUsageMessage,
 )
@@ -28,9 +29,12 @@ def try_command(irc_c, msg, cmd, command_name=None):
         command_name = cmd.command
     try:
         # Get the command class from the command registry
-        command_class = tars.commands.COMMANDS_REGISTRY.get_command(
-            command_name
-        )
+        try:
+            command_class = commands.COMMANDS_REGISTRY.get_command_by_alias(
+                command_name
+            )
+        except KeyError as error:
+            raise CommandNotExistError from error
         # Check if the command should defer to another bot
         if should_defer(cmd):
             return 1
@@ -52,14 +56,26 @@ def try_command(irc_c, msg, cmd, command_name=None):
             # should be only in pm
             msg.reply("I don't know what '{}' means.".format(command_name))
             return 1
+    except CommandParsingError as error:
+        msg.reply(
+            "\x02Parsing error:\x0F {}. {}".format(
+                str(error).capitalize(),
+                command_class.make_command_link() if command_class else "",
+            )
+        )
+        return 1
     except CommandError as e:
-        msg.reply("\x02Invalid command:\x0F {}".format(str(e)))
+        msg.reply(
+            "\x02Invalid command:\x0F {} {}".format(
+                str(e), command.make_command_link() if command else ""
+            )
+        )
         return 1
     except MyFaultError as e:
         msg.reply("\x02Sorry!\x0F {}".format(str(e)))
         return 1
     except CommandUsageMessage as e:
-        msg.reply("\x02Command usage:\x0F {}".format(str(e)))
+        msg.reply(str(e))
         return 1
     except Exception as e:
         if msg.raw_channel != CONFIG.channels.home:
@@ -86,7 +102,7 @@ def execute_commands(irc_c, msg, cmds, command_name=None):
             # special case for .reload - needs high priority
             msg.reply("Reloading commands...")
             try:
-                reload(tars.commands)
+                reload(commands)
             except:
                 msg.reply("Reload failed.")
                 raise
