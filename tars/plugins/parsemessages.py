@@ -61,7 +61,7 @@ def try_command(irc_c, msg, cmd, command_name=None):
             "\x02Parsing error:\x0F {}. {}".format(
                 str(error).capitalize(),
                 command_class.make_command_link() if command_class else "",
-            )
+            ).replace("Unrecognized arguments", "Unrecognised arguments"),
         )
         return 1
     except CommandError as e:
