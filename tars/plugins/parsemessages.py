@@ -16,6 +16,7 @@ from tars.helpers.defer import should_defer, make_permission_checker
 from tars.helpers.error import (
     CommandError,
     CommandNotExistError,
+    CommandParsingError,
     MyFaultError,
     CommandUsageMessage,
 )
@@ -55,6 +56,14 @@ def try_command(irc_c, msg, cmd, command_name=None):
             # should be only in pm
             msg.reply("I don't know what '{}' means.".format(command_name))
             return 1
+    except CommandParsingError as error:
+        msg.reply(
+            "\x02Parsing error:\x0F {}. {}".format(
+                str(error).capitalize(),
+                command_class.make_command_link() if command_class else "",
+            )
+        )
+        return 1
     except CommandError as e:
         msg.reply(
             "\x02Invalid command:\x0F {} {}".format(

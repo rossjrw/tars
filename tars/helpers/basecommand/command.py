@@ -97,17 +97,6 @@ class Command(ABC, ParsingMixin, IntrospectionMixin):
         try:
             # Can throw ArgumentError
             self.args = parser.parse_intermixed_args(message)
-        except CommandParsingError as error:
-            raise CommandError(
-                "{}. {}".format(
-                    str(error).capitalize(),
-                    self._full_docs
-                    if self.command_name is None
-                    else self._specific_docs.format(
-                        self.__class__.__name__.lower()
-                    ),
-                )
-            ) from error
         except CommandParsingHelp as error:
             # The error contains the get_usage string but I'm going to just
             # ignore that
@@ -153,7 +142,9 @@ class Command(ABC, ParsingMixin, IntrospectionMixin):
         setattr(self.args, arg, value)
 
     def __len__(self):
-        """Get the number of arguments given to this command"""
+        """Get the number of arguments given to this command."""
+        if self.args is None:
+            return 0
         return len(vars(self.args))
 
     @abstractmethod
