@@ -52,7 +52,7 @@ class Refactor(Command):
             raise CommandError("Already refactored once this reload.")
         try:
             if len(self['sql']) > 0:
-                DB.issue(" ".join(cmd['sql']), callback=msg.reply)
+                DB.issue(" ".join(self['sql']), callback=msg.reply)
             else:
                 Refactor.refactor_database()
                 Refactor.has_refactored = True
