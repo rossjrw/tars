@@ -185,7 +185,7 @@ class Seen(Command):
             nick = self['count']
         if nick is None:
             raise CommandError(
-                "Specify a user and I'll tell you when I last saw them"
+                "Specify a user and I'll tell you when I last saw them."
             )
         messages = DB.get_messages_from_user(nick, msg.raw_channel)
         if len(messages) == 0:
