@@ -48,13 +48,18 @@ class IntrospectionMixin:
                 cls._full_docs
             )
         return "Command: \x02..{}\x0F — {} {}".format(
-            cls.aliases[0],
-            cls.get_intro(),
+            cls.aliases[0], cls.get_intro(), cls.make_command_link()
+        )
+
+    @classmethod
+    def make_command_link(cls):
+        """Constructs the link for this command."""
+        return (
             cls._specific_docs.format(cls.__name__.lower())
             if cls.command_name is not None
             else "{} ({})".format(
                 cls._full_docs, "this command is hidden from documentation",
-            ),
+            )
         )
 
     @classmethod

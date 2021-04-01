@@ -56,7 +56,11 @@ def try_command(irc_c, msg, cmd, command_name=None):
             msg.reply("I don't know what '{}' means.".format(command_name))
             return 1
     except CommandError as e:
-        msg.reply("\x02Invalid command:\x0F {}".format(str(e)))
+        msg.reply(
+            "\x02Invalid command:\x0F {} {}".format(
+                str(e), command.make_command_link() if command else ""
+            )
+        )
         return 1
     except MyFaultError as e:
         msg.reply("\x02Sorry!\x0F {}".format(str(e)))
