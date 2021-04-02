@@ -33,3 +33,8 @@ def regex_type(arg_value):
             )
         )
     return arg_value
+
+
+class longstr(str):
+    """Used in the parsing action to concatenate the given arguments into a
+    single long string."""

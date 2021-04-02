@@ -6,6 +6,7 @@ Mixin to the base command that enables it to parse arguments.
 import argparse
 import copy
 
+from tars.helpers.basecommand.types import longstr
 from tars.helpers.error import (
     CommandParsingError,
     CommandParsingHelp,
@@ -99,6 +100,16 @@ class ParsingMixin:
                         "You don't have permission to use the {} "
                         "argument.".format(option_string)
                     )
+                # Check if the values are longstr and if they are, concatenate
+                print(option_string, values)
+                all_longstrs = [isinstance(value, longstr) for value in values]
+                if all(all_longstrs):
+                    values = " ".join(values)
+                elif any(all_longstrs):
+                    raise TypeError(
+                        "Not all longstrs for {}".format(option_string)
+                    )
+                # Bind the value
                 super().__call__(parser, namespace, values, option_string)
 
         return Action

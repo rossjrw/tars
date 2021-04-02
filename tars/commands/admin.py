@@ -9,7 +9,7 @@ import sys
 import git
 
 from tars.commands.gib import Gib
-from tars.helpers.basecommand import Command, matches_regex
+from tars.helpers.basecommand import Command, matches_regex, longstr
 from tars.helpers.greetings import kill_bye
 from tars.helpers.error import CommandError
 from tars.helpers.database import DB
@@ -218,14 +218,18 @@ class Debug(Command):
 
     arguments = [
         dict(
+            flags=["--longstr"],
+            type=longstr,
+            nargs='*',
+            help="""Long string.""",
+        ),
+        dict(
             flags=["--restricted"],
             permission=True,
             type=bool,
             help="""This argument has elevated permissions.""",
-        )
+        ),
     ]
 
     def execute(self, irc_c, msg, cmd):
-        # msg.reply(", ".join("%s: %s" % item for item in vars(msg).items()))
-
-        msg.reply("Debugged")
+        msg.reply(self['longstr'])

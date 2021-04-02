@@ -95,13 +95,19 @@ optional):
      boolean, with `true` indicating only a Controller can run it).
   * `type`: The same as `type` from argparse, but can also be the following
     values:
-    * `helpers.basecommand.regex_type`: Checks that the arguments correctly
-      compile to a regex, and exposes the argument values as compiled regex
-      objects.
-    * `helpers.basecommand.matches_regex(rgx, reason)`: Checks that the
+    * `tars.helpers.basecommand.regex_type`: Checks that the arguments
+      correctly compile to a regex, and exposes the argument values as compiled
+      regex objects.
+    * `tars.helpers.basecommand.matches_regex(rgx, reason)`: Checks that the
       provided string matches regex `rgx` (can be a Pattern or a string); if it
       does not, rejects the argument with the given reason. The reason should
       complete the sentence "Argument rejected because the value..."
+    * `tars.helpers.basecommand.longstr`: Same as `str`, but the argument
+      values are concatenated with spaces into a single string and exposed as
+      one value. Simulates passing e.g. a sentence as argument value without
+      needing to use quotes. Must be used with a `nargs` value that would
+      normally expose a list, but will actually expose a single value as if the
+      `nargs` were `None`.
 * `permission`: The permission level required to run this command (currently
   boolean, with `true` indicating only a Controller can run it).
 * `arguments_prepend`: A string that will be prepended to arguments passed to
