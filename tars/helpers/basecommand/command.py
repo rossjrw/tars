@@ -99,7 +99,7 @@ class Command(ABC, ParsingMixin, IntrospectionMixin):
         message = [w.replace("<<QUOT>>", '"') for w in message]
         try:
             # Can throw ArgumentError
-            self.args = parser.parse_intermixed_args(message)
+            self.args = parser.parse_args(message)
         except CommandParsingHelp as error:
             # The error contains the get_usage string but I'm going to just
             # ignore that

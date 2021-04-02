@@ -143,63 +143,39 @@ class Seen(Command):
         dict(
             flags=['nick'],
             type=str,
-            nargs='?',
+            nargs=None,
             help="""The nick of the user to search for.
 
             Aliases of this user will also be searched for.
-
-            When using @argument(first) or @argument(count), the nick can be
-            omitted here, in which case a nick is expected at the end of the
-            command.
             """,
         ),
         dict(
             flags=['--first', '-f'],
-            type=str,
-            nargs='?',
-            metavar="nick",
-            help="""Shows when the user was first seen.
-
-            The username can come after this argument, in which case it
-            overrides a username that was provided before it.
-            """,
+            type=bool,
+            help="""Shows when the user was first seen.""",
         ),
         dict(
             flags=['--count', '-c'],
-            type=str,
-            nargs='?',
-            metavar="nick",
-            help="""Counts the number of times this user has been seen.
-
-            The username can come after this argument, in which case it
-            overrides a username that was provided before it.
-            """,
+            type=bool,
+            help="""Counts the number of times this user has been seen.""",
         ),
     ]
 
     def execute(self, irc_c, msg, cmd):
         nick = self['nick']
-        if 'first' in self and self['first'] is not None:
-            nick = self['first']
-        if 'count' in self and self['count'] is not None:
-            nick = self['count']
-        if nick is None:
-            raise CommandError(
-                "Specify a user and I'll tell you when I last saw them."
-            )
         messages = DB.get_messages_from_user(nick, msg.raw_channel)
         if len(messages) == 0:
             raise MyFaultError(
                 "I've never seen {} in this channel.".format(nick)
             )
-        if 'count' in self:
+        if self['count']:
             msg.reply(
                 "I've seen {} {} times in this channel.".format(
                     nick, len(messages)
                 )
             )
             return
-        if 'first' in self:
+        if self['first']:
             message = messages[0]
             response = "I first saw {} {} saying: {}"
         else:
