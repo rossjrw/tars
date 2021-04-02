@@ -133,33 +133,30 @@ class Alias(Command):
 
             current_wikiname = DB.get_wikiname(user_id)
             if current_wikiname == self['wikiname']:
-                msg.reply(
-                    "{} Wikidot username is already {}!".format(
+                raise MyFaultError(
+                    "{} Wikidot username is already {}.".format(
                         "{}'s".format(self['nick'])
                         if self['nick'].lower() != msg.sender.lower()
                         else "Your",
                         self['wikiname'],
                     )
                 )
-            else:
-                DB.set_wikiname(user_id, self['wikiname'])
-                msg.reply(
-                    "Updated {} Wikidot username {}to {}.".format(
-                        "{}'s".format(self['nick'])
-                        if self['nick'].lower() != msg.sender.lower()
-                        else "your",
-                        ""
-                        if current_wikiname is None
-                        else "from {} ".format(current_wikiname),
-                        self['wikiname'],
-                    )
+            DB.set_wikiname(user_id, self['wikiname'])
+            msg.reply(
+                "Updated {} Wikidot username {}to {}.".format(
+                    "{}'s".format(self['nick'])
+                    if self['nick'].lower() != msg.sender.lower()
+                    else "your",
+                    ""
+                    if current_wikiname is None
+                    else "from {} ".format(current_wikiname),
+                    self['wikiname'],
                 )
-                irc_c.PRIVMSG(
-                    CONFIG['channels']['home'],
-                    "{} set wikiname {}".format(
-                        self['nick'], self['wikiname']
-                    ),
-                )
+            )
+            irc_c.PRIVMSG(
+                CONFIG['channels']['home'],
+                "{} set wikiname {}".format(self['nick'], self['wikiname']),
+            )
         if self['list']:
             # get all aliases associated with the user
             aliases = DB.get_aliases(user_id)
