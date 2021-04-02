@@ -72,6 +72,9 @@ class Search(Command):
         ),
         dict(
             flags=['--regex', '-x'],
+            # The type is intentionally str and not regex_type because the SQL
+            # query prefers to accept regex as string; this command performs
+            # its own regex validation check
             type=str,
             nargs='+',
             help="""Filter pages by a regular expression.
