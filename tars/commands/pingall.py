@@ -5,7 +5,7 @@ Pings everyone in the room.
 
 from pyaib.signals import await_signal
 
-from tars.helpers.basecommand import Command, matches_regex
+from tars.helpers.basecommand import Command, matches_regex, longstr
 from tars.helpers.database import DB
 from tars.helpers.defer import get_users
 from tars.helpers.error import CommandError, MyFaultError
@@ -25,7 +25,7 @@ class Pingall(Command):
     arguments = [
         dict(
             flags=['--message', '-m'],
-            type=str,
+            type=longstr,
             nargs='+',
             help="""Specify a message to be PMed to everyone.
 
@@ -90,12 +90,12 @@ class Pingall(Command):
             and modes.find(mode) >= modes.find(self['target'])
             # Unspecified target is "" so this is genius honestly
         ]
-        if len(self['message']) > 0:
+        if 'message' in self:
             for member in members:
                 irc_c.PRIVMSG(
                     member,
                     "{1} in {2} says: {0}".format(
-                        " ".join(self['message']), msg.sender, msg.raw_channel
+                        self['message'], msg.sender, msg.raw_channel
                     ),
                 )
             msg.reply("Message sent to selected users.")

@@ -10,7 +10,7 @@ from datetime import datetime
 import pendulum as pd
 
 from tars.commands.gib import Gib
-from tars.helpers.basecommand import Command
+from tars.helpers.basecommand import Command, longstr
 from tars.helpers.error import CommandError, MyFaultError
 from tars.helpers.parse import nickColor
 from tars.helpers.database import DB
@@ -53,7 +53,7 @@ class Query(Command):
         ),
         dict(
             flags=['--sql'],
-            type=str,
+            type=longstr,
             nargs='+',
             permission=True,
             help="""Issue an SQL statement to the database.
@@ -120,9 +120,9 @@ class Query(Command):
                     msg.reply(
                         "I don't know anything called '{}'.".format(search)
                     )
-        elif len(self['sql']) > 0:
+        elif 'sql' in self:
             try:
-                DB.print_selection(" ".join(self['sql']), 'str' in self)
+                DB.print_selection(self['sql'], 'str' in self)
                 msg.reply("Printing that selection to console")
             except:
                 msg.reply("There was a problem with the selection")

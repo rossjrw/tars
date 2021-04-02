@@ -3,7 +3,7 @@
 For handling aliases and stuff like that.
 """
 
-from tars.helpers.basecommand import Command
+from tars.helpers.basecommand import Command, longstr
 from tars.helpers.database import DB
 from tars.helpers.error import CommandError, MyFaultError
 from tars.helpers.defer import is_controller
@@ -60,8 +60,8 @@ class Alias(Command):
         ),
         dict(
             flags=['--wikiname', '-w'],
-            type=str,
-            nargs=None,
+            type=longstr,
+            nargs='+',
             help="""Sets the Wikidot username associated with this IRC
             nick.""",
         ),

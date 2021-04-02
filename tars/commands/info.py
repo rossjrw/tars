@@ -9,7 +9,7 @@ import time
 import platform, distro
 
 from tars import commands
-from tars.helpers.basecommand import Command
+from tars.helpers.basecommand import Command, longstr
 from tars.helpers.config import CONFIG
 from tars.helpers.error import CommandError, MyFaultError
 from tars.helpers.greetings import acronym
@@ -157,7 +157,7 @@ class User(Command):
     arguments = [
         dict(
             flags=['user'],
-            type=str,
+            type=longstr,
             nargs='+',
             help="""The name of the user.""",
         )
@@ -166,7 +166,7 @@ class User(Command):
     def execute(self, irc_c, msg, cmd):
         msg.reply(
             "http://www.wikidot.com/user:info/{}".format(
-                " ".join(self['user']).replace(" ", "-")
+                self['user'].replace(" ", "-")
             )
         )
 

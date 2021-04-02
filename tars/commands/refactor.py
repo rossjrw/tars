@@ -9,7 +9,7 @@ TEMPORARY commands for refactoring the database.
 TARS will not allow you to refactor a 2nd time unless you issue .reload again.
 """
 
-from tars.helpers.basecommand import Command
+from tars.helpers.basecommand import Command, longstr
 from tars.helpers.database import DB
 from tars.helpers.error import CommandError
 
@@ -36,7 +36,7 @@ class Refactor(Command):
         ),
         dict(
             flags=['--sql'],
-            type=str,
+            type=longstr,
             nargs='+',
             help="""An SQL query to issue.
 
@@ -51,8 +51,8 @@ class Refactor(Command):
         if Refactor.has_refactored and not self['force']:
             raise CommandError("Already refactored once this reload.")
         try:
-            if len(self['sql']) > 0:
-                DB.issue(" ".join(self['sql']), callback=msg.reply)
+            if 'sql' in self:
+                DB.issue(self['sql'], callback=msg.reply)
             else:
                 Refactor.refactor_database()
                 Refactor.has_refactored = True
