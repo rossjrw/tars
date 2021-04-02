@@ -54,7 +54,7 @@ def get_info_from_command(ThisCommand):
             )
         ],
         'aliases': ThisCommand.aliases,
-        'defers_to': {
+        'defersTo': {
             alias: deferred_bots_for_alias(alias)
             for alias in ThisCommand.aliases
             if len(deferred_bots_for_alias(alias).keys()) > 0

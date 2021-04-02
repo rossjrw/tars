@@ -56,6 +56,28 @@
           <span>..</span><span>{alias}</span><span>, </span>
         {/each}
       </h3>
+      {#if Object.keys(info.defersTo).length > 0}
+        <ul>
+          {#each Object.entries(info.defersTo) as [alias, conflict]}
+            <li>
+              The alias <code>{alias}</code> <a href=#deferral>defers</a>
+              to {@html
+                new Intl.ListFormat("en").format(
+                  Object.entries(conflict).map(([botname, prefixes]) => {
+                    return `${botname} when used with the prefix${
+                      prefixes.length > 1 ? "es" : ""
+                    } ${
+                      new Intl.ListFormat("en", {type: "disjunction"}).format(
+                        prefixes.map(prefix => `<code>${prefix}</code>`)
+                      )
+                    }`
+                  })
+                )
+              }
+            </li>
+          {/each}
+        </ul>
+      {/if}
       {#if info.base === "Command"}
         <div class="usage px-5 py-3">
           <pre class="p-0 inline-block whitespace-normal">
