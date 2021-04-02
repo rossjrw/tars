@@ -155,6 +155,13 @@ class HelpFormatter(argparse.HelpFormatter):
         of that argument instead of its uppercase"""
         return action.dest
 
+    def _format_actions_usage(self, actions, groups):
+        """Change the actions order to remove help and put positionals before
+        optionals."""
+        actions = [a for a in actions if "--help" not in a.option_strings]
+        actions.sort(key=lambda action: action.option_strings != [])
+        return super()._format_actions_usage(actions, groups)
+
 
 def help_formatter(prog):
     """Override argparse's help formatter instantiation"""
