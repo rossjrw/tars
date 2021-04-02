@@ -56,14 +56,23 @@
           <span>..</span><span>{alias}</span><span>, </span>
         {/each}
       </h3>
-      {#if Object.keys(info.defersTo).length > 0}
+      {#if info.defersTo.length > 0}
         <ul>
-          {#each Object.entries(info.defersTo) as [alias, conflict]}
+          {#each info.defersTo as { aliases, condition }}
             <li>
-              The alias <code>{alias}</code> <a href=#deferral>defers</a>
+              {#if info.aliases.length === 1}
+                This command
+              {:else}
+                The alias{aliases.length > 1 ? "es" : ""} {@html
+                  new Intl.ListFormat("en").format(
+                    aliases.map(alias => `<code>${alias}</code>`)
+                  )
+                }
+              {/if}
+              <a href=#deferral>defer{aliases.length > 1 ? "" : "s"}</a>
               to {@html
                 new Intl.ListFormat("en").format(
-                  Object.entries(conflict).map(([botname, prefixes]) => {
+                  Object.entries(condition).map(([botname, prefixes]) => {
                     return `${botname} when used with the prefix${
                       prefixes.length > 1 ? "es" : ""
                     } ${

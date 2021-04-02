@@ -32,6 +32,32 @@ def get_info_from_command(ThisCommand):
         return None
     # Get the command's parent
     ParentCommand = ThisCommand.__mro__[1]
+    # Sort deferred aliases into a sensible structure
+    deferral_conditions = {
+        alias: deferred_bots_for_alias(alias)
+        for alias in ThisCommand.aliases
+        if len(deferred_bots_for_alias(alias).keys()) > 0
+    }
+    ref = str
+    unique_deferral_conditions = set(
+        [ref(condition) for condition in deferral_conditions.values()]
+    )
+    defers_to = [
+        {
+            'aliases': [
+                alias
+                for alias, condition in deferral_conditions.items()
+                if ref(condition) == c
+            ],
+            'condition': [
+                condition
+                for condition in deferral_conditions.values()
+                if ref(condition) == c
+            ][0],
+        }
+        for c in unique_deferral_conditions
+    ]
+    # Construct the rest of the command info
     info = {
         'id': ThisCommand.__name__,
         'name': ThisCommand.command_name,
@@ -54,11 +80,7 @@ def get_info_from_command(ThisCommand):
             )
         ],
         'aliases': ThisCommand.aliases,
-        'defersTo': {
-            alias: deferred_bots_for_alias(alias)
-            for alias in ThisCommand.aliases
-            if len(deferred_bots_for_alias(alias).keys()) > 0
-        },
+        'defersTo': defers_to,
         'usage': ThisCommand(ignore_permission_check).get_parser().get_usage(),
         'base': ParentCommand.__name__,
     }
