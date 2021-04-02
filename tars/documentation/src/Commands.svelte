@@ -97,13 +97,21 @@
       {@html info.help}
       {#if info.base !== "Command"}
         <p>
-          This command extends {info.base} and supports all of its arguments.
+          This command extends
+          <a href=#{info.base.toLowerCase()}>..{info.base.toLowerCase()}</a>
+          and supports all of its arguments.
         </p>
       {/if}
       {#if info.subcommands.length > 0}
         <p>
           This command is extended by
-          {new Intl.ListFormat("en").format(info.subcommands)}, which
+          {@html new Intl.ListFormat("en").format(
+            info.subcommands.map(
+              subcommand => `<a href=#${subcommand.toLowerCase()}>
+                ..${subcommand.toLowerCase()}
+              </a>`.replace(/\n\s*/g, "")
+            )
+          )}, which
           {info.subcommands.length === 1 ? "inherits" : "inherit"} all of its
           arguments.
         </p>
