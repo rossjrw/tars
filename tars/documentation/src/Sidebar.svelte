@@ -109,5 +109,6 @@
         class="rounded-full w-20 h-20 bg-primary-dark
                focus:outline-none focus:ring focus:ring-primary
                fixed bottom-8 right-8 lg:hidden">
+  <span class="sr-only">Toggle sidebar</span>
   =
 </button>
