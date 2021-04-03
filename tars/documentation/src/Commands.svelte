@@ -90,7 +90,7 @@
       {#if info.base === "Command"}
         <div class="usage px-5 py-3">
           <pre class="p-0 inline-block whitespace-normal">
-            ..{info.usage}
+            {@html info.usage}
           </pre>
         </div>
       {/if}

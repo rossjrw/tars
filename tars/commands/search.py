@@ -49,7 +49,7 @@ class Search(Command):
     of between 20 and 80, and were created between June 1st 2018 and the end of
     2018.)
 
-    @example(.s -x ^SCP-\d*2$ -m)(matches articles that start with "SCP-"
+    @example(.s -x ^SCP-\d\*2$ -m)(matches articles that start with "SCP-"
     followed by any amount of numbers so long as that number ends in a 2, and
     returns the one that most needs extra attention.)
     """
@@ -67,8 +67,8 @@ class Search(Command):
             quotemarks (`"`) will be treated as a single word. If you leave
             @argument(title) empty, then it will match all pages, and you'll
             need to specify more criteria. If you actually need to search for
-            quotemarks, escape them with a backslash - e.g. `.s \\"The
-            Administrator\\"`.""",
+            quotemarks, escape them with a backslash - e.g.
+            @example(.s \\"The Administrator\\"`).""",
         ),
         dict(
             flags=['--regex', '-x'],
@@ -153,10 +153,10 @@ class Search(Command):
             default=None,
             help="""Filter pages by their parent page's slug.
 
-            The parent page's slug must be given exactly (e.g. `-p
-            antimemetics-division-hub`). The entire parent tree will be
-            checked - the page will be found even if it's a great-grandchild
-            of the @argument(--parent).""",
+            The parent page's slug must be given exactly (e.g.
+            @example(-p antimemetics-division-hub)). The entire parent tree
+            will be checked - the page will be found even if it's a
+            great-grandchild of the @argument(--parent).""",
         ),
         dict(
             flags=['--summary', '--summarise', '-u'],
@@ -574,7 +574,7 @@ class Regexsearch(Search):
     @example(.rs ^SCP- -t -scp)(searches for articles starting with "SCP-" but
     that are not tagged 'scp'.)
 
-    @example(.rs ^((?!the).)*$)(searches for articles that don't contain
+    @example(.rs ^((?!the).)\*$)(searches for articles that don't contain
     'the'.)
     """
 
@@ -584,7 +584,12 @@ class Regexsearch(Search):
 
 
 class Tags(Search):
-    """Search by tags. Equivalent to `.s -t [tag]`."""
+    """Search by tags.
+
+    Equivalent to @example(.s --tags [tag]).
+
+    See also @command(tag), which is unrelated.
+    """
 
     command_name = "Search by tags"
     aliases = ["tags"]

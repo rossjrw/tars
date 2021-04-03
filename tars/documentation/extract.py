@@ -6,6 +6,7 @@ Extracts documentation information from the command registry.
 import re
 
 from tars.commands import COMMANDS_REGISTRY
+from tars.documentation.link import format_example
 from tars.helpers.basecommand import Command
 from tars.helpers.defer import deferred_bots_for_alias
 
@@ -81,7 +82,11 @@ def get_info_from_command(ThisCommand):
         ],
         'aliases': ThisCommand.aliases,
         'defersTo': defers_to,
-        'usage': ThisCommand(ignore_permission_check).get_parser().get_usage(),
+        'usage': format_example(
+            "..{}".format(
+                ThisCommand(ignore_permission_check).get_parser().get_usage()
+            )
+        ),
         'base': ParentCommand.__name__,
     }
     return info

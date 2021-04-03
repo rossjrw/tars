@@ -25,6 +25,18 @@ code {
   @apply py-1;
   @apply text-sm;
 }
+.inline-bot-name {
+  @apply text-primary-light;
+}
+.inline-command {
+  @apply text-primary-bright;
+}
+.inline-argument {
+  @apply text-primary-lighter;
+}
+.usage .inline-syntax {
+  @apply text-gray-400;
+}
 
 /* Examples */
 blockquote {

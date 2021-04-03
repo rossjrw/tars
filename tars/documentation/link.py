@@ -3,6 +3,7 @@
 Links together command documentation by replacing @-commands.
 """
 
+import itertools
 import re
 
 from markdown import markdown
@@ -43,6 +44,9 @@ def process_links(command_infos, other_texts):
 
     All commands may include newlines in their text, which will be ignored in
     the output (by definition as per Markdown).
+
+    Note that while examples will be formatted as code, they will not be
+    escaped as such, so any Markdown-active syntax inside them must be escaped.
 
     `command_infos` must be the information from the registry per extract.py.
     `other_texts` is a list of other Markdown text that will appear in the
@@ -135,7 +139,7 @@ def replace_inline_example(string, *, allow_paren=False, **_):
     """Replaces inline examples."""
 
     def replace(match):
-        return "`{}`".format(match.group(1))
+        return "`{}`".format(format_example(match.group(1)))
 
     return re.sub(
         r"@example\(([{}]*)\)".format(r"\S\s" if allow_paren else "^)"),
@@ -237,5 +241,23 @@ def wrap_headers_in_sections(string):
 
 def compile_markdown(string, **_):
     """Converts a Markdown string to HTML."""
+    # A backtick creates a code block but also escapes the text inside it,
+    # which I don't want, so I will do that myself
+    code = itertools.cycle(["<code>", "</code>"])
+    string = re.sub(r"(?<!\\)`", lambda _: next(code), string)
     html = markdown(string, extensions=['md_in_html'])
     return html
+
+
+def format_example(example):
+    """Adds basic formatting to a command example."""
+    span = r"""<span class="{}">\1</span>"""
+    replacements = [
+        ("(TARS)", "inline-bot-name"),
+        (r"(?:(?<=: )|(?<=\.)|(?<=\..))([a-z]+)(?= |$)", "inline-command"),
+        (r"(?<= |\[)(--[a-z-]{2,}|-[a-z])(?= |\]|$)", "inline-argument"),
+        (r"(\[|\]|\.\.\.|,|{|})", "inline-syntax"),
+    ]
+    for find, name in replacements:
+        example = re.sub(find, span.format(name), example)
+    return example
