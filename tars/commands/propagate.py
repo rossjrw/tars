@@ -3,6 +3,8 @@
 For propagating the database with wiki data.
 """
 
+import gevent
+
 from tars.helpers.api import SCPWiki
 from tars.helpers.basecommand import Command
 from tars.helpers.error import CommandError
@@ -90,6 +92,8 @@ class Propagate(Command):
                     # Don't want to track fragments
                     continue
                 DB.add_article(page, commit=False)
+            # Give the API a moment to rest
+            gevent.sleep(5)
         DB.commit()
 
     @staticmethod

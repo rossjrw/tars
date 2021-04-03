@@ -178,25 +178,30 @@ class Punctuation(Command):
 
 
 class Tell(Command):
-    """Calls you a dumbass.
+    """Recommends a method for getting a message to someone.
 
     TARS intentionally doesn't support `.tell`, so as to avoid causing
     confusion with other bots on the network. It would be a bit of a pain
     sending a message with one bot, only for it to take forever to arrive
     because most of the other user's interactions are with another bot.
 
-    If you write a tell in a channel with TARS but no other bot that TARS
-    knows, it will call you a dumbass. This will hopefully prompt you to
-    rewrite your message elsewhere. If TARS didn't respond at all, you might
+    If TARS successfully receives a `.tell` command, which implies that there
+    is no other bot present to handle it, it will inform you as such and
+    recommend another method. TARS assumes that you meant to use `.tell` in a
+    channel with a bot that supports it. The response will hopefully prompt you
+    to rewrite your message elsewhere. If TARS didn't respond at all, you might
     not notice and go on with your life, and the message would never be sent.
 
     You can send a message to any user on SkipIRC using MemoServ with
     @example(/ms send [nick] [message...]), which will even tell you when
-    they've read it.
+    they've read it. This is the method that TARS will recommend.
     """
 
     command_name = "Tell"
     aliases = ["tell"]
 
     def execute(self, irc_c, msg, cmd):
-        msg.reply("{}: dumbass".format(msg.sender))
+        msg.reply(
+            "{}: I don't support .tell - try using MemoServ: "
+            "/ms send [nick] [message...]".format(msg.sender)
+        )
