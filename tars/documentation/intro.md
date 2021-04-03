@@ -68,10 +68,10 @@ I welcome any pull requests that result from your experiments!
 
 This documentation is built using [Svelte](https://svelte.dev/) and styled with
 [Tailwind](https://tailwindcss.com/). The command reference is constructed from
-the Python codebase &mdash; every command has an internal
+@repo(the Python codebase) &mdash; every command has an internal
 [argparse](https://docs.python.org/library/argparse) object which contains the
 documentation. There is no prospective documentation &mdash; the commands are
 described as they are, not as they could be; while there are a few undocumented
-features, they are all intentional. The documentation is re-built with every
-push to the repository, so it is guaranteed to be in sync with the codebase
-&mdash; it will never be outdated.
+features, they are all intentionally so. The documentation is re-built with
+every push to the repository, so it is guaranteed to be in sync with the
+codebase &mdash; it will never be outdated.
