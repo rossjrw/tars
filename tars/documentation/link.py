@@ -194,7 +194,8 @@ def replace_argument(string, *, command_infos, command_id, **_):
                     command_id,
                 )
             )
-        return "[`--{}`](#{})".format(argument_name, matching_args[0]['id'])
+        arg = matching_args[0]
+        return "[{}](#{})".format(arg['flags'][0], arg['id'])
 
     return re.sub(r"@argument\(([^)]*)\)", replace, string)
 

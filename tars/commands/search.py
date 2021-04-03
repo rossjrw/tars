@@ -35,23 +35,9 @@ class Search(Command):
     Provides URLs and basic info for the page(s) that match your search
     criteria. Searching is never case-sensitive.
 
-    If TARS finds more than one article that matches your criteria (and if you
-    didn't specify @argument(random), @argument(summary) or
-    @argument(recommend)), it will provide a list of matches and ask if you
-    meant any of them. To pick your article from the list, see
-    @command(showmore).
-
-    @example(TARS: search -t +scp +meta -r >100 -c 2014)(matches pages tagged
-    both "scp" and "meta", with a rating of more than 100, posted in 2014.)
-
-    @example(.s Insurgency --rating 20..80 --created 2018-06..2018)(matches
-    pages that contain the word "Insurgency" in the title, which have a rating
-    of between 20 and 80, and were created between June 1st 2018 and the end of
-    2018.)
-
-    @example(.s -x ^SCP-\d\*2$ -m)(matches articles that start with "SCP-"
-    followed by any amount of numbers so long as that number ends in a 2, and
-    returns the one that most needs extra attention.)
+    If TARS finds more than one article that matches your criteria, it will
+    provide a list of matches and ask if you meant any of them. To pick your
+    article from the list, see @command(showmore).
     """
 
     command_name = "Search the Wiki"
@@ -65,10 +51,15 @@ class Search(Command):
 
             Words are space-separated. Like all commands, anything wrapped in
             quotemarks (`"`) will be treated as a single word. If you leave
-            @argument(title) empty, then it will match all pages, and you'll
-            need to specify more criteria. If you actually need to search for
-            quotemarks, escape them with a backslash - e.g.
-            @example(.s \\"The Administrator\\"`).""",
+            this argument empty, then it will match all pages, and you'll
+            need to specify more criteria.
+
+            @example(.s await research)(matches pages whose title contains both
+            "await" and "research".)
+
+            @example(.s \\"The Administrator\\")(searches for articles whose
+            title contains "The Administrator".)
+            """,
         ),
         dict(
             flags=['--regex', '-x'],
@@ -82,7 +73,12 @@ class Search(Command):
             You may use more than one regex in a single search, still
             delimited by a space. If you want to include a literal space in
             the regex, you should either wrap the whole regex in quotes or use
-            `\\s` instead.""",
+            `\\s` instead.
+
+            @example(.s -x ^SCP-\d\*2$)(matches articles that start with
+            "SCP-" followed by any amount of numbers so long as that number
+            ends in a 2.)
+            """,
         ),
         dict(
             flags=['--tags', '--tag', '--tagged', '-t'],
@@ -92,7 +88,15 @@ class Search(Command):
 
             The matched pages must have all the tags that you specified,
             unless that tag starts with `-`, in which case they must not
-            have that tag.""",
+            have that tag.
+
+            See also the @command(tags) command, which is a shortcut for this.
+
+            @example(.s -t scp)(matches pages tagged 'scp'.)
+
+            @example(.s -t 001-propsoal -scp)(matches pages tagged
+            '001-proposal' but not 'scp'.)
+            """,
         ),
         dict(
             flags=['--author', '--au', '--by', '-a'],
@@ -134,7 +138,16 @@ class Search(Command):
 
             Also supports ranges of dates with two dots e.g. `2018..2019`.
             Ranges are always inclusive, and you can mix relative dates and
-            absolute dates.""",
+            absolute dates.
+
+            @example(.s --created 2018-06..2018)(matches pages that were
+            created between June 1st 2018 and the end of 2018.)
+
+            @example(.s -c >10y)(matches pages created at least 10 years ago.)
+
+            @example(.s -c 1y5M..2016)(matches pages created between 1 year, 5
+            months ago and 2016.)
+            """,
         ),
         dict(
             flags=['--category', '--cat', '-y'],
@@ -142,9 +155,17 @@ class Search(Command):
             nargs='+',
             help="""Filter pages by Wikidot category.
 
-            By default, all categories are searched. If you include this
-            argument but don't specify any categories, TARS will only search
-            '_default'.""",
+            By default, all categories are searched. A category can be prefixed
+            with `-` to exclude it.
+
+            @example(.s)(matches pages in all categories.)
+
+            @example(.s -y theme component)(matches only pages in the 'theme'
+            or 'component' categories.)
+
+            @example(.s -y -adult)(matches pages in all categories except
+            'adult'.)
+            """,
         ),
         dict(
             flags=['--parent', '-p'],
@@ -158,26 +179,28 @@ class Search(Command):
             will be checked - the page will be found even if it's a
             great-grandchild of the @argument(--parent).""",
         ),
-        dict(
-            flags=['--summary', '--summarise', '-u'],
-            type=bool,
-            help="""Summarise search results.
-
-            Instead of providing a link to a single article, TARS will
-            summarise all articles that match the search criteria.""",
-        ),
+        # Not yet implemented
+        # dict(
+        #     flags=['--summary', '--summarise', '-u'],
+        #     type=bool,
+        #     help="""Summarise search results.
+        #
+        #     Instead of providing a link to a single article, TARS will
+        #     summarise all articles that match the search criteria.""",
+        # ),
         dict(
             flags=['--random', '--rand', '--ran', '-d'],
             type=bool,
             help="""If your search matches more than one article, return a
             random one.""",
         ),
-        dict(
-            flags=['--recommend', '--rec', '-m'],
-            type=bool,
-            help="""If your search matches more than one article, return the
-            one that most needs attention.""",
-        ),
+        # Not yet implemented
+        # dict(
+        #     flags=['--recommend', '--rec', '-m'],
+        #     type=bool,
+        #     help="""If your search matches more than one article, return the
+        #     one that most needs attention.""",
+        # ),
         dict(
             flags=['--newest', '--new', '-n'],
             type=bool,
@@ -188,9 +211,24 @@ class Search(Command):
             flags=['--order', '-o'],
             type=str,
             nargs=None,
-            choices=['random', 'recommend', 'recent', 'none', 'fuzzy'],
+            choices=['random', 'recent', 'none', 'fuzzy'],
             default='fuzzy',
-            help="""Returns the results in a certain order.""",
+            help="""Returns the results in a certain order.
+
+            While @argument(random) and @argument(newest) will only return one
+            result, this argument does not impose a search result limit,
+            allowing you to set your own with @argument(limit). This argument
+            simply changes the order of the results.
+
+            The choices are as follows:
+
+            * `random` &mdash; results are ordered randomly.
+            * `recent` &mdash; results are ordered newest-first.
+            * `none` &mdash; results are not ordered; they come as they are.
+            * `fuzzy` &mdash; fuzzy search, i.e. results are ordered by how
+            well they match the @argument(title) argument. If no `title`
+            argument was provided, the results are unordered.
+            """,
         ),
         dict(
             flags=['--offset', '-f'],
@@ -390,8 +428,11 @@ class Search(Command):
             if category[0] == "-":
                 categories['exclude'].append(category[1:])
                 continue
-            if category[0] == "+":
-                categories['include'].append(category[1:])
+            else:
+                if category[0] == "+":
+                    categories['include'].append(category[1:])
+                    continue
+                categories['include'].append(category)
                 continue
             categories['include'].append(category)
         searches.append({'term': categories, 'type': 'category'})
