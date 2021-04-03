@@ -76,10 +76,24 @@
       })
     }
   }
+
+  let sidebarOpen = false
+
+  function toggleSidebar () {
+    sidebarOpen = !sidebarOpen
+  }
 </script>
 
-<aside class="sticky h-screen top-0 bottom-0 flex flex-col
-              bg-primary-dark md:w-72 lg:w-96">
+<div on:click={toggleSidebar}
+     class="fixed inset-0 bg-black lg:hidden transition-opacity
+            {sidebarOpen ? "opacity-50" : "opacity-0 pointer-events-none"}">
+</div>
+
+<aside class="fixed h-screen top-0 bottom-0 left-0 transform
+              {sidebarOpen ? "" : "-translate-x-full"} transition-transform
+              lg:sticky lg:transform-none
+              flex flex-col
+              bg-primary-dark lg:w-96">
   <h1 class="text-7xl my-6 text-center font-bold text-primary-light">
     TARS
   </h1>
@@ -91,3 +105,9 @@
   </nav>
 </aside>
 
+<button on:click={toggleSidebar}
+        class="rounded-full w-20 h-20 bg-primary-dark
+               focus:outline-none focus:ring focus:ring-primary
+               fixed bottom-8 right-8 lg:hidden">
+  =
+</button>

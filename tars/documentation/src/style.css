@@ -78,6 +78,7 @@ h4 {
 /* Spacing between the sections */
 section[data-role=section] {
   @apply my-24;
+  @apply mx-8;
 }
 section[data-role=command] {
   @apply my-16;
