@@ -33,6 +33,7 @@ toml = "*"
 python-scuttle = "*"
 pre-commit = "*"
 apscheduler = "*"
+markdown = "*"
 
 [requires]
 python_version = "3.8"

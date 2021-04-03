@@ -1,0 +1,47 @@
+name: build documentation
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'tars/**'
+      - '.github/workflows/documentation.yaml'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'tars/**'
+      - '.github/workflows/documentation.yaml'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install Python dependencies
+        run: |
+          python -m pip install pipenv
+          pipenv install --skip-lock
+      - name: Generate command information
+        run: >-
+          pipenv run python -m tars
+          config/tars.skipirc.conf
+          --deferral config/defer_list.toml
+          --docs
+      - name: Install JavaScript dependencies
+        working-directory: ./tars/documentation
+        run: npm install
+      - name: Build documentation
+        working-directory: ./tars/documentation
+        run: npm run build
+      - name: Deploy site
+        if: github.ref == 'refs/heads/master'
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          ACCESS_TOKEN: ${{secrets.ACCESS_TOKEN}}
+          BRANCH: gh-pages
+          FOLDER: ./tars/documentation/dist

@@ -1,0 +1,173 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Style text */
+p, .usage {
+  @apply mb-4;
+}
+section a {
+  @apply link-line;
+  @apply font-bold;
+  @apply text-primary-bright;
+  @apply hover:text-primary-lighter;
+  @apply hover:link-line-hover;
+  @apply inline;
+}
+
+/* Style code blocks */
+code, .usage {
+  @apply bg-primary-dark;
+  @apply rounded-md;
+}
+code {
+  @apply px-1.5;
+  @apply py-1;
+  @apply text-sm;
+}
+.inline-bot-name, .inline-argument {
+  @apply text-primary-lighter;
+}
+.inline-command {
+  @apply text-primary-bright;
+}
+.usage .inline-syntax {
+  @apply text-gray-400;
+}
+
+/* Examples */
+blockquote {
+  @apply px-8;
+}
+blockquote strong {
+  @apply text-primary-lighter;
+}
+
+/* Style headers */
+h1 {
+  @apply font-bold;
+  @apply text-9xl;
+  @apply text-center;
+  @apply text-primary-bright;
+}
+h2 {
+  @apply font-bold;
+  @apply text-7xl;
+  @apply text-center;
+  @apply text-primary-light;
+  @apply lowercase;
+}
+h3 {
+  @apply font-bold;
+  @apply text-5xl;
+  @apply text-primary-bright;
+  @apply mb-6;
+}
+h4 {
+  @apply font-bold;
+  @apply text-4xl;
+  @apply text-primary-lighter;
+  @apply mb-4;
+}
+
+.intro h3 {
+  @apply text-primary-light;
+  @apply text-3xl;
+}
+
+/* Spacing between the sections */
+section[data-role=section] {
+  @apply my-24;
+  @apply mx-8;
+}
+section[data-role=command] {
+  @apply my-16;
+}
+section[data-role=argument], section[data-role=other] {
+  @apply my-8;
+}
+
+/* Give text a good reading width, but make the titles slightly wider */
+.intro h3, section[data-role=command] h4 {
+  @apply max-w-3xl;
+  @apply mx-auto;
+}
+section[data-role=command] h3 {
+  @apply max-w-4xl;
+  @apply mx-auto;
+}
+.intro p,
+section[data-role=command] > :not(h3):not(section),
+section[data-role=argument] > :not(h4) {
+  @apply max-w-2xl;
+  @apply mx-auto;
+}
+
+/* Sidebar */
+nav ul {
+  @apply ml-4
+}
+nav li {
+  @apply my-2;
+  @apply text-primary;
+}
+
+/* Lists */
+main ul, ol {
+  @apply pl-8;
+  @apply -mt-2;
+}
+main ul {
+  @apply list-disc;
+}
+ol {
+  @apply list-decimal;
+}
+
+main ul > li, ol > li {
+  @apply mb-2;
+}
+main ul > li::marker {
+  @apply text-primary-light;
+}
+ol > li::marker {
+  @apply text-primary-lighter;
+}
+
+/* Sidebar links */
+nav li {
+  @apply m-0;
+  @apply text-primary-light;
+}
+nav a {
+  @apply block;
+  @apply rounded-md;
+  @apply p-1;
+}
+nav li:hover a {
+  @apply bg-primary-dim;
+  @apply text-primary-lighter;
+}
+
+/* Indendation for commands and arguments */
+nav li.other, nav li.command {
+  @apply list-disc;
+  @apply ml-6
+}
+nav li.argument {
+  @apply list-disc;
+  @apply ml-12;
+  @apply text-sm;
+  @apply text-primary;
+}
+nav li::marker {
+  @apply text-primary-darker;
+}
+nav li:hover::marker {
+  @apply text-primary-light;
+}
+
+/* Currently active link */
+nav li.selected, nav li.selected::marker {
+  @apply text-primary-bright;
+}

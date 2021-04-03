@@ -5,18 +5,6 @@ This README contains instructions for command line usage and implementation
 details. End users looking for command instruction should look at the
 documentation: https://rossjrw.github.io/tars/help/
 
-TARS' development philosophy is to be **dynamic** and **responsive**.
-* **dynamic** - TARS should not hold any non-essential data and should get its
-  content direct from the source. Where data must be held, it should be updated
-  frequently. Data that TARS relies on but that is able to change (e.g.
-  config files; specific exceptions) must be stored externally.
-* **responsive** - TARS should never need to be asked to do something twice -
-  it should just work. It should play nicely with other bots and do its part to
-  ensure that it does not respond to queries that it was not asked. When errors
-  occur as a result of the user, they must be reported explicitly such that the
-  user may fix them. When errors occur as a result of internal failure, they
-  should be reported and fixed without any input from the user who caused them.
-
 ## Current state
 
 TARS is not yet finished and has no ETA. TARS is, however, operational.
@@ -37,17 +25,6 @@ cd tars
 pipenv install --dev
 ```
 
-## Usage
-
-```shell
-pipenv shell
-python3 bot.py [tars.conf]
-```
-or
-```shell
-pipenv run python3 bot.py [tars.conf]
-```
-
 All modules are from PyPI except:
 - pyaib, which is forked here: https://github.com/rossjrw/pyaib
 - re2, which is forked here: https://github.com/andreasvc/pyre2
@@ -62,14 +39,28 @@ required to run:
 
 TARS requires at least Python 3.5.2.
 
-TARS requires a set of API keys to function correctly. These should be stored
-in `keys.secret.toml`. More details can be found in `helpers/api.py`.
+## Usage
 
-TARS will use the config file given as the command line argument. If none is
-provided, it will default to `tars.conf`.
+```shell
+pipenv run python3 -m tars [config file] --deferral [deferral config]
+```
+
+The config files I use are in `config/`.
+
+TARS requires a set of API keys to function correctly. These should be stored
+in `config/keys.secret.toml`. More details can be found in `helpers/api.py`.
 
 TARS will use the nick provided in the config file and NickServ password as
-defined by the key `irc_password` in `keys.secret.txt`.
+defined by the key `irc_password` in `keys.secret.toml`.
+
+## Building documentation
+
+```shell
+pipenv run python3 -m tars [config file] --deferral [deferral config] --docs
+```
+
+Information from the main config and the deferral config are used in the
+documentation, so they should be provided for the most accurate output.
 
 ## Testing
 
@@ -81,57 +72,102 @@ comprehensive.
 
 ## Adding commands
 
-Each major command should be in its own file. Subcommands can be in the same file
-as the major command's file.
+Each major command should be in its own file. Subcommands can be in the same
+file as the major command's file.
 
 Create a new file in `commands/` named the same as your major command.
 
-Within this file, create a new `class` with the (lowercase) name of the major
-command. Add an `aliases` property with a list of any aliases for the command.
+Within this file, create a new class named for the major command that extends
+`helpers.basecommand.Command`, with the following properties (all of which are
+optional):
 
-Within the class, create a new class method called `command` that takes
-arguments `irc_c`, `msg` and `cmd`, where irc_c is pyaib's irc context and msg
-is pyaib's message object, and cmd is the message as a parsed command.
+* `command_name`: The canonical name of this command, used for documentation;
+  if not provided or `None`, this command will not appear in documentation.
+* `arguments`: A list of dicts, each of which represents an argument for this
+  command. These are passed directly to the argparse [`add_argument`
+  constructor](https://docs.python.org/3/library/argparse.html#the-add-argument-method)
+  and the keys correspond to its kwargs. However, the following extra keys are
+  accepted:
+  * `flags`: A list of flags for this argument (will be used as the first
+    positional parameter of `add_argument`).
+  * `mode`: If `"hidden"`, this argument will not appear in documentation.
+  * `permission`: The permission level required to run this command (currently
+     boolean, with `true` indicating only a Controller can run it).
+  * `type`: The same as `type` from argparse, but can also be the following
+    values:
+    * `tars.helpers.basecommand.regex_type`: Checks that the arguments
+      correctly compile to a regex, and exposes the argument values as compiled
+      regex objects.
+    * `tars.helpers.basecommand.matches_regex(rgx, reason)`: Checks that the
+      provided string matches regex `rgx` (can be a Pattern or a string); if it
+      does not, rejects the argument with the given reason. The reason should
+      complete the sentence "Argument rejected because the value..."
+    * `tars.helpers.basecommand.longstr`: Same as `str`, but the argument
+      values are concatenated with spaces into a single string and exposed as
+      one value. Simulates passing e.g. a sentence as argument value without
+      needing to use quotes. Must be used with a `nargs` value that would
+      normally expose a list, but will actually expose a single value as if the
+      `nargs` were `None`.
+* `permission`: The permission level required to run this command (currently
+  boolean, with `true` indicating only a Controller can run it).
+* `arguments_prepend`: A string that will be prepended to arguments passed to
+  this command. Useful for setting defaults for subcommands.
+* `aliases`: A list of string aliases for this command. A command with no
+  aliases cannot be called. A subcommand with no defined aliases will use the
+  same aliases as its parent command which probably isn't very useful.
+
+The class' docstring is used as documentation for the command, although only
+the first line will appear on the command line.
+
+The command must have an instance method called `execute`, which is called when
+the command is run, that takes the
+following arguments (which can be named anything):
+
+* `self`: The command object. Check for argument presence with `'argname' in
+  self`. To get the value of the argument, access `self` like a dict:
+  `self['argname']`.
+* `irc_c`: [pyaib
+  context](https://github.com/facebook/pyaib/wiki/Plugin-Writing#context-object)
+* `msg`: [pyaib
+  message](https://github.com/facebook/pyaib/wiki/Plugin-Writing#message-object)
+* `cmd`: A parsed message-like object, similar to `msg` but with more
+  properties that are pertinent to this command specifically:
+  * `ping`: Whether the bot was pinged by this message.
+  * `command`: The command name as typed by the user (may differ from the
+    canonical `command_name`).
+  * `prefix`: The prefix used to call the command e.g. `..`.
+
+To create a subcommand, create a new class that extends the parent command,
+with its own docstring and `command_name`. I recommend using
+`arguments_prepend` to add command-line flags and then implement the
+corresponding functionality in the parent command, but if you must add
+an `execute` method to the subcommand, be sure to call the parent's `execute`
+method as appropriate.
 
 Edit `commands/__init__.py` and add any commands you created to the `COMMANDS`
 dict along with any aliases as a sub-dict. Your command must have at least one
 alias, or it won't be able to be called.
 
-## Commands
+Other considerations:
 
-Command objects (`cmd`) consist of a dictionary of lists. Each item in the
-dictionary will be named for its flag, and will consist of the list of
-arguments that follow the flag.
+* Arguments may not pass an `action` to the argparse parser.
+* Creating boolean arguments is a little different to normal argparse usage.
+  Normally, you would set `default=False` and `action='store_true'`, omitting a
+  type. Here, just set `type=bool`; this is a special case and the action and
+  default value will be handled automatically. `nargs` must be 0 or omitted.
+* A boolean arg is always present (and an `'arg' in self` check will always
+  return `true`) regardless of whether it was actually specified. If it was not
+  specified, its value is `false`.
+* Most `nargs` values will result in a list being created, except for
+  `nargs=None`, which expects a single value and returns it directly.
+* The default value for `nargs` of `*` and `+` is an empty list, even if no
+  value was actually provided.
+* If an argument with `nargs` of `"*"` or `"?"` is not present, `'argname' in
+  self` will return `false`; if it _is_ present but no values were provided,
+  `'argname' in self` will return `true`, even though either way the value is
+  identical (`[]` for `"*"` and `XXX TODO` for `"?"`).
 
-`cmd.hasarg('argname')` will return whether or not a flag is present in the
-command.
-
-`cmd.getarg('argname')` will return the list of arguments that follows that
-flag. Where there are no arguments but the flag is present, an empty list will
-be returned.
-
-To account for variations in flag names, `cmd.expandargs` can be called on a
-list of strings that represent flag transformations. For each entry in the
-list, the flag name will be changed to the first entry in the string, delimited
-by a space.
-
-`cmd.expandargs(['tags t', 'author a'])` will mean that `.command --tags -a`
-means the same as `.command -t --author`. The arguments will be accessible from
-`cmd.getarg('tags')` and `cmd.getargs('author')`. `cmd.hasarg('t')` will return
-false.
-
-It is up to the command author to ensure that all flags are unique.
-
-The base arguments (those that appear before any flag) are accessible from the
-pseudoflag `root`, which will always be present.
-
-`cmd` has a few other properties:
-* `cmd.raw` - The original, unparsed message
-* `cmd.ping` - The identity of the command's ping, if any
-* `cmd.unping` - The original message sans ping
-* `cmd.pinged` - Boolean, whether or not the bot was pinged
-* `cmd.command` - The identity of the actual command issued
-* `cmd.args` - The dictionary of arguments
+## Other bits
 
 A few other important pieces of information:
 
@@ -140,32 +176,3 @@ A few other important pieces of information:
   function in helpers/database.py
 * `from helpers.config import CONFIG` then `CONFIG.xxx` to access property xxx
   of the configuration file
-
-## Database Structure
-
-<p align="center">
-    <img src="https://raw.githubusercontent.com/rossjrw/tars/master/database.png">
-</p>
-
-* `user_aliases.type` - 'wiki', 'irc' or 'discord'
-* `user_aliases.weight` - 0 by default, 1 if the alias is both an IRC name and
-  has been set by `.alias` instead of `/nick`.
-* `messages.sender` is the IRC name of the user at the time of the message.
-* `articles_authors.metadata` - whether or not this value is derived from the
-  page itself or from Attribution Metadata.
-
-`user_aliases` and `articles_authors` are not linked, although aliases of type
-'wiki' are be searchable in `articles_authors`.
-
-If `articles.downs` is NULL then this indicates that `articles.ups` is the
-net rating, and not the number of upvotes. The ratings have yet to be looked at
-in more detail. If `articles.downs` is 0 then the article really does have no
-downvotes. This is because the Wikidot API does not provide a method for
-distinguishing between upvotes and downvotes.
-
-`articles.rating` is an article's rating. `articles.downs` subtracted from
-`articles.ups` is expected to be equal to the rating, but this is not
-guaranteed, as ups and downs are the result of a separate, less frequent
-query.
-
-`channels.autojoin` ≡ whether or not TARS is currently in a channel.

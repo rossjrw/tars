@@ -1,0 +1,27 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true
+  },
+  "extends": [
+    "eslint:recommended"
+  ],
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 12
+  },
+  "plugins": ["svelte3"],
+  "rules": {
+    "no-unused-vars": [
+      "warn", { "argsIgnorePattern": "^_" }
+    ],
+    "prefer-template": "error",
+    "quotes": ["warn", "double"]
+  },
+  "overrides": [
+    {
+      "files": ["*.svelte"],
+      "processor": "svelte3/svelte3"
+    }
+  ]
+}
