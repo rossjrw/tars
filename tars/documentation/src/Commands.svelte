@@ -1,4 +1,5 @@
 <script>
+  import Details from "./Details.svelte"
   import docs from "../build/docs.json"
 
   docs.infos.forEach(info => {
@@ -56,7 +57,7 @@
           <span>..</span><span>{alias}</span><span>, </span>
         {/each}
       </h3>
-      {#if info.defersTo.length > 0}
+      {#if info.defersTo.length > 0 || info.permission === true}
         <ul>
           {#each info.defersTo as { aliases, condition }}
             <li>
@@ -85,6 +86,9 @@
               }
             </li>
           {/each}
+          {#if info.permission === true}
+            <li>🔒 This command requires elevated permissions</li>
+          {/if}
         </ul>
       {/if}
       {#if info.base === "Command"}
@@ -126,6 +130,7 @@
                 <span>{flag[0]}</span><span>{flag[1]}</span><span>, </span>
               {/each}
             </h4>
+            <Details argument={arg}></Details>
             {@html arg.help}
           </section>
         {/each}

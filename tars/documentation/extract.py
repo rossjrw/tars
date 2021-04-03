@@ -88,6 +88,7 @@ def get_info_from_command(ThisCommand):
             )
         ),
         'base': ParentCommand.__name__,
+        'permission': ThisCommand.permission,
     }
     return info
 
