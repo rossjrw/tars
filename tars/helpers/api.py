@@ -20,12 +20,18 @@ import tomlkit
 import requests
 import pendulum as pd
 
-with open(pathlib.Path.cwd() / "config/keys.secret.toml") as keys:
-    keys = tomlkit.parse(keys.read())['keys']
+keyfile = pathlib.Path.cwd() / "config/keys.secret.toml"
 
-GOOGLE_CSE_API_KEY = keys['google_cse_api']
-GOOGLE_CSE_ID = keys['google_cse_id']
-NICKSERV_PASSWORD = keys['irc_password']
+if keyfile.exists():
+    with open(keyfile) as keys:
+        keys = tomlkit.parse(keys.read())['keys']
+else:
+    print("No secret keyfile; some things will not work")
+    keys = {}
+
+GOOGLE_CSE_API_KEY = keys.get('google_cse_api', None)
+GOOGLE_CSE_ID = keys.get('google_cse_id', None)
+NICKSERV_PASSWORD = keys.get('irc_password', None)
 
 
 def toml_url(url):
