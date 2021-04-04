@@ -67,7 +67,10 @@ class ParsingMixin:
             if 'nargs' in arg:
                 # Assign sensible defaults
                 if 'default' not in arg:
-                    if arg['nargs'] in ['*', '+']:
+                    if (
+                        arg['nargs'] in ['*', '+']
+                        and arg['type'] is not longstr
+                    ):
                         arg['default'] = []
                     else:
                         # The default would usually be None
