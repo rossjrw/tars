@@ -185,7 +185,7 @@ class Tag(Command):
 
     def execute(self, irc_c, msg, cmd):
         msg.reply(
-            "http://www.scp-wiki.wikidot.com/system:page-tags/tag/{}".format(
+            "https://scp-wiki.wikidot.com/system:page-tags/tag/{}".format(
                 self['tag']
             )
         )

@@ -100,7 +100,7 @@ class Showmore(Command):
             "by " + " & ".join(page['authors']),
             ("+" if page['rating'] >= 0 else "") + str(page['rating']),
             pd.from_timestamp(page['date_posted']).diff_for_humans(),
-            "http://www.scp-wiki.wikidot.com/" + page['fullname'],
+            "https://scp-wiki.wikidot.com/" + page['fullname'],
         )
 
     @staticmethod

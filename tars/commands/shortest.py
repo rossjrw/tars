@@ -28,7 +28,7 @@ class Shortest(Command):
     which match any character.
 
     @example(.s "lve ")(the shortest single-string search that uniquely matches
-    [_SCP-1313: Solve For Bear_](http://scp-wiki.wikidot.com/scp-1313) as of
+    [_SCP-1313: Solve For Bear_](https://scp-wiki.wikidot.com/scp-1313) as of
     March 2021.)
 
     The 'multi string' result is a set of phrases, each of which do not
