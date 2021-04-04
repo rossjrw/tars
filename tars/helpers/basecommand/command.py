@@ -18,12 +18,6 @@ from tars.helpers.error import (
 )
 
 
-# Sentinel value to indicate that an argument was not provided (e.g. for
-# nargs="*", distinguishes between argument present but no parameters provided,
-# and argument not present at all)
-NoArgument = object()
-
-
 class Command(ABC, ParsingMixin, IntrospectionMixin):
     """Base command extended by all commands that generates documentation from
     its internal argparse object. If this text appears outside of TARS' source

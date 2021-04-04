@@ -6,7 +6,7 @@ Used to be in analytic.py, but it's too long now.
 """
 
 from itertools import product, combinations_with_replacement
-from tars.helpers.basecommand import Command
+from tars.helpers.basecommand import Command, longstr
 from tars.helpers.database import DB
 from tars.helpers.error import CommandError, MyFaultError
 
@@ -72,8 +72,8 @@ class Shortest(Command):
         ),
         dict(
             flags=['--title', '-t'],
-            type=str,
-            nargs=None,
+            type=longstr,
+            nargs='+',
             help="""An article's title. Doesn't have to be a real one.
 
             This argument can be any text, not just the title of an
@@ -101,7 +101,7 @@ class Shortest(Command):
                             {
                                 'type': 'url',
                                 # Handle case where the whole URL was entered
-                                'term': self['url'][0].split("/")[-1],
+                                'term': self['url'].split("/")[-1],
                             }
                         ]
                     )[0]

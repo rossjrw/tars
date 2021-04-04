@@ -185,7 +185,7 @@ class Gib(Command):
         limit = self['limit'] or CONFIG['gib']['message_limit'] or 5000
         if 'media' in self:
             limit = -1
-        if 'me' in self:
+        if self['me']:
             self['regex'].append(re.compile(r"^\u0001ACTION "))
         # can only gib a channel both the user and the bot are in
         for channel in self['channel']:
@@ -212,12 +212,14 @@ class Gib(Command):
                     "any channel from if you do it in PMs with me)."
                 )
         # Does the model need to be regenerated?
-        if not self['nocache'] and all(
-            Gib.cache['model'] is not None,
-            Gib.cache['channels'] == self['channel'],
-            Gib.cache['users'] == self['user'],
-            Gib.cache['size'] == self['size'],
-            Gib.cache['limit'] == limit,
+        if not self['no_cache'] and all(
+            [
+                Gib.cache['model'] is not None,
+                Gib.cache['channels'] == self['channel'],
+                Gib.cache['users'] == self['user'],
+                Gib.cache['size'] == self['size'],
+                Gib.cache['limit'] == limit,
+            ]
         ):
             print("Reusing Markov model")
         else:
@@ -338,7 +340,7 @@ class Gib(Command):
             minlength=40,
             limit=limit,
             senders=None if self['user'] == [] else self['user'],
-            patterns=self['regex'],
+            patterns=[r.pattern for r in self['regex']],
         )
         print("messages found: {}".format(len(messages)))
         if len(messages) == 0:
@@ -366,7 +368,7 @@ class Gib(Command):
             if sentence is not None:
                 break
             print("Sentence is None")
-        if not self['nocache'] and sentence in DB.get_gibs():
+        if not self['no_cache'] and sentence in DB.get_gibs():
             print(
                 "Sentence already sent, {} attempts remaining".format(
                     CONFIG['gib']['attempt_limit'] - attempts

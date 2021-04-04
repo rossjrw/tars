@@ -80,8 +80,6 @@ class ParsingMixin:
                         # not provided; if it is provided but with no argument,
                         # the value from `const` is taken, which defaults to
                         # None
-                if arg['nargs'] in ['*', '+']:
-                    assert isinstance(arg['default'], list)
             parser.add_argument(*flags, **arg)
         return parser
 

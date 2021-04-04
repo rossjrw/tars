@@ -37,6 +37,7 @@ def try_command(irc_c, msg, cmd, command_name=None):
             raise CommandNotExistError from error
         # Check if the command should defer to another bot
         if should_defer(cmd):
+            print("Deferred")
             return 1
         # Construct a function to validate if the user has permission to do
         # something
