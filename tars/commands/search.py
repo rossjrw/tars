@@ -268,9 +268,9 @@ class Search(Command):
         if self['random']:
             selection['order'] = 'random'
             selection['limit'] = 1
-        if self['recommend']:
-            selection['order'] = 'recommend'
-            selection['limit'] = 1
+        # if self['recommend']:
+        #     selection['order'] = 'recommend'
+        #     selection['limit'] = 1
         if self['newest']:
             selection['order'] = 'recent'
             selection['limit'] = 1
