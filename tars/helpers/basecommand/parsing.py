@@ -102,7 +102,6 @@ class ParsingMixin:
                         "argument.".format(option_string)
                     )
                 # Check if the values are longstr and if they are, concatenate
-                print(option_string, values)
                 if isinstance(values, (list, tuple)):
                     all_longstrs = [
                         isinstance(value, longstr) for value in values

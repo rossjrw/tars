@@ -84,7 +84,7 @@ class ParsedCommand:
             self.command = match.group('cmd').strip().lower()
             self.message = match.group('rest').strip()
             # Store the prefix so defer can use it, if there was one
-            if len(match.group('prefix')) > 1:
+            if len(match.group('prefix')) > 0:
                 self.prefix = match.group('prefix')
 
 
