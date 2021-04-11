@@ -64,22 +64,20 @@ class ParsingMixin:
             if 'help' not in arg:
                 raise ValueError("arg must have help string")
             # Handle the nargs
-            if 'nargs' in arg:
-                # Assign sensible defaults
-                if 'default' not in arg:
-                    if (
-                        arg['nargs'] in ['*', '+']
-                        and arg['type'] is not longstr
-                    ):
-                        arg['default'] = []
-                    else:
-                        # The default would usually be None
-                        # Use __contains__ to check if argument is present
-                        arg['default'] = NoArgument
-                        # For '?', the `default` value is used if the option is
-                        # not provided; if it is provided but with no argument,
-                        # the value from `const` is taken, which defaults to
-                        # None
+            if 'nargs' not in arg:
+                arg['nargs'] = None
+            # Assign sensible defaults
+            if 'default' not in arg:
+                if arg['nargs'] in ['*', '+'] and arg['type'] is not longstr:
+                    arg['default'] = []
+                else:
+                    # The default would usually be None
+                    # Use __contains__ to check if argument is present
+                    arg['default'] = NoArgument
+                    # For '?', the `default` value is used if the option is
+                    # not provided; if it is provided but with no argument,
+                    # the value from `const` is taken, which defaults to
+                    # None
             parser.add_argument(*flags, **arg)
         return parser
 
