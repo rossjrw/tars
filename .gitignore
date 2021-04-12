@@ -5,7 +5,7 @@
 *.db-journal
 
 .venv/
-Pipfile.lock
+poetry.lock
 __pycache__/
 
 node_modules/
