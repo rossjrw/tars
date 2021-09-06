@@ -7,12 +7,11 @@ import os
 import sys
 
 import git
-
 from tars.commands.gib import Gib
-from tars.helpers.basecommand import Command, matches_regex, longstr
-from tars.helpers.greetings import kill_bye
-from tars.helpers.error import CommandError
+from tars.helpers.basecommand import Command, longstr, matches_regex
 from tars.helpers.database import DB
+from tars.helpers.error import CommandError
+from tars.helpers.greetings import kill_bye
 
 
 class Kill(Command):
@@ -79,7 +78,7 @@ class Leave(Command):
         ),
         dict(
             flags=['--message', '-m'],
-            type=str,
+            type=longstr,
             nargs='+',
             help="""The message to leave on departure.""",
         ),
@@ -87,7 +86,7 @@ class Leave(Command):
 
     def execute(self, irc_c, msg, cmd):
         if 'message' in self:
-            leavemsg = " ".join(self['message'])
+            leavemsg = self['message']
         else:
             leavemsg = None
         if self['channel'] is not None:
