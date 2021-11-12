@@ -43,28 +43,59 @@ def toml_url(url):
 class CromAPI:
     """Wrapper for Crom API functions."""
 
-    page_graphql = """
-        url
-        attributions {
-            type
-            user {
-                name
+    page_fragment_graphql = """
+        fragment PageFragment on Page {
+            url
+            attributions {
+                type
+                user {
+                    name
+                }
+                date
             }
-            date
+            alternateTitles {
+                type
+                title
+            }
+            wikidotInfo {
+                title
+                category
+                rating
+                voteCount
+                tags
+                createdAt
+                parent {
+                    url
+                }
+            }
         }
-        alternateTitles {
-            type
-            title
+    """
+
+    get_one_page_query = """
+        query GetOnePage($url: URL!) {
+            page (url: $url) {
+                ...PageFragment
+            }
         }
-        wikidotInfo {
-            title
-            category
-            rating
-            voteCount
-            tags
-            createdAt
-            parent {
-                url
+    """
+
+    get_all_pages_query = """
+        query GetAllPages($filter: QueryPagesFilter!, $after: ID) {
+            pages (
+                filter: $filter
+                first: 100
+                after: $after
+                sort: { order: ASC, key: CREATED_AT }
+            ) {
+                edges {
+                    node {
+                        ...PageFragment
+                    }
+                }
+                pageInfo {
+                    hasNextPage
+                    endCursor
+                }
             }
         }
     """
@@ -73,22 +104,17 @@ class CromAPI:
         self.endpoint = "https://api.crom.avn.sh/"
         self.domain = {'en': "http://scp-wiki.wikidot.com"}[domain]
 
-    def _get(self, query):
+    def _get(self, query, variables={}):
         return requests.post(
             self.endpoint,
-            json={'query': query.replace("@domain", self.domain)},
+            json={'query': query, 'variables': variables},
         )
 
     def _get_one_page(self, slug):
         """Gets all Crom data for a single page."""
         response = self._get(
-            f"""{{
-                page (
-                    url: "@domain/{slug}"
-                ) {{
-                    {CromAPI.page_graphql}
-                }}
-            }}"""
+            self.page_fragment_graphql + self.get_one_page_query,
+            {'url': f"{self.domain}/{slug}"},
         )
         return json.loads(response.text)['data']['page']
 
@@ -129,57 +155,50 @@ class CromAPI:
 
     def get_all_pages(self, *, tags=None, categories=None, seconds=None):
         """Returns a generator that gets data for all pages on the wiki."""
-        if tags is not None or categories is not None:
-            raise NotImplementedError
-        date_filter = (
-            ""
-            if seconds is None
-            else f"""
-                wikidotInfo: {{
-                    createdAt: {{
-                        gte: "{pd.now().subtract(seconds=seconds).isoformat()}"
-                    }}
-                }}
-            """
-        )
+
+        # Generate a Crom filter expression based on the arguments.
+        # Create references to elements inside the expression that we can
+        # modify later.
+        wikidot_info_filter = {'category': {'neq': 'fragment'}}
+        tag_filters = []
+        category_filters = []
+        page_filter = {
+            'url': {'startsWith': self.domain},
+            'wikidotInfo': {
+                '_and': [
+                    wikidot_info_filter,
+                    {'_or': tag_filters},
+                    {'_or': category_filters},
+                ]
+            },
+        }
+
+        if seconds is not None:
+            wikidot_info_filter['createdAt'] = {
+                'gte': pd.now().subtract(seconds=seconds).isoformat()
+            }
+        if tags is not None:
+            tag_filters.extend({'tags': {'eq': tag}} for tag in tags)
+        if categories is not None:
+            category_filters.extend(
+                {'category': {'eq': category}} for category in categories
+            )
 
         def paginated_generator():
-            previous_end_cursor = ""
+            next_cursor = None
             while True:
                 response = self._get(
-                    f"""{{
-                        pages (
-                            sort: {{
-                                order: ASC
-                                key: CREATED_AT
-                            }}
-                            filter: {{
-                                anyBaseUrl: "@domain"
-                                {date_filter}
-                            }}
-                            last: 100
-                            before: "{previous_end_cursor}"
-                        ) {{
-                            edges {{
-                                node {{
-                                    {CromAPI.page_graphql}
-                                }}
-                            }}
-                            pageInfo {{
-                                hasPreviousPage
-                                endCursor
-                            }}
-                        }}
-                    }}"""
+                    self.page_fragment_graphql + self.get_all_pages_query,
+                    {'filter': page_filter, 'after': next_cursor},
                 )
                 data = json.loads(response.text)['data']['pages']
                 yield [
                     self._process_page_data(edge['node'])
                     for edge in data['edges']
                 ]
-                if not data['pageInfo']['hasPreviousPage']:
+                if not data['pageInfo']['hasNextPage']:
                     return
-                previous_end_cursor = data['pageInfo']['endCursor']
+                next_cursor = data['pageInfo']['endCursor']
 
         return paginated_generator()
 

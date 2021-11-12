@@ -88,9 +88,6 @@ class Propagate(Command):
         pages_generator = SCPWiki.get_all_pages(**kwargs)
         for pages in pages_generator:
             for page in pages:
-                if page['fullname'].startswith("fragment:"):
-                    # Don't want to track fragments
-                    continue
                 DB.add_article(page, commit=False)
             # Give the API a moment to rest
             gevent.sleep(5)
