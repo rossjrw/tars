@@ -1,6 +1,7 @@
 # TARS
 
-IRC bot for IO automation
+IRC chatbot for the [SCP Wiki](https://scpwiki.com), facilitating wiki
+search and internet outreach automation.
 
 This README contains instructions for command line usage and implementation
 details. End users looking for command instructions should look at the
@@ -8,20 +9,20 @@ documentation: https://rossjrw.com/tars
 
 ## Current state
 
-TARS is not yet finished. It has no ETA. In the meantime, it has quite a
-few features and works pretty well.
-
-TARS is operational on the SCP IRC network (currently
-[skipirc](http://05command.wikidot.com/skipirc:home)) and has been since
-March 2019. In that time it's seen two IRC networks, ~1000 users,
-~1,000,000 messages, and served ~75,000 requests.
+TARS operated on the SCP IRC network (currently
+[SkipIRC](http://05command.wikidot.com/skipirc:home)) since March 2019. In
+that time it's seen two IRC networks, ~1000 users, ~1,000,000 messages, and
+served ~75,000 requests.
 
 TARS has run on:
 
 * A Chromebook
 * A Raspberry Pi 3 Model A+ with a cute little screen
 * An AWS EC2 t2.micro instance
-* An AWS EC2 t3a.nano instance (current as of September 2021)
+* An AWS EC2 t3a.nano instance
+
+As of December 2021, the main instance of TARS is no longer operational,
+coinciding with the SCP Wiki's move away from IRC.
 
 ## Installation
 

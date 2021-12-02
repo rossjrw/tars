@@ -1,6 +1,8 @@
-TARS is an IRC bot made by [SCP Wiki](https://scp-wiki.wikidot.com/) tech team
-member Croquembouche. It operates on SkipIRC, and its database is powered by
-SMLT's [Crom](https://crom.avn.sh/). TARS is fully @repo(open source).
+TARS is an IRC bot made by [SCP Wiki](https://scp-wiki.wikidot.com/) tech
+team member Croquembouche. It operated on
+[SkipIRC](https://scp-wiki.wikidot.com/chat-guide), and its database is
+powered by SMLT's [Crom](https://crom.avn.sh/). TARS is fully
+@repo(open source).
 
 TARS is designed with the intention of assisting the Internet Outreach team of
 the English-speaking branch of the SCP Wiki by automating social media
@@ -8,8 +10,8 @@ promotion; however, I've never actually gotten around to implementing this. For
 now it is just a general chat bot, although as far as I'm aware it has the most
 powerful search syntax of all SCP bots available.
 
-Come chat with TARS in [`#tars`](https://scp-wiki.wikidot.com/chat-guide) on
-SkipIRC.
+As of December 2021, the main instance of TARS is no longer operational,
+coinciding with the SCP Wiki's move away from IRC.
 
 ### Using TARS
 
